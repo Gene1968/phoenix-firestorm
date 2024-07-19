@@ -2,8 +2,8 @@
 <context_menu
 	layout="topleft"
 	name="Avatar Context Menu">
-	<!--Ap0110 HydraStorm Menu-->
-	<context_menu label="Ap0110 Hydra Menu" name="Ap0110 Hydra Menu">
+	<!--ShareStorm Menu-->
+	<context_menu label="ShareStorm Menu" name="ShareStorm Menu">
 		<menu_item_call label="Avatar Textures" name="avatar_textures">
 			<menu_item_call.on_click function="Avatar.AVTextures"/>
 			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
@@ -34,7 +34,7 @@
 		</menu_item_call>
 	</context_menu>
 	<menu_item_separator />
-	<!--Ap0110 End-->
+	<!--ShareStorm End-->
 	<menu_item_call
 		label="View Profile"
 		layout="topleft"

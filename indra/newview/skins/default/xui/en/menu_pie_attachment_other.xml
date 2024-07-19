@@ -214,13 +214,13 @@
 				<pie_separator/>
 				<pie_separator/>
 				<pie_separator/>
-		<!-- Ap0110 edit -->
+		<!-- ShareStorm edit -->
 		<pie_separator />
 		<pie_slice label="Xml" name="Export...">
 			<pie_slice.on_click function="Object.SaveAs" />
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
-		<!-- end Ap0110 edit -->
+		<!-- end ShareStorm edit -->
 				<pie_slice
 					label="Dump XML"
 					name="Dump XML">
@@ -259,8 +259,8 @@
 				</pie_slice>
 			</pie_menu>
         </pie_menu>
-	<!-- Ap0110 edit -->
-	<pie_menu label="Hydra Menu>" name="Hydra More">
+	<!-- ShareStorm edit -->
+	<pie_menu label="ShareStorm Menu>" name="ShareStorm More">
 		<pie_slice label="Xml" name="Export...">
 			<pie_slice.on_click function="Object.SaveAs" />
 			<pie_slice.on_enable function="Object.EnableExport" />
@@ -290,7 +290,7 @@
 			<pie_slice.on_enable function="Object.EnableInspect" />
 		</pie_slice>
 	</pie_menu>
-	<!-- end Ap0110 edit -->
+	<!-- end ShareStorm edit -->
         <pie_slice
             label="Inspect"
             name="Avatar Inspect">

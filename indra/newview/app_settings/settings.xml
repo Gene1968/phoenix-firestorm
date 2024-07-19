@@ -2,7 +2,7 @@
 <llsd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="llsd.xsd">
 <map>
-	<!--Ap0110 Hardware spoofing-->
+	<!--ShareStorm Hardware spoofing-->
 	<key>SpecifyMAC</key>
 	<map>
 		<key>Comment</key>
@@ -106,7 +106,7 @@
 	<key>HackedGodmode</key>
 	<map>
 		<key>Comment</key>
-		<string>Enable the hacked godmode option from the Hydrastorm menu.  Note: This will just allow the toggle to be set; this does not grant God privileges It is strictly for unlocking viewer side features.</string>
+		<string>Enable the hacked godmode option from the ShareStorm menu.  Note: This will just allow the toggle to be set; this does not grant God privileges It is strictly for unlocking viewer side features.</string>
 		<key>Persist</key>
 		<integer>0</integer>
 		<key>Type</key>
@@ -270,7 +270,7 @@
 		<key>Value</key>
 		<string></string>
 	</map>
-	<!--Ap0110 Radar Settings-->
+	<!--ShareStorm Radar Settings-->
 		<key>EnableRadarGriff</key>
 		<map>
 		<key>Comment</key>
@@ -415,7 +415,7 @@
 			<integer>473</integer>
 		</array>
 	</map>
-	<!--end Ap0110 Hardware & Radar-->
+	<!--end ShareStorm Hardware & Radar-->
 
   <key>FSLandmarkCreatedNotification</key>
   <map>
@@ -525,7 +525,7 @@
     <integer>1</integer>
   </map>
 
-	<!--Ap0110 DAE / OXP / XML export-->
+	<!--ShareStorm DAE / OXP / XML export-->
 	<key>UseFixedValuesForExport</key>
 	<map>
 		<key>Comment</key>
@@ -582,7 +582,7 @@
 		<key>Value</key>
 		<string>Joe Cool</string>
 	</map>
-	<!--End Ap0110 DAE / OXP / XML export-->
+	<!--End ShareStorm DAE / OXP / XML export-->
 
   <key>PieMenuOuterRingShade</key>
   <map>

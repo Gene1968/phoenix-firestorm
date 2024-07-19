@@ -101,7 +101,7 @@
 			 top="117"
 			 left="4"
 			 width="122" />
-			<!-- Ap0110 edit copybot button -->
+			<!-- ShareStorm edit copybot button -->
 				<button
 				layout="topleft"
 				follows="left|bottom"
@@ -111,7 +111,7 @@
 				top="117"
 				left_pad="4"
 				width="122" />
-			<!-- Ap0110 end edit -->
+			<!-- ShareStorm end edit -->
 		</layout_panel>
 		<layout_panel
 		 follows="all"

@@ -48,8 +48,8 @@
         <pie_slice.on_enable
             function="Object.EnableStandUp" />
     </pie_slice>
-	<!--Ap0110 edit-->
-	<pie_menu label="HYDRA>" name="Object Pie More 3">
+	<!--ShareStorm edit-->
+	<pie_menu label="ShareStorm >" name="Object Pie More 3">
 		<pie_slice enabled="false"	label="Import.Xml" name="Import...">
 			<pie_slice.on_click function="Object.Import" />
 			<pie_slice.on_enable function="Object.EnableImport" />
@@ -72,7 +72,7 @@
 			<pie_slice.on_click	function="Object.Export" />
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
-		<pie_menu label="Hydra More >" name="Object Pie More 4">
+		<pie_menu label="ShareStorm More >" name="Object Pie More 4">
 			<pie_slice	label="Destroy" name="Destroy">
 			<pie_slice.on_click	function="Object.Blink" />
 		</pie_slice>
@@ -93,7 +93,7 @@
 	</pie_slice>
 	</pie_menu>
 	<pie_menu label="Object >" name="Object Pie Menu Object">
-	<!--end Ap0110 edit-->
+	<!--end ShareStorm edit-->
     <pie_slice
         start_autohide="true"
         enabled="false"
@@ -420,7 +420,7 @@
                      function="Advanced.EnableAppearanceToXML"/>
             </pie_slice>
 
-	<!-- Ap0110 edit -->
+	<!-- ShareStorm edit -->
 		<pie_slice enabled="false" label="Import.Xml" name="Import...">
 			<pie_slice.on_click function="Object.Import" />
 			<pie_slice.on_enable function="Object.EnableImport" />
@@ -430,7 +430,7 @@
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
 	</pie_menu>
-	<!-- end Ap0110 edit -->
+	<!-- end ShareStorm edit -->
 <!-- Phoenix has "Disable" here, which we haven't implemented yet.
      Might get interesting when we finally do ... -->
 <!-- <pie_separator name="disable_placeholder" /> -->

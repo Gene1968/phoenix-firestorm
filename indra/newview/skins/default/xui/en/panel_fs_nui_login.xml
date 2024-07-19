@@ -387,7 +387,7 @@
       width="140">
         Forgot password?
     </text>
-	<!-- Ap0110 Login Spoof -->
+	<!-- ShareStorm Login Spoof -->
 	<button follows="right|bottom"
 		font="SansSerifMedium"
 		text_color="EmphasisColor"

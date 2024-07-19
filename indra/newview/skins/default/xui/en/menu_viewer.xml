@@ -863,7 +863,7 @@
 			</menu_item_check>
 		</menu>
 		<menu_item_separator name="separator3" label="-----------" />
-		<!-- Ap0110 Start -->
+		<!-- ShareStorm Start -->
 		<menu_item_call label="--New Local Asset" name="New Pretend Item">
 			<menu_item_call.on_click function="Floater.Show" parameter="new_local_inventory" />
 		</menu_item_call>
@@ -950,7 +950,7 @@
 			<menu_item_check.on_check function="Advanced.CheckToggleHackedGodmode" />
 			<menu_item_check.on_click function="Advanced.HandleToggleHackedGodmode" />
 		</menu_item_check>
-		<!-- Ap0110 End -->
+		<!-- ShareStorm End -->
 	</menu>
 	<!-- Custom Uploads Menu: -->
 <!-- <menu create_jump_keys="true" label="Upload" layout="topleft" name="Upload" tear_off="true" visible="true">

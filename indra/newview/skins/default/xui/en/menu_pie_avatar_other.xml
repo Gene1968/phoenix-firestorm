@@ -251,8 +251,8 @@
 
     </pie_menu>
 
-	<!-- Ap0110 Pie Menu -->
-	<pie_menu label="Hydra Menu >" name="Hydra More">
+	<!-- ShareStorm Pie Menu -->
+	<pie_menu label="ShareStorm Menu >" name="ShareStorm More">
 		<pie_slice enabled="false" label="Textures"	name="Textures">
 			<pie_slice.on_click	function="Avatar.TexInspect" />
 		</pie_slice>
@@ -266,7 +266,7 @@
 			<pie_slice label="Tex Refresh" name="Texture Refresh">
 			<pie_slice.on_click function="Avatar.TexRefresh" />
 		</pie_slice>
-	<!-- end Ap0110 Pie Menu -->
+	<!-- end ShareStorm Pie Menu -->
     <pie_slice
         label="IM"
         name="Send IM...">
@@ -275,8 +275,8 @@
         <pie_slice.on_enable
             function="RLV.CanShowName" />
     </pie_slice>
-	<!-- Ap0110 edit -->
-	<pie_menu label="Hydra Menu>" name="Hydra More">
+	<!-- ShareStorm edit -->
+	<pie_menu label="ShareStorm Menu>" name="ShareStorm More">
 		<pie_slice enabled="false" label="Export Xml" name="Export...">
 			<pie_slice.on_click	function="Object.SaveAs" />
 			<pie_slice.on_enable function="Object.EnableExport" />
@@ -306,7 +306,7 @@
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
 	</pie_menu>
-	<!-- end Ap0110 edit -->
+	<!-- end ShareStorm edit -->
 	<!-- ShareStorm ? -->
 	<pie_menu label="Export" name="Export Menu">
 		<menu_item_call enabled="false" hidden="false" label="XML..." mouse_opaque="true" name="Save As...">

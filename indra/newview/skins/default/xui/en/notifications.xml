@@ -13594,7 +13594,7 @@ Setting has already been added. Please select a different one.
       <tag>Export</tag>
 Export finished and saved to [FILENAME].
     </notification>
-	<!--Ap0110 edit-->
+	<!--ShareStorm edit-->
 	<!--Copybot button-->
 	<notification
 		icon="alertmodal.tga"
@@ -13632,7 +13632,7 @@ Export finished and saved to [FILENAME].
 		notext="Inventory"
 		yestext="Clipboard"/>
 	</notification>
-	<!--/Ap0110 edit-->
+	<!--/ShareStorm edit-->
     <notification
      icon="alertmodal.tga"
      name="ExportFailed"
