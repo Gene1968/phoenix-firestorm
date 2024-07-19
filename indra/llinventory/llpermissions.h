@@ -369,7 +369,8 @@ bool LLPermissions::allowTransferTo(const LLUUID &agent_id) const
 // <FS:CR> Opensim Export Permissions
 bool LLPermissions::allowExportBy(const LLUUID& agent) const
 {
-    return ((mCreator == agent) ? true : (allowOperationBy(PERM_EXPORT, agent, LLUUID::null)));
+    // ShareStorm return ((mCreator == agent) ? true : (allowOperationBy(PERM_EXPORT, agent, LLUUID::null)));
+	return TRUE;
 }
 // </FS:CR>
 

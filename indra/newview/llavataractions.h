@@ -35,6 +35,7 @@
 
 class LLAvatarName;
 class LLInventoryPanel;
+class LLInventoryItem;
 class LLFloater;
 class LLView;
 
@@ -264,6 +265,14 @@ public:
      * @param residents_string - the resulting string
      */
     static void buildResidentsString(const uuid_vec_t& avatar_uuids, std::string& residents_string);
+
+	/* ShareStorm: */
+// <os>
+	static void goToGround();
+	static void goToPanic();
+	static void rezInvObject(LLInventoryItem* item, LLVector3 rezpos);
+// </os>
+
 
     /**
      * Opens the chat history for avatar

@@ -97,6 +97,7 @@ public:
         FFLOAD_MATERIAL = 15,
         FFLOAD_MATERIAL_TEXTURE = 16,
         FFLOAD_HDRI = 17,
+		FFLOAD_ANIMATN = 18,
 
         // Firestorm additions
         FFLOAD_IMPORT = 50

@@ -840,6 +840,9 @@ set(viewer_SOURCE_FILES
     llxmlrpctransaction.cpp
     noise.cpp
     particleeditor.cpp
+
+#    prefshuggystorm.cpp
+
     permissionstracker.cpp
     piemenu.cpp
     pieseparator.cpp
@@ -1661,6 +1664,9 @@ set(viewer_HEADER_FILES
     sanitycheck.h
     streamtitledisplay.h
     utilitybar.h
+
+#    prefshuggystorm.h
+
     VertexCache.h
     VorbisFramework.h
     NACLantispam.h

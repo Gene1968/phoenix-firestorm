@@ -272,12 +272,13 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
                     BOOL mod = itemp->getPermissions().allowModifyBy(gAgent.getID());
                     BOOL xfer = itemp->getPermissions().allowOperationBy(PERM_TRANSFER, gAgent.getID());
 
-                    if(!copy)
-                    {
-                        // no copy texture
-                        getChild<LLUICtrl>("apply_immediate_check")->setValue(FALSE);
-                        mNoCopyTextureSelected = TRUE;
-                    }
+					// ShareStorm from original Singularity copybot Grimore:
+					// if(!copy)
+					// {
+						// no copy texture
+						// getChild<LLUICtrl>("apply_immediate_check")->setValue(FALSE);
+						// mNoCopyTextureSelected = TRUE;
+					// }
 
                     //Verify permissions before revealing UUID.
                     //Replicates behaviour of "Copy UUID" on inventory. If you can't copy it there, you can't copy it here.
@@ -486,19 +487,18 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
     {
         LLInventoryItem *item = (LLInventoryItem *)cargo_data;
 
-        BOOL copy = item->getPermissions().allowCopyBy(gAgent.getID());
-        BOOL mod = item->getPermissions().allowModifyBy(gAgent.getID());
-        BOOL xfer = item->getPermissions().allowOperationBy(PERM_TRANSFER,
-                                                            gAgent.getID());
-
-        PermissionMask item_perm_mask = 0;
-        if (copy) item_perm_mask |= PERM_COPY;
-        if (mod)  item_perm_mask |= PERM_MODIFY;
-        if (xfer) item_perm_mask |= PERM_TRANSFER;
-
-        PermissionMask filter_perm_mask = mDnDFilterPermMask;
-        if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
-        {
+		// ShareStorm from original Singularity copybot Grimore:
+        // BOOL copy = item->getPermissions().allowCopyBy(gAgent.getID());
+        // BOOL mod = item->getPermissions().allowModifyBy(gAgent.getID());
+        // BOOL xfer = item->getPermissions().allowOperationBy(PERM_TRANSFER,
+        //                                                     gAgent.getID());
+        // PermissionMask item_perm_mask = 0;
+        // if (copy) item_perm_mask |= PERM_COPY;
+        // if (mod)  item_perm_mask |= PERM_MODIFY;
+        // if (xfer) item_perm_mask |= PERM_TRANSFER;
+        // PermissionMask filter_perm_mask = mDnDFilterPermMask;
+        // if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+        // {
             if (drop)
             {
                 // <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
@@ -509,11 +509,11 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
             }
 
             *accept = ACCEPT_YES_SINGLE;
-        }
-        else
-        {
-            *accept = ACCEPT_NO;
-        }
+        // }
+        // else
+        // {
+        //     *accept = ACCEPT_NO;
+        // }
     }
     else
     {

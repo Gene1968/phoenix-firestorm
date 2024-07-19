@@ -59,7 +59,9 @@ LLFilePicker LLFilePicker::sInstance;
 #if LL_WINDOWS
 #define SOUND_FILTER L"Sounds (*.wav)\0*.wav\0"
 #define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png\0"
-#define ANIM_FILTER L"Animations (*.bvh; *.anim)\0*.bvh;*.anim\0"
+// ShareStorm from original Singularity copybot Grimore:
+//define ANIM_FILTER L"Animations (*.bvh; *.anim)\0*.bvh;*.anim\0"
+#define ANIM_FILTER L"Animations (*.bvh; *.anim; *.animatn)\0*.bvh;*.anim;*.animatn\0"
 #define COLLADA_FILTER L"Scene (*.dae)\0*.dae\0"
 #define GLTF_FILTER L"glTF (*.gltf; *.glb)\0*.gltf;*.glb\0"
 #define XML_FILTER L"XML files (*.xml)\0*.xml\0"
