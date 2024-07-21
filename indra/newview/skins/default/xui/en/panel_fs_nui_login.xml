@@ -396,7 +396,7 @@
 		image_unselected="PushButton_Login"
 		image_pressed="PushButton_Login_Pressed"
 		image_hover_unselected="PushButton_Login_Over"
-		label="Login Spoof"
+		label="--Login Spoof"
 		label_color="White"
 		layout="topleft"
 		name="privacy_btn"
