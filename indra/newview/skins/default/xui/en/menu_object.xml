@@ -4,10 +4,7 @@
     name="Object Pie">
 	<!-- ShareStorm Menu WIP -->
 	<context_menu label="ShareStorm!" name="Export Menu">
-		<menu_item_call label="--Inspect Textures" name="Inspect Textures" enabled="true" mouse_opaque="true">
-			<on_click function="ShowFloater" userdata="inspect textures" />
-		</menu_item_call>
-		<menu_item_call label="--Inspect TexturesH" name="TexInspect">
+		<menu_item_call label="Inspect Textures!" name="TexInspect">
 			<menu_item_call.on_click function="Floater.Show" parameter="inspect_texture" />
 		</menu_item_call>
 		<menu_item_call label="--Measure" enabled="true" name="Measure">
