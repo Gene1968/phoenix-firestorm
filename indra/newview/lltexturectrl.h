@@ -395,6 +395,10 @@ public:
     static void     onBtnSelect(void* userdata);
     static void     onBtnCancel(void* userdata);
     void            onBtnPipette();
+//<ShareStorm>!
+	static void		onBtnCpToInv( void* userdata );
+	static void		onBtnUUID( void* userdata );
+//</ShareStorm>!
     //static void       onBtnRevert( void* userdata );
     static void     onBtnBlank(void* userdata);
     static void     onBtnTransparent( void* userdata ); // <FS:PP> FIRE-5082: "Transparent" button in Texture Panel
@@ -473,7 +477,9 @@ protected:
     LLLineEditor*       mUUIDEditor{ nullptr };
     LLButton*           mUUIDBtn{ nullptr };
     LLButton*           mTransparentBtn{ nullptr };
-
+// <ShareStorm>
+    LLButton*           mCpToInvBtn{ nullptr };
+//÷</ShareStorm>
 private:
     bool mCanApply;
     bool mCanPreview;

@@ -81,6 +81,10 @@
 
 #include "fscommon.h"
 
+// <ShareStorm>
+#include "llinventorydefines.h"
+// </ShareStorm>
+
 //static
 bool get_is_predefined_texture(LLUUID asset_id)
 {
@@ -268,28 +272,27 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
                 //if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
                 if (itemp)
                 {
-                    BOOL copy = itemp->getPermissions().allowCopyBy(gAgent.getID());
-                    BOOL mod = itemp->getPermissions().allowModifyBy(gAgent.getID());
-                    BOOL xfer = itemp->getPermissions().allowOperationBy(PERM_TRANSFER, gAgent.getID());
-
-					// ShareStorm from original Singularity copybot Grimore:
+				// <ShareStorm>!?
+					// BOOL copy = itemp->getPermissions().allowCopyBy(gAgent.getID());
+					// BOOL mod = itemp->getPermissions().allowModifyBy(gAgent.getID());
+					// BOOL xfer = itemp->getPermissions().allowOperationBy(PERM_TRANSFER, gAgent.getID());
 					// if(!copy)
 					// {
 						// no copy texture
 						// getChild<LLUICtrl>("apply_immediate_check")->setValue(FALSE);
 						// mNoCopyTextureSelected = TRUE;
 					// }
-
-                    //Verify permissions before revealing UUID.
-                    //Replicates behaviour of "Copy UUID" on inventory. If you can't copy it there, you can't copy it here.
-                    if(copy&&mod&&xfer)
-                    {
-                        getChild<LLLineEditor>("TextureKey")->setText(image_id.asString());
-                    }
-                    else
-                    {
-                        getChild<LLLineEditor>("TextureKey")->setText(LLUUID::null.asString());
-                    }
+					//Verify permissions before revealing UUID.
+					//Replicates behaviour of "Copy UUID" on inventory. If you can't copy it there, you can't copy it here.
+					// if(copy&&mod&&xfer)
+					// {
+						getChild<LLLineEditor>("TextureKey")->setText(image_id.asString());
+					// }
+					// else
+					// {
+					//     getChild<LLLineEditor>("TextureKey")->setText(LLUUID::null.asString());
+					// }
+				// </ShareStorm>!? some from original Singularity copybot Grimore
                 }
                 else
                 {
@@ -487,7 +490,7 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
     {
         LLInventoryItem *item = (LLInventoryItem *)cargo_data;
 
-		// ShareStorm from original Singularity copybot Grimore:
+		// <ShareStorm>! from original Singularity copybot Grimore:
         // BOOL copy = item->getPermissions().allowCopyBy(gAgent.getID());
         // BOOL mod = item->getPermissions().allowModifyBy(gAgent.getID());
         // BOOL xfer = item->getPermissions().allowOperationBy(PERM_TRANSFER,
@@ -498,7 +501,9 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
         // if (xfer) item_perm_mask |= PERM_TRANSFER;
         // PermissionMask filter_perm_mask = mDnDFilterPermMask;
         // if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
-        // {
+		if(1)
+		// </ShareStorm>! always true Here
+        {
             if (drop)
             {
                 // <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
@@ -509,11 +514,11 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
             }
 
             *accept = ACCEPT_YES_SINGLE;
-        // }
-        // else
-        // {
-        //     *accept = ACCEPT_NO;
-        // }
+        }
+        else
+        {
+            *accept = ACCEPT_NO;
+        }
     }
     else
     {
@@ -624,6 +629,9 @@ BOOL LLFloaterTexturePicker::postBuild()
     mCancelBtn = getChild<LLButton>("Cancel");
     // <FS> Special additions
     mTransparentBtn = getChild<LLButton>("Transparent");
+// <ShareStorm>
+	mCpToInvBtn = getChild<LLButton>("CpToInv");
+// </ShareStorm>
     mUUIDBtn = getChild<LLButton>("TextureKeyApply");
     mUUIDEditor = getChild<LLLineEditor>("TextureKey");
 
@@ -636,6 +644,12 @@ BOOL LLFloaterTexturePicker::postBuild()
     // <FS> Special additions
     mTransparentBtn->setClickedCallback(boost::bind(LLFloaterTexturePicker::onBtnTransparent, this));
     mUUIDBtn->setClickedCallback(boost::bind(LLFloaterTexturePicker::onBtnApplyTexture, this));
+// <ShareStorm>?!
+	mCpToInvBtn->setClickedCallback(boost::bind(LLFloaterTexturePicker::onBtnCpToInv, this));
+	getChild<LLUICtrl>("texture_uuid")->setValue(mImageAssetID);
+	// mUUIDBtn->setClickedCallback(boost::bind(LLFloaterTexturePicker::onBtnUUID, this));// which is right?
+	// ApplyUUID->setClickedCallback(boost::bind(LLFloaterTexturePicker::onBtnUUID, this));// which is right?
+// </ShareStorm>?!
 
     mFilterEdit = getChild<LLFilterEditor>("inventory search editor");
     mFilterEdit->setCommitCallback(boost::bind(&LLFloaterTexturePicker::onFilterEdit, this, _2));
@@ -787,6 +801,12 @@ void LLFloaterTexturePicker::draw()
         mBlankBtn->setEnabled((mImageAssetID != mBlankImageAssetID && mBlankImageAssetID.notNull()) || mTentative);
         mNoneBtn->setEnabled(mAllowNoTexture && (!mImageAssetID.isNull() || mTentative));
         mTransparentBtn->setEnabled((mImageAssetID != mTransparentImageAssetID && mTransparentImageAssetID.notNull()) || mTentative); // <FS:PP> FIRE-5082: "Transparent" button in Texture Panel
+
+// <ShareStorm>!?
+		// getChildView("CpToInv")->setEnabled(!mImageAssetID.isNull() );
+		mCpToInvBtn->setEnabled(mImageAssetID.notNull() || mTentative);
+// </ShareStorm>!?
+
 
         LLFloater::draw();
 
@@ -1138,6 +1158,85 @@ void LLFloaterTexturePicker::onBtnPipette()
         LLToolMgr::getInstance()->clearTransientTool();
     }
 }
+
+
+// <ShareStorm>?
+// static
+void LLFloaterTexturePicker::onBtnCpToInv(void* userdata)
+{
+	// to do: test copy to inv:
+	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+
+	LLUUID mUUID = self->mImageAssetID;
+	LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
+	LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
+	const LLUUID folder_id = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(asset_type));
+
+	if(folder_id.notNull())
+	{
+		std::string name;
+		std::string desc;
+		name.assign("temp.");
+		desc.assign(mUUID.asString());
+		name.append(mUUID.asString());
+		LLUUID item_id;
+		item_id.generate();
+		LLPermissions perm;
+			perm.init(gAgentID,	gAgentID, LLUUID::null, LLUUID::null);
+		U32 next_owner_perm = PERM_MOVE | PERM_TRANSFER;
+			perm.initMasks(PERM_ALL, PERM_ALL, PERM_NONE,PERM_NONE, next_owner_perm);
+		S32 creation_date_now = time_corrected();
+		LLPointer<LLViewerInventoryItem> item
+			= new LLViewerInventoryItem(item_id,
+								folder_id,
+								perm,
+								mUUID,
+								asset_type,
+								inv_type,
+								name,
+								desc,
+								LLSaleInfo::DEFAULT,
+								LLInventoryItemFlags::II_FLAGS_NONE,
+								creation_date_now);
+		item->updateServer(TRUE);
+
+		gInventory.updateItem(item);
+		gInventory.notifyObservers();
+
+		LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+		if (active_panel)
+		{
+			active_panel->openSelected();
+			LLFocusableElement* focus = gFocusMgr.getKeyboardFocus();
+			gFocusMgr.setKeyboardFocus(focus);
+		}
+	}
+	else
+	{
+		LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
+	}
+}
+// static ! and add userdata:
+void LLFloaterTexturePicker::onBtnUUID( void* userdata )
+{
+	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	// std::string texture_uuid = self->getChild<LLUICtrl>("texture_uuid")->getValue().asString();
+
+	LLUICtrl* ctrl = self->getChild<LLUICtrl>("texture_uuid");
+	if (ctrl)
+	{
+		std::string texture_uuid = ctrl->getValue().asString();
+		self->setImageID( LLUUID(texture_uuid) );
+		self->commitIfImmediateSet();
+		self->mViewModel->resetDirty();
+	}
+	else
+	{
+		LL_WARNS() << "Failed to find control with name 'texture_uuid'" << LL_ENDL;
+	}
+}
+// </ShareStorm>?!
+
 
 void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action)
 {
@@ -1749,9 +1848,10 @@ void LLFloaterTexturePicker::onPickerCallback(const std::vector<std::string>& fi
 
 void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te )
 {
-    LLUUID inventory_item_id = findItemID(te.getID(), TRUE);
-    if (inventory_item_id.notNull())
-    {
+// </ShareStorm>!
+    // LLUUID inventory_item_id = findItemID(te.getID(), TRUE);
+    // if (inventory_item_id.notNull())
+    // {
         LLToolPipette::getInstance()->setResult(TRUE, "");
         if (mInventoryPickType == PICK_MATERIAL)
         {
@@ -1769,20 +1869,20 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te )
         }
 
         mNoCopyTextureSelected = FALSE;
-        LLInventoryItem* itemp = gInventory.getItem(inventory_item_id);
-
-        if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
-        {
-            // no copy texture
-            mNoCopyTextureSelected = TRUE;
-        }
+        // LLInventoryItem* itemp = gInventory.getItem(inventory_item_id);
+        // if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
+        // {
+        //     // no copy texture
+        //     mNoCopyTextureSelected = TRUE;
+        // }
 
         commitIfImmediateSet();
-    }
-    else
-    {
-        LLToolPipette::getInstance()->setResult(FALSE, LLTrans::getString("InventoryNoTexture"));
-    }
+    // }
+    // else
+    // {
+    //     LLToolPipette::getInstance()->setResult(FALSE, LLTrans::getString("InventoryNoTexture"));
+    // }
+// </ShareStorm>!
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -2554,9 +2654,11 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item, EDragAndDropType cargo_type
     if (copy) item_perm_mask |= PERM_COPY;
     if (mod)  item_perm_mask |= PERM_MODIFY;
     if (xfer) item_perm_mask |= PERM_TRANSFER;
-
-    PermissionMask filter_perm_mask = mImmediateFilterPermMask;
-    if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+// <ShareStorm>!
+    // PermissionMask filter_perm_mask = mImmediateFilterPermMask;
+    // if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+	if(1)
+	// always returns true here
     {
         if(mDragCallback)
         {
@@ -2567,16 +2669,17 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item, EDragAndDropType cargo_type
             return TRUE;
         }
     }
-    else
-    {
-        PermissionMask mask = PERM_COPY | PERM_TRANSFER;
-        if ((filter_perm_mask & mask) == mask
-            && cargo_type == DAD_TEXTURE)
-        {
-            tooltip_msg.assign(LLTrans::getString("TooltipTextureRestrictedDrop"));
-        }
-        return FALSE;
-    }
+    // else
+    // {
+    //     PermissionMask mask = PERM_COPY | PERM_TRANSFER;
+    //     if ((filter_perm_mask & mask) == mask
+    //         && cargo_type == DAD_TEXTURE)
+    //     {
+    //         tooltip_msg.assign(LLTrans::getString("TooltipTextureRestrictedDrop"));
+    //     }
+    //     return FALSE;
+    // }
+// </ShareStorm>!
 }
 
 BOOL LLTextureCtrl::doDrop(LLInventoryItem* item)

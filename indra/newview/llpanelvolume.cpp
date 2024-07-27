@@ -289,7 +289,10 @@ void LLPanelVolume::getState( )
     LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 
     // BUG? Check for all objects being editable?
-    BOOL editable = root_objectp->permModify() && !root_objectp->isPermanentEnforced();
+// <ShareStorm>
+    // BOOL editable = root_objectp->permModify() && !root_objectp->isPermanentEnforced();
+	BOOL editable = true;
+// </ShareStorm>
     BOOL single_volume = LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME )
         && LLSelectMgr::getInstance()->getSelection()->getObjectCount() == 1;
     BOOL single_root_volume = LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ) &&

@@ -1141,9 +1141,15 @@ void LLPanelFace::updateUI(bool force_set_values /*false*/)
 
     if (objectp
         && objectp->getPCode() == LL_PCODE_VOLUME
-        && objectp->permModify())
+// <ShareStorm>
+        // && objectp->permModify()
+// </ShareStorm>
+		)
     {
-        BOOL editable = objectp->permModify() && !objectp->isPermanentEnforced();
+// <ShareStorm>
+        // BOOL editable = objectp->permModify() && !objectp->isPermanentEnforced();
+		BOOL editable = TRUE;
+// </ShareStorm>
         BOOL attachment = objectp->isAttachment();
 
         bool has_pbr_material;
