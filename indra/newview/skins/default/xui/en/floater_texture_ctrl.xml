@@ -133,7 +133,7 @@ Pick: Texture
      name="Default"
      width="73"
 	 left="94"
-     top="212"/>
+     top="206"/>
     <button
      follows="left|top"
      height="18"
