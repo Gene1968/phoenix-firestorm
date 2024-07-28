@@ -200,9 +200,7 @@ void LLFloaterAvatarTextures::onClickDump(void* data)
             if (!te) continue;
 
 		LLUUID mUUID = te->getID();
-		// submsg.assign(LLAvatarAppearanceDictionary::getInstance()->getTexture(ETextureIndex(i))->mName);
 		submsg.assign(LLAvatarAppearance::getDictionary()->getTexture(ETextureIndex(i))->mName);
-		// const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture((ETextureIndex)(i));
 		submsg.append(" : ");
 		if (mUUID == IMG_DEFAULT_AVATAR)
 		{
