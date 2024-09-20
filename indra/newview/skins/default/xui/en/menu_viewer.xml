@@ -674,23 +674,35 @@
 	<!-- Custom ShareStorm Menu: -->
 	<menu create_jump_keys="true" label="ShareStorm!" mouse_opaque="false" name="File" opaque="true" tear_off="true">
 		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~" />
-		<menu create_jump_keys="true" label="Import environment" mouse_opaque="false" name="Import environment" opaque="true" tear_off="true">
-			<menu_item_call name="Import water" label="Import water settings" enabled="false">
-				<on_click function="File.ImportSettings" userdata="water" />
-				<on_enable function="File.EnableImportSettings" />
+		<menu create_jump_keys="true" label="! Save/Export object" mouse_opaque="false" name="Import/Export" opaque="true" tear_off="true">
+			<menu_item_call label="Mesh Export as Collada DAE" name="Collada">
+				<menu_item_call.on_click function="Object.ExportCollada" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
 			</menu_item_call>
-			<menu_item_call name="Import sky" label="Import sky settings" enabled="false">
-				<on_click function="File.ImportSettings" userdata="sky" />
-				<on_enable function="File.EnableImportSettings" />
+			<menu_item_call label="Backup object as OXP" name="Backup">
+				<menu_item_call.on_click function="Object.Export" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
 			</menu_item_call>
-			<menu_item_call name="Import day" label="Import day cycle settings" enabled="false">
-				<on_click function="File.ImportSettings" userdata="day" />
-				<on_enable function="File.EnableImportSettings" />
+			<menu_item_separator name="exportseparator" label="-----------" />
+			<menu_item_call label="--Export as OBJ" name="Export OBJ">
+				<on_click function="File.ExportOBJ" />
+				<on_enable function="File.EnableBackupObject" />
+			</menu_item_call>
+			<menu_item_call label="--Xml Export" name="Export...">
+				<menu_item_call.on_click function="Object.SaveAs" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
+			</menu_item_call>
+			<menu_item_call label="--Save texture as..." name="Save Texture As...">
+				<on_click function="File.SaveTexture" />
+				<on_enable function="File.EnableSaveAs" />
+			</menu_item_call>
+			<menu_item_call label="Take Snapshot" name="Take Snapshot" shortcut="control|shift|S">
+				<menu_item_call.on_click function="Floater.Show" parameter="snapshot" />
+			</menu_item_call>
+			<menu_item_call name="Snapshot to Disk" label="Snapshot to disk" shortcut="control|`" useMacCtrl="true">
+				<on_click function="File.TakeSnapshotToDisk" />
 			</menu_item_call>
 		</menu>
-		<menu_item_call label="Set Default Permissions..." name="Set default permissions">
-			<menu_item_call.on_click function="Floater.ToggleOrBringToFront" parameter="perms_default" />
-		</menu_item_call>
 		<menu label="! Import/Upload item(s)" name="upload" create_jump_keys="true" mouse_opaque="false" opaque="true" tear_off="true">
 			<menu_item_call label="Mesh Model DAE (variable cost)..." name="Upload Model">
 				<on_click function="File.UploadModel" />
@@ -749,35 +761,23 @@
 				<on_enable function="File.EnableImportObject" />
 			</menu_item_call>
 		</menu>
-		<menu create_jump_keys="true" label="! Save/Export object" mouse_opaque="false" name="Import/Export" opaque="true" tear_off="true">
-			<menu_item_call label="Mesh Export as Collada DAE" name="Collada">
-				<menu_item_call.on_click function="Object.ExportCollada" />
-				<menu_item_call.on_enable function="Object.EnableExport" />
+		<menu create_jump_keys="true" label="Import environment" mouse_opaque="false" name="Import environment" opaque="true" tear_off="true">
+			<menu_item_call name="Import water" label="Import water settings" enabled="false">
+				<on_click function="File.ImportSettings" userdata="water" />
+				<on_enable function="File.EnableImportSettings" />
 			</menu_item_call>
-			<menu_item_call label="Backup object as OXP" name="Backup">
-				<menu_item_call.on_click function="Object.Export" />
-				<menu_item_call.on_enable function="Object.EnableExport" />
+			<menu_item_call name="Import sky" label="Import sky settings" enabled="false">
+				<on_click function="File.ImportSettings" userdata="sky" />
+				<on_enable function="File.EnableImportSettings" />
 			</menu_item_call>
-			<menu_item_separator name="exportseparator" label="-----------" />
-			<menu_item_call label="--Export as OBJ" name="Export OBJ">
-				<on_click function="File.ExportOBJ" />
-				<on_enable function="File.EnableBackupObject" />
-			</menu_item_call>
-			<menu_item_call label="--Xml Export" name="Export...">
-				<menu_item_call.on_click function="Object.SaveAs" />
-				<menu_item_call.on_enable function="Object.EnableExport" />
-			</menu_item_call>
-			<menu_item_call label="--Save texture as..." name="Save Texture As...">
-				<on_click function="File.SaveTexture" />
-				<on_enable function="File.EnableSaveAs" />
-			</menu_item_call>
-			<menu_item_call label="Take Snapshot" name="Take Snapshot" shortcut="control|shift|S">
-				<menu_item_call.on_click function="Floater.Show" parameter="snapshot" />
-			</menu_item_call>
-			<menu_item_call name="Snapshot to Disk" label="Snapshot to disk" shortcut="control|`" useMacCtrl="true">
-				<on_click function="File.TakeSnapshotToDisk" />
+			<menu_item_call name="Import day" label="Import day cycle settings" enabled="false">
+				<on_click function="File.ImportSettings" userdata="day" />
+				<on_enable function="File.EnableImportSettings" />
 			</menu_item_call>
 		</menu>
+		<menu_item_call label="Set Default Permissions..." name="Set default permissions">
+			<menu_item_call.on_click function="Floater.ToggleOrBringToFront" parameter="perms_default" />
+		</menu_item_call>
 		<menu_item_separator />
 		<menu create_jump_keys="true" label="Selected Objects" name="Object" tear_off="true">
 			<menu_item_call label="Buy" name="Menu Object Buy">
