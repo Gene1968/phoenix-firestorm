@@ -85,6 +85,10 @@ endif( LLPHYSICSEXTENSIONS_SRC_DIR )
 
 set(viewer_SOURCE_FILES
 # <Add FS includes below this line>
+# <ShareStorm>
+	llfloaterinspecttexture.cpp
+	llimportobject.cpp
+# </ShareStorm>
     alfloaterregiontracker.cpp
     animationexplorer.cpp
     ao.cpp
@@ -844,6 +848,9 @@ set(viewer_SOURCE_FILES
     llxmlrpctransaction.cpp
     noise.cpp
     particleeditor.cpp
+
+#    prefshuggystorm.cpp
+
     permissionstracker.cpp
     pieautohide.cpp
     piemenu.cpp
@@ -890,6 +897,10 @@ set(viewer_HEADER_FILES
     ViewerInstall.cmake
 
 # <Add FS includes below this line>
+# <ShareStorm>
+	llfloaterinspecttexture.h
+	llimportobject.h
+# </ShareStorm>
     alfloaterregiontracker.h
     animationexplorer.h
     ao.h
@@ -1671,6 +1682,9 @@ set(viewer_HEADER_FILES
     sanitycheck.h
     streamtitledisplay.h
     utilitybar.h
+
+#    prefshuggystorm.h
+
     VertexCache.h
     VorbisFramework.h
     NACLantispam.h

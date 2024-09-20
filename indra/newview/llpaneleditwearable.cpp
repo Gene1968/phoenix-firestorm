@@ -582,8 +582,9 @@ static void init_texture_ctrl(LLPanelEditWearable* self, LLPanel* panel, const L
                 texture_ctrl->setDefaultImageAssetID(entry->mDefaultImageId);
                 texture_ctrl->setAllowNoTexture(entry->mAllowNoTexture);
                 // Don't allow (no copy) or (notransfer) textures to be selected.
-                texture_ctrl->setImmediateFilterPermMask(PERM_NONE);
-                texture_ctrl->setDnDFilterPermMask(PERM_NONE);
+				// ShareStorm from original Singularity copybot Grimore:
+                // texture_ctrl->setImmediateFilterPermMask(PERM_NONE);
+                // texture_ctrl->setDnDFilterPermMask(PERM_NONE);
         }
 }
 
@@ -1106,13 +1107,13 @@ void LLPanelEditWearable::updatePanelPickerControls(LLWearableType::EType type)
                 return;
         }
 
-        bool is_modifiable = false;
-
-        if (mWearableItem)
+		// ShareStorm from original Singularity copybot Grimore:
+        bool is_modifiable = true;
+        /* if (mWearableItem)
         {
                 const LLPermissions& perm = mWearableItem->getPermissions();
                 is_modifiable = perm.allowModifyBy(gAgent.getID(), gAgent.getGroupID());
-        }
+        } */
 
         if (is_modifiable)
         {
@@ -1670,12 +1671,12 @@ void LLPanelEditWearable::buildParamList(LLScrollingPanelList *panel_list, value
 
 void LLPanelEditWearable::updateVerbs()
 {
-        bool can_copy = false;
-
-        if (mWearableItem)
+		// ShareStorm from original Singularity copybot Grimore:
+        bool can_copy = true;
+        /* if (mWearableItem)
         {
                 can_copy = mWearableItem->getPermissions().allowCopyBy(gAgentID);
-        }
+        } */
 
         bool is_dirty = isDirty();
 

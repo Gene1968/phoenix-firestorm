@@ -2504,10 +2504,11 @@ class LLAdvancedDebugAvatarTextures : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-        if (gAgent.isGodlike())
-        {
-            handle_debug_avatar_textures(NULL);
-        }
+		// ShareStorm ?:
+        // if (gAgent.isGodlike())
+        // {
+			handle_debug_avatar_textures(NULL);
+        // }
         return true;
     }
 };
@@ -5135,6 +5136,27 @@ class FSSelfForceSit : public view_listener_t
         return true;
     }
 };
+
+// ShareStorm:
+// Tp to Safety and rez platform if allowed.
+class OSSafety : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLAvatarActions::goToPanic();
+		return TRUE;
+	}
+};
+// Tp to Ground Level
+class OSGround : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLAvatarActions::goToGround();
+		return true;
+	}
+};
+
 
 bool enable_forcesit_self()
 {
@@ -12555,6 +12577,15 @@ void initialize_menus()
     enable.add("Agent.IsMicrophoneOn", boost::bind(&LLAgent::isMicrophoneOn, _2));
     enable.add("Agent.IsActionAllowed", boost::bind(&LLAgent::isActionAllowed, _2));
 
+
+	// ShareStorm:
+	// <os>
+	view_listener_t::addMenu(new OSSafety() , "Avatar.TpSafety");
+	view_listener_t::addMenu(new OSGround() , "Avatar.TpGround");
+	// view_listener_t::addMenu(new OSDeleteAllYours() , "OS.DeleteAllYours");
+	// </os>
+
+
     // File menu
     init_menu_file();
 
@@ -13072,6 +13103,8 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAttachmentPointFilled(), "Attachment.PointFilled");
     view_listener_t::addMenu(new LLAttachmentEnableDrop(), "Attachment.EnableDrop");
     view_listener_t::addMenu(new LLAttachmentEnableDetach(), "Attachment.EnableDetach");
+	// ShareStorm from original Singularity copybot Grimore:
+    // view_listener_t::addMenu(new LLObjectEnableExport(), "Attachment.EnableExport");
 
     // Land pie menu
     view_listener_t::addMenu(new LLLandBuild(), "Land.Build");

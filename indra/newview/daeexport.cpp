@@ -270,7 +270,8 @@ void ColladaExportFloater::addSelectedObjects()
             {
                 mTotal++;
                 LLSelectNode* node = *iter;
-                if (!node->getObject()->getVolume() || !FSExportPermsCheck::canExportNode(node, true)) continue;
+				// ShareStorm from original Singularity copybot Grimore:
+                // if (!node->getObject()->getVolume() || !FSExportPermsCheck::canExportNode(node, true)) continue;
                 mIncluded++;
                 mSaver.add(node->getObject(), node->mName);
             }
@@ -540,7 +541,8 @@ void DAESaver::updateTextureInfo()
             if (std::find(mTextures.begin(), mTextures.end(), id) != mTextures.end()) continue;
 
             mTextures.push_back(id);
-            bool exportable = false;
+			// ShareStorm from original Singularity copybot Grimore:
+            bool exportable = true;
             LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTexture(id);
             std::string name;
             std::string description;

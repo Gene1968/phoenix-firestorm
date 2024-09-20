@@ -40,6 +40,13 @@
 #include "lllocaltextureobject.h"
 #include "rlvhandler.h"
 
+// <ShareStorm>
+#include "llfocusmgr.h"
+#include "llnotificationsutil.h"
+#include "llinventorypanel.h"
+#include "llinventorydefines.h"
+// </ShareStorm>
+
 using namespace LLAvatarAppearanceDefines;
 
 LLFloaterAvatarTextures::LLFloaterAvatarTextures(const LLSD& id)
@@ -171,14 +178,88 @@ void LLFloaterAvatarTextures::refresh()
 // static
 void LLFloaterAvatarTextures::onClickDump(void* data)
 {
-    if (gAgent.isGodlike())
-    {
+// <ShareStorm>
+    // if (gAgent.isGodlike())
+    // {
         const LLVOAvatarSelf* avatarp = gAgentAvatarp;
         if (!avatarp) return;
+
+		std::string fullname;
+		gCacheName->getFullName(avatarp->getID(), fullname);
+		std::string msg;
+		msg.assign("Avatar Textures : ");
+		msg.append(fullname);
+		msg.append("\n");
+// </ShareStorm>
+
         for (S32 i = 0; i < avatarp->getNumTEs(); i++)
         {
+// <ShareStorm>
+		std::string submsg;// sumo for each text
             const LLTextureEntry* te = avatarp->getTE(i);
             if (!te) continue;
+
+		LLUUID mUUID = te->getID();
+		submsg.assign(LLAvatarAppearance::getDictionary()->getTexture(ETextureIndex(i))->mName);
+		submsg.append(" : ");
+		if (mUUID == IMG_DEFAULT_AVATAR)
+		{
+			submsg.append("No texture") ;
+		}
+		else
+		{
+			submsg.append(mUUID.asString());
+			msg.append(submsg);
+			msg.append("\n");
+			LLUUID mUUID = te->getID();
+			LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
+			LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
+			const LLUUID folder_id = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(asset_type));
+			if(folder_id.notNull())
+			{
+				std::string name;
+				std::string desc;
+				name.assign("temp.");
+				desc.assign(mUUID.asString());
+				name.append(mUUID.asString());
+				LLUUID item_id;
+				item_id.generate();
+				LLPermissions perm;
+					perm.init(gAgentID,	gAgentID, LLUUID::null, LLUUID::null);
+				U32 next_owner_perm = PERM_MOVE | PERM_TRANSFER;
+					perm.initMasks(PERM_ALL, PERM_ALL, PERM_NONE,PERM_NONE, next_owner_perm);
+				S32 creation_date_now = time_corrected();
+				LLPointer<LLViewerInventoryItem> item
+					= new LLViewerInventoryItem(item_id,
+										folder_id,
+										perm,
+										mUUID,
+										asset_type,
+										inv_type,
+										name,
+										desc,
+										LLSaleInfo::DEFAULT,
+										LLInventoryItemFlags::II_FLAGS_NONE,
+										creation_date_now);
+				item->updateServer(TRUE);
+
+				gInventory.updateItem(item);
+				gInventory.notifyObservers();
+		
+				LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+				if (active_panel)
+				{
+					active_panel->openSelected();
+					LLFocusableElement* focus = gFocusMgr.getKeyboardFocus();
+					gFocusMgr.setKeyboardFocus(focus);
+				}
+			}
+			else
+			{
+				LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
+			}
+		}
+// </ShareStorm>
 
             const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture((ETextureIndex)(i));
             if (!tex_entry)
@@ -214,5 +295,10 @@ void LLFloaterAvatarTextures::onClickDump(void* data)
                 LL_INFOS() << "TE " << i << " name:" << tex_entry->mName << " id:" << te->getID() << LL_ENDL;
             }
         }
-    }
+    // }
+// <ShareStorm>
+	LLSD args;
+	args["MESSAGE"] = msg;
+	LLNotificationsUtil::add("SystemMessage", args);
+// </ShareStorm>
 }

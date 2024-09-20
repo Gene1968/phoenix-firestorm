@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ legacy_header_height="18"
+ height="500"
+ layout="topleft"
+ name="floater_privacy"
+ help_topic="privacysettings"
+ title="Privacy Settings"
+ width="500">
+  <check_box
+	 control_name="BrowserProxyEnabled"
+	 top="38"
+	 enabled="true"
+	 follows="left|top"
+	 height="14"
+	 initial_value="false"
+	 commit_callback.function="Proxy.Change"
+	 label="Use HTTP Proxy for Web pages"
+	 left="22"
+	 mouse_opaque="true"
+	 name="web_proxy_enabled"
+	 radio_style="false"
+	 width="400"
+	 top_pad="5" />
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 left_delta="23"
+	 layout="topleft"
+	 name="http_proxy_label"
+	 top_pad="10"
+	 width="300">
+    HTTP Proxy:
+  </text>
+  <line_editor
+	 control_name="BrowserProxyAddress"
+	 enabled_control="BrowserProxyEnabled"
+	 follows="left|top"
+	 font="SansSerif"
+	 height="23"
+	 layout="topleft"
+	 left_delta="0"
+	 name="web_proxy_editor"
+	 tool_tip="The DNS name or IP address of the HTTP proxy you would like to use."
+	 top_pad="4"
+	 width="200" />
+  <spinner
+	 control_name="BrowserProxyPort"
+	 enabled_control="BrowserProxyEnabled"
+     decimal_digits="0"
+	 follows="left|top"
+	 height="23"
+	 increment="1"
+	 initial_value="80"
+	 label="Port number:"
+	 label_width="95"
+	 layout="topleft"
+	 left_delta="210"
+	 max_val="12000"
+	 min_val="10"
+	 name="web_proxy_port"
+	 top_delta="0"
+	 tool_tip="The port of the HTTP proxy you would like to use."
+	 width="145" />
+  <check_box
+	 control_name="Socks5ProxyEnabled"
+	 height="16"
+	 label="Use SOCKS 5 Proxy for UDP traffic"
+	 layout="topleft"
+	 left="22"
+	 name="socks_proxy_enabled"
+	 top_pad="22"
+	 width="256"
+	 commit_callback.function="Proxy.Change" />
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 layout="topleft"
+	 left_delta="23"
+	 name="socks5_proxy_label"
+	 top_pad="10"
+	 width="300">
+    SOCKS 5 Proxy:
+  </text>
+  <line_editor
+	 control_name="Socks5ProxyHost"
+	 enabled_control="Socks5ProxyEnabled"
+	 follows="left|top"
+	 font="SansSerif"
+	 height="23"
+	 layout="topleft"
+	 left_delta="0"
+	 name="socks_proxy_editor"
+	 tool_tip="The DNS name or IP address of the SOCKS 5 proxy you would like to use."
+	 top_pad="4"
+	 width="200"
+	 commit_callback.function="Proxy.Change" />
+  <spinner
+	 control_name="Socks5ProxyPort"
+	 enabled_control="Socks5ProxyEnabled"
+	 decimal_digits="0"
+	 follows="left|top"
+	 height="23"
+	 increment="1"
+	 initial_value="80"
+	 label="Port number:"
+	 label_width="95"
+	 layout="topleft"
+	 left_delta="210"
+	 max_val="12000"
+	 min_val="10"
+	 name="socks_proxy_port"
+	 top_delta="0"
+	 width="145"
+	 tool_tip="The port of the SOCKS 5 proxy you would like to use."
+	 commit_callback.function="Proxy.Change" />
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 layout="topleft"
+	 left="40"
+	 name="socks_auth_label"
+	 top_pad="15"
+	 width="300">
+    SOCKS Authentication:
+  </text>
+  <radio_group
+	 control_name="Socks5AuthType"
+	 enabled_control="Socks5ProxyEnabled"
+	 height="50"
+	 layout="topleft"
+	 name="socks5_auth_type"
+	 top_pad="10"
+	 width="120"
+	 commit_callback.function="Proxy.Change" >
+    <radio_item
+		 height="16"
+		 label="No Authentication"
+		 layout="topleft"
+		 name="Socks5NoAuth"
+		 value="None"
+		 tool_tip="Socks5 proxy requires no authentication."
+		 width="120" />
+    <radio_item
+		 height="16"
+		 label="Username/Password"
+		 layout="topleft"
+		 name="Socks5UserPass"
+		 value="UserPass"
+		 tool_tip="Socks5 proxy requires username/password authentication."
+		 width="120" />
+  </radio_group>
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 layout="topleft"
+	 left_delta="170"
+	 name="socks5_username_label"
+	 top_delta="0"
+	 width="200">
+    Username:
+  </text>
+  <line_editor
+	 follows="left|top"
+	 font="SansSerif"
+	 height="23"
+	 layout="topleft"
+	 left="270"
+	 name="socks5_username"
+	 tool_tip="The username used to authenticate with your SOCKS 5 server"
+	 top_delta="-6"
+	 width="200"
+	 commit_callback.function="Proxy.Change" /> 
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 left="210"
+	 layout="topleft"
+	 name="socks5_password_label"
+	 width="200">
+    Password:
+  </text>
+  <line_editor
+	 follows="left|top"
+	 font="SansSerif"
+	 height="23"
+	 layout="topleft"
+	 left="270"
+	 name="socks5_password"
+	 tool_tip="The password used to authenticate with your SOCKS 5 server"
+	 top_delta="-3"
+	 width="200"
+	 is_password="true"
+	 commit_callback.function="Proxy.Change" />
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 layout="topleft"
+	 left="20"
+	 name="spoof_label"
+	 top="300"
+	 width="300">
+    Spoof Your Hardware id and Viewer Version Below:
+  </text>
+  <check_box
+    left_delta="10"
+    height="16"
+    initial_value="false"
+    font="SansSerifSmall"
+    label="MAC:"
+    control_name="SpecifyMAC"
+    mouse_opaque="true"
+    name="mac_check"
+	top_pad="18"
+    width="50" />
+  <button
+    bottom_delta="0"
+    follows="left|bottom"
+    font="SansSerif"
+    halign="center"
+    height="20"
+    label="R"
+    left_pad="1"
+    mouse_opaque="true"
+    name="mac_random_btn"
+    scale_image="TRUE"
+    width="20" />
+  <line_editor
+    bevel_style="in"
+    border_style="line"
+    border_thickness="1"
+    bottom_delta="0"
+    left_delta="20"
+    follows="left|bottom"
+    height="20"
+    mouse_opaque="true"
+    name="mac_edit"
+    select_all_on_focus_received="true"
+    width="230"
+    enabled="false" />
+  <check_box
+    follows="left|bottom"
+    font="SansSerifSmall"
+    height="16"
+    initial_value="false"
+    label="ID0:"
+    control_name="SpecifyID0"
+    left_delta="-71"
+    bottom_delta="20"
+    mouse_opaque="true"
+    name="id0_check"
+    width="50" />
+  <button
+    bottom_delta="0"
+    follows="left|bottom"
+    font="SansSerif"
+    halign="center"
+    height="20"
+    label="R"
+    left_pad="1"
+    mouse_opaque="true"
+    name="id0_random_btn"
+    scale_image="TRUE"
+    width="20" />
+  <line_editor
+    bevel_style="in"
+    border_style="line"
+    border_thickness="1"
+    follows="left|bottom"
+    font="SansSerif"
+    height="20"
+    left_pad="0"
+    mouse_opaque="true"
+    name="id0_edit"
+    select_all_on_focus_received="true"
+    width="230"
+    enabled="false" />
+  <text
+	 follows="left|bottom"
+	 height="15"
+	 bottom="420"
+	 left_delta="-73"
+	 top_pad="5" 
+	 name="channel_text"
+	 width="55">
+     Channel:
+  </text>
+  <line_editor
+	 follows="left|bottom"
+	 height="18"
+	 name="channel_edit"
+	 left_pad="-2"
+	 width="250" />
+  <text
+	 follows="left|bottom"
+	 height="15"
+	 left_delta="-53"
+	 top_pad="5" 
+	 name="channel_text"
+	 width="55">
+     Version:
+  </text>
+  <spinner 
+	 decimal_digits="0" 
+	 follows="left|bottom" 
+	 height="15" 
+	 increment="1" 
+	 initial_val="0"
+	 label="Major:" 
+	 label_width="35" 
+	 left_delta="52"
+	 top_delta="0" 
+	 max_val="9999" 
+	 min_val="0" 
+	 mouse_opaque="true"	
+	 name="vermaj_spin"
+	 control_edit="SpecifiedVersionMaj"
+	 width="85" />
+  <spinner 
+	 decimal_digits="0" 
+	 follows="left|bottom" 
+	 height="15" 
+	 increment="1" 
+	 initial_val="0"
+	 label="Minor:"
+	 label_width="35"
+	 left_delta="0"
+	 top_pad="10" 
+	 max_val="9999" 
+	 min_val="0" 
+	 mouse_opaque="true"
+	 name="vermin_spin"
+	 control_edit="SpecifiedVersionMin"
+	 width="85" />
+  <spinner 
+	 decimal_digits="0" 
+	 follows="left|bottom" 
+	 height="15" increment="1"
+	 initial_val="0"
+	 label="Patch:" 
+	 label_width="35" 
+	 left_delta="0"
+	 top_pad="10" 
+	 max_val="9999"
+	 min_val="0"
+	 mouse_opaque="true"
+	 name="verpatch_spin" 
+	 control_edit="SpecifiedVersionPatch" 
+	 width="85" />
+  <spinner 
+	 decimal_digits="0" 
+	 follows="left|bottom" 
+	 height="15" 
+	 increment="1" 
+	 initial_val="0"
+	 label="Build:" 
+	 label_width="35" 
+	 left_delta="0"
+	 top_pad="10"
+	 max_val="99999" 
+	 min_val="0" 
+	 mouse_opaque="true"
+	 name="verbuild_spin" 
+	 control_edit="SpecifiedVersionBuild"
+	 width="105" />
+  <text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="10"
+	 layout="topleft"
+	 left="335"
+	 name="other_proxy_label"
+	 top="275"
+	 width="140">
+    Other HTTP traffic proxy:
+  </text>
+  <radio_group
+	 control_name="HttpProxyType"
+	 name="other_http_proxy_type"
+	 height="60"
+	 layout="topleft"
+	 top_pad="9"
+	 width="120"
+	 left_delta="15"
+	 commit_callback.function="Proxy.Change" >
+    <radio_item
+		 height="16"
+		 label="Do not proxy"
+		 layout="topleft"
+		 name="OtherNoProxy"
+		 value="None"
+		 width="120"
+		 tool_tip="Non-web HTTP traffic will NOT be sent to any proxy."/>
+    <radio_item
+		 height="16"
+		 label="Use HTTP Proxy"
+		 layout="topleft"
+		 name="OtherHTTPProxy"
+		 value="Web"
+		 width="120"
+		 enabled_control="BrowserProxyEnabled"
+		 tool_tip="Non-web HTTP will be sent through the configured Web proxy." />
+    <radio_item
+		 height="16"
+		 label="Use SOCKS 5 Proxy"
+		 layout="topleft"
+		 name="OtherSocksProxy"
+		 value="Socks"
+		 width="120"
+		 enabled_control="Socks5ProxyEnabled"
+		 tool_tip="Non-web HTTP traffic will be sent through the configured Socks 5 proxy."/>
+  </radio_group>
+  <button
+	 follows="left|top"
+	 height="22"
+	 label="Cancel"
+	 label_selected="Cancel"
+	 layout="topleft"
+	 left="302"
+	 name="Cancel"
+	 top="470"
+	 width="90"
+	 commit_callback.function="Proxy.Cancel" />
+  <button
+	 follows="left|top"
+	 height="22"
+	 label="Ok"
+	 label_selected="Ok"
+	 layout="topleft"
+	 left_pad="10"
+	 name="OK"
+	 top_delta="0"
+	 width="90"
+	 commit_callback.function="Proxy.OK" />
+
+</floater>
