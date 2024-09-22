@@ -343,7 +343,8 @@ bool LLPermissions::allowMoveBy(const LLUUID& agent) const
 
 bool LLPermissions::allowExportBy(const LLUUID& agent) const
 {
-    return agent == mOwner && agent == mCreator;
+    // ShareStorm: return agent == mOwner && agent == mCreator;
+	return TRUE;
 }
 
 // <FS:CR> Opensim Export Permissions
@@ -366,14 +367,6 @@ bool LLPermissions::allowTransferTo(const LLUUID &agent_id) const
         return ((mOwner == agent_id) ? true : allowOperationBy(PERM_TRANSFER, mOwner));
     }
 }
-
-// <FS:CR> Opensim Export Permissions
-bool LLPermissions::allowExportBy(const LLUUID& agent) const
-{
-    // ShareStorm return ((mCreator == agent) ? true : (allowOperationBy(PERM_EXPORT, agent, LLUUID::null)));
-	return TRUE;
-}
-// </FS:CR>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLAggregatePermissions

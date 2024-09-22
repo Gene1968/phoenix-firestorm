@@ -1916,7 +1916,7 @@ void LLAvatarActions::goToGround()
 }
 void LLAvatarActions::goToPanic()
 {
-	BOOL can_build = FALSE;
+	bool can_build = FALSE;
 	LLParcel* agent_parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if (agent_parcel)
 	{
@@ -1986,7 +1986,7 @@ void LLAvatarActions::rezInvObject(LLInventoryItem* item, LLVector3 rezpos)
 	{
 		// LLFirstUse::useSandbox();
 	}
-	BOOL remove_from_inventory = !item->getPermissions().allowCopyBy(gAgent.getID());
+	bool remove_from_inventory = !item->getPermissions().allowCopyBy(gAgent.getID());
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessageFast(_PREHASH_RezObject);
 	msg->nextBlockFast(_PREHASH_AgentData);

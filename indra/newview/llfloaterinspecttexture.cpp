@@ -35,7 +35,7 @@ LLFloaterInspectTexture::LLFloaterInspectTexture(const LLSD& key)
 	mCommitCallbackRegistrar.add("Inspect.SelectObject",	boost::bind(&LLFloaterInspectTexture::onSelectObject, this));
 }
 
-BOOL LLFloaterInspectTexture::postBuild()
+bool LLFloaterInspectTexture::postBuild()
 {
 	mTextureList = getChild<LLScrollListCtrl>("object_list");
 	texture_ctrl = getChild<LLTextureCtrl>("imagette");

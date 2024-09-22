@@ -48,40 +48,40 @@
         <pie_slice.on_enable
             function="Object.EnableStandUp" />
     </pie_slice>
-	<!--ShareStorm edit-->
-	<pie_menu label="ShareStorm >" name="Object Pie More 3">
-		<pie_slice enabled="false"	label="Import.Xml" name="Import...">
-			<pie_slice.on_click function="Object.Import" />
-			<pie_slice.on_enable function="Object.EnableImport" />
-		</pie_slice>
-		<pie_slice label="Export Xml" name="Export...">
-			<pie_slice.on_click	function="Object.SaveAs" />
-			<pie_slice.on_enable function="Object.EnableExport" />
-		</pie_slice>
-		<pie_slice label="Textures!" enabled="false" name="Textures">
-			<pie_slice.on_click	function="Avatar.TexInspect" />
-			<pie_slice.on_click function="Floater.Show" parameter="inspect_texture" />
-		</pie_slice>
-		<pie_slice label="Particle RIP" name="Particles">
-			<pie_slice.on_click	function="Object.RipParticles" />
-		</pie_slice>
-		<pie_slice label="Collada" name="Collada">
-			<pie_slice.on_click	function="Object.ExportCollada" />
-			<pie_slice.on_enable function="Object.EnableExport" />
-		</pie_slice>
-		<pie_slice enabled="false" label="OXP Backup" name="Backup">
-			<pie_slice.on_click	function="Object.Export" />
-			<pie_slice.on_enable function="Object.EnableExport" />
-		</pie_slice>
-		<pie_menu label="ShareStorm More >" name="Object Pie More 4">
-			<pie_slice	label="Destroy" name="Destroy">
+<!--ShareStorm edit-->
+<pie_menu label="ShareStorm >" name="Object Pie More 3">
+	<pie_slice enabled="false"	label="Import.Xml" name="Import...">
+		<pie_slice.on_click function="Object.Import" />
+		<pie_slice.on_enable function="Object.EnableImport" />
+	</pie_slice>
+	<pie_slice label="Export Xml" name="Export...">
+		<pie_slice.on_click	function="Object.SaveAs" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<pie_slice label="Textures!" enabled="false" name="Textures">
+		<pie_slice.on_click	function="Avatar.TexInspect" />
+		<pie_slice.on_click function="Floater.Show" parameter="inspect_texture" />
+	</pie_slice>
+	<pie_slice label="Particle RIP" name="Particles">
+		<pie_slice.on_click	function="Object.RipParticles" />
+	</pie_slice>
+	<pie_slice label="Collada" name="Collada">
+		<pie_slice.on_click	function="Object.ExportCollada" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<pie_slice enabled="false" label="OXP Backup" name="Backup">
+		<pie_slice.on_click	function="Object.Export" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<pie_menu label="ShareStorm More >" name="Object Pie More 4">
+		<pie_slice label="Destroy" name="Destroy">
 			<pie_slice.on_click	function="Object.Blink" />
 		</pie_slice>
 		<pie_slice label="Mass Delete" name="Mass Delete">
-			<pie_slice.on_click	function="World.MassGodDelete" />
+			<pie_slice.on_click function="World.MassGodDelete" />
 		</pie_slice>
 		<pie_slice enabled="false"	label="Edit Particles" name="Edit Particles">
-			<pie_slice.on_click	function="Object.EditParticles" />
+			<pie_slice.on_click function="Object.EditParticles" />
 			<pie_slice.on_enable function="Object.EnableEditParticles" />
 		</pie_slice>
 		<pie_slice label="OXP Import" name="linkset">
@@ -92,9 +92,9 @@
 		<pie_slice.on_click	function="Object.Duplicate" />
 		<pie_slice.on_enable function="Object.EnableDuplicate" />
 	</pie_slice>
-	</pie_menu>
-	<pie_menu label="Object >" name="Object Pie Menu Object">
-	<!--end ShareStorm edit-->
+</pie_menu>
+<pie_menu label="Object >" name="Object Pie Menu Object">
+<!--end ShareStorm edit-->
     <pie_slice
         start_autohide="true"
         enabled="false"
@@ -487,8 +487,9 @@
 			<pie_slice.on_click function="Object.SaveAs" />
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
-	</pie_menu>
 	<!-- end ShareStorm edit -->
+        </pie_menu>
+
 <!-- Phoenix has "Disable" here, which we haven't implemented yet.
      Might get interesting when we finally do ... -->
 <!-- <pie_separator name="disable_placeholder" /> -->
