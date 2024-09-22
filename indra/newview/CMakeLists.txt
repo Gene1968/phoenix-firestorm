@@ -87,7 +87,7 @@ set(viewer_SOURCE_FILES
 # <Add FS includes below this line>
 # <ShareStorm>
 	llfloaterinspecttexture.cpp
-	llimportobject.cpp
+	# llimportobject.cpp
 # </ShareStorm>
     alfloaterregiontracker.cpp
     animationexplorer.cpp
@@ -899,7 +899,7 @@ set(viewer_HEADER_FILES
 # <Add FS includes below this line>
 # <ShareStorm>
 	llfloaterinspecttexture.h
-	llimportobject.h
+	# llimportobject.h
 # </ShareStorm>
     alfloaterregiontracker.h
     animationexplorer.h

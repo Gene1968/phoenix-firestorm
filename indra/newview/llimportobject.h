@@ -1,4 +1,4 @@
-// <edit>?add?
+// ShareStorm <edit>?add?
 /** 
  * @file llimportobject.h
  */
@@ -8,7 +8,8 @@
 
 #include "llviewerobject.h"
 #include "llfloater.h"
-#include "llvoavatardefines.h"
+//#include "llvoavatardefines.h"
+#include "../llappearance/llavatarappearancedefines.h"
 
 typedef enum e_import_object_state
 	{
@@ -82,9 +83,9 @@ public:
 	std::vector<LLImportObject*> mRootObjects;
 	std::vector<LLImportObject*> mChildObjects;
 	std::vector<LLImportWearable*> mWearables;
-	BOOL mKeepPosition;
+	bool mKeepPosition;
 	LLViewerObject* mSupplier;
-	BOOL mReplaceTexture;
+	bool mReplaceTexture;
 protected:
 	LLUUID mID;
 };

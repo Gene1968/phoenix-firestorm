@@ -1,5 +1,5 @@
 
-// <edit>?add?
+// ShareStorm <edit>?add?
 /** 
  * @file llimportobject.cpp
  */
@@ -13,14 +13,14 @@
 #include "llviewerobject.h"
 #include "llagent.h"
 #include "llchat.h"
-#include "llfloaterchat.h"
+// #include "llfloaterchat.h"
 #include "llfloater.h"
 #include "lllineeditor.h"
 #include "llinventorymodel.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
 #include "llviewercontrol.h"
-#include "llfloaterimport.h"
+#include "fsfloaterimport.h"
 #include "llassetuploadresponders.h"
 #include "lleconomy.h"
 #include "llfloaterperms.h"
@@ -63,7 +63,7 @@ public:
 		mOptions = LLXmlImport::sXmlImportOptions;
 		mRoots = roots;
 	}
-	virtual BOOL tick()
+	virtual bool tick()
 	{
 		// Import for this timer has been cancled :<
 		if(!LLXmlImport::sImportInProgress || (LLXmlImport::sXmlImportOptions && mOptions && mOptions != LLXmlImport::sXmlImportOptions)) return TRUE;
@@ -1020,7 +1020,7 @@ void LLXmlImport::onUpdatePrim(LLViewerObject* object)
 					sImportInProgress = false;
 					std::string msg = "Imported " + sXmlImportOptions->mName;
 					LLChat chat(msg);
-					LLFloaterChat::addChat(chat);
+					// LLFloaterChat::addChat(chat);
 					LLFloaterImportProgress::update();
 				}
 				else
@@ -1028,7 +1028,7 @@ void LLXmlImport::onUpdatePrim(LLViewerObject* object)
 					// Take attachables into inventory
 					std::string msg = "Wait a few moments for the attachments to link and attach...";
 					LLChat chat(msg);
-					LLFloaterChat::addChat(chat);
+					// LLFloaterChat::addChat(chat);
 					sAttachmentsDone = 0;
 					if(sLinkSets.size() > 0)
 					{
@@ -1152,7 +1152,7 @@ void LLXmlImport::onNewAttachment(LLViewerObject* object)
 			sImportInProgress = false;
 			std::string msg = "Imported " + sXmlImportOptions->mName;
 			LLChat chat(msg);
-			LLFloaterChat::addChat(chat);
+			// LLFloaterChat::addChat(chat);
 			LLFloaterImportProgress::update();
 			return;
 		}

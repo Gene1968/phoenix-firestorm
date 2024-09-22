@@ -1186,7 +1186,7 @@ void LLFloaterTexturePicker::onBtnCpToInv(void* userdata)
 			perm.init(gAgentID,	gAgentID, LLUUID::null, LLUUID::null);
 		U32 next_owner_perm = PERM_MOVE | PERM_TRANSFER;
 			perm.initMasks(PERM_ALL, PERM_ALL, PERM_NONE,PERM_NONE, next_owner_perm);
-		S32 creation_date_now = time_corrected();
+		S32 creation_date_now = static_cast<S32>(time_corrected());
 		LLPointer<LLViewerInventoryItem> item
 			= new LLViewerInventoryItem(item_id,
 								folder_id,
