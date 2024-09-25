@@ -5139,8 +5139,10 @@ class FSSelfForceSit : public view_listener_t
 
 // ShareStorm restored methods:
 // tried LLObjectMeasure from Theos, but it didn't like: LLEvent, LLPointer, LLFloaterChat, addChat
-// tried some of LLObjectTexture, LLObjectKey, LLObjectParticle, LLObjectSaveAs, LLObjectImport too
-// not running yet:
+// LLObjectTexture - tried?
+// LLObjectKey - investigate whether renamed to LLUUID or uuid ?
+// LLObjectParticle - haven't tried yet
+// no errors, but no response from Export as XML:
 class LLObjectSaveAs : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
@@ -5150,6 +5152,7 @@ class LLObjectSaveAs : public view_listener_t
 		return true;
 	}
 };
+// no errors, but no response from Import.XML:
 class LLObjectImport : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
@@ -5183,7 +5186,7 @@ class LLObjectImport : public view_listener_t
 		return true;
 	}
 };
-// TP to Safety and rez platform if allowed.
+// ! TP to Safety and rez platform if allowed.
 class OSSafety : public view_listener_t
 {
 	bool handleEvent(const LLSD& userdata)
@@ -5192,7 +5195,7 @@ class OSSafety : public view_listener_t
 		return TRUE;
 	}
 };
-// Tp to Ground Level
+// ! TP to Ground Level
 class OSGround : public view_listener_t
 {
 	bool handleEvent(const LLSD& userdata)

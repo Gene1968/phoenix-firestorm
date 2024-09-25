@@ -712,7 +712,7 @@
 			<menu_item_call label="OXP Linkset..." visibility_control="FSEnableObjectExports" name="import linkset">
 				<menu_item_call.on_click function="File.ImportLinkset" parameter="" />
 			</menu_item_call>
-			<menu_item_call label="--Import.Xml" name="Import..." enabled="false">
+			<menu_item_call label="--Import.XML" name="Import..." enabled="false">
 				<on_click function="Object.Import" />
 				<on_enable function="Object.EnableImport" />
 			</menu_item_call>
