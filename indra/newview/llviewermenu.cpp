@@ -5137,8 +5137,53 @@ class FSSelfForceSit : public view_listener_t
     }
 };
 
-// ShareStorm:
-// Tp to Safety and rez platform if allowed.
+// ShareStorm restored methods:
+// tried LLObjectMeasure from Theos, but it didn't like: LLEvent, LLPointer, LLFloaterChat, addChat
+// tried some of LLObjectTexture, LLObjectKey, LLObjectParticle, LLObjectSaveAs, LLObjectImport too
+// not running yet:
+class LLObjectSaveAs : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+	{
+//TO FIX		LLFloaterExport* floater = new LLFloaterExport();
+//TO FIX		floater->center();
+		return true;
+	}
+};
+class LLObjectImport : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		if(object)
+		{
+			if(!object->permCopy())
+				new_value = false;
+			else if(!object->permModify())
+				new_value = false;
+			else if(!object->permMove())
+				new_value = false;
+			else if(object->numChildren() != 0)
+				new_value = false;
+			else if(object->getParent())
+				new_value = false;
+		}
+		if(new_value == false) return true;
+		
+		LLFilePicker& picker = LLFilePicker::instance();
+		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+		{
+			return true;
+		}
+		std::string file_name = picker.getFirstFile();
+//TO FIX		LLXmlImportOptions* options = new LLXmlImportOptions(file_name);
+//TO FIX		options->mSupplier = object;
+//TO FIX		new LLFloaterXmlImportOptions(options);
+		return true;
+	}
+};
+// TP to Safety and rez platform if allowed.
 class OSSafety : public view_listener_t
 {
 	bool handleEvent(const LLSD& userdata)
@@ -12578,10 +12623,10 @@ void initialize_menus()
     enable.add("Agent.IsActionAllowed", boost::bind(&LLAgent::isActionAllowed, _2));
 
 
-	// ShareStorm:
-	// <os>
+	// ShareStorm: <os>
 	view_listener_t::addMenu(new OSSafety() , "Avatar.TpSafety");
 	view_listener_t::addMenu(new OSGround() , "Avatar.TpGround");
+	// view_listener_t::addMenu(new CopyObjectUUID() , "Object.CopyObjectUUID");
 	// view_listener_t::addMenu(new OSDeleteAllYours() , "OS.DeleteAllYours");
 	// </os>
 
@@ -13053,6 +13098,16 @@ void initialize_menus()
     view_listener_t::addMenu(new LLObjectMute(), "Object.Mute");
     view_listener_t::addMenu(new LLObjectDerender(), "Object.Derender");
     view_listener_t::addMenu(new LLObjectDerenderPermanent(), "Object.DerenderPermanent"); // <FS:Ansariel> Optional derender & blacklist
+
+// ShareStorm <edit>
+	// view_listener_t::addMenu(new LLObjectMeasure(), "Object.Measure");
+	// view_listener_t::addMenu(new LLObjectTexture(), "Object.Texture");
+	// view_listener_t::addMenu(new LLObjectKey(), "Object.Key");
+	// view_listener_t::addMenu(new LLObjectParticle(), "Object.Particle");
+	view_listener_t::addMenu(new LLObjectSaveAs(), "Object.SaveAs");
+	view_listener_t::addMenu(new LLObjectImport(), "Object.Import");
+// </edit>
+
     enable.add("Object.EnableDerender", boost::bind(&enable_derender_object));  // <FS:CR> FIRE-10082 - Don't enable derendering own attachments when RLVa is enabled as well
     view_listener_t::addMenu(new LLObjectTexRefresh(), "Object.TexRefresh");    // ## Zi: Texture Refresh
     view_listener_t::addMenu(new LLEditParticleSource(), "Object.EditParticles");
