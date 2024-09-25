@@ -112,7 +112,7 @@
         name="Take Submenu">
         <pie_slice
          enabled="false"
-         label="Copies as separate items"
+         label="Copies: Separately"
          name="Take Copy Separate">
             <pie_slice.on_click
              function="Object.TakeSeparateCopy"/>
@@ -147,7 +147,7 @@
         </pie_slice>
         <pie_slice
          enabled="false"
-         label="As combined item"
+         label="Take: Combined"
          name="Take combined">
             <pie_slice.on_click
              function="Object.Take"/>
@@ -158,7 +158,7 @@
         </pie_slice>
         <pie_slice
          enabled="false"
-         label="Copy as combined item"
+         label="Copy: Combined"
          name="Take Copy combined">
             <pie_slice.on_click
              function="Tools.TakeCopy"/>
@@ -169,7 +169,7 @@
         </pie_slice>
         <pie_slice
          enabled="false"
-         label="As separate items"
+         label="Take: Separately"
          name="Take Separate">
             <pie_slice.on_click
              function="Object.TakeSeparate"/>
