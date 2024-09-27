@@ -385,9 +385,10 @@ void LLMediaFilePicker::notify(const std::vector<std::string>& filenames)
 //============================================================================
 
 #if LL_WINDOWS
-static std::string SOUND_EXTENSIONS = "wav";
+static std::string SOUND_EXTENSIONS = "wav dsf";
 static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
 static std::string ANIM_EXTENSIONS =  "bvh anim animatn";// ShareStorm
+static std::string LSL_EXTENSIONS = "lsl";
 static std::string XML_EXTENSIONS = "xml";
 static std::string SLOBJECT_EXTENSIONS = "slobject";
 #endif
@@ -414,6 +415,8 @@ std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
         return MATERIAL_EXTENSIONS;
     case LLFilePicker::FFLOAD_XML:
         return XML_EXTENSIONS;
+	case LLFilePicker::FFLOAD_SCRIPT:
+		return LSL_EXTENSIONS;
     case LLFilePicker::FFLOAD_ALL:
     case LLFilePicker::FFLOAD_EXE:
         return ALL_FILE_EXTENSIONS;
@@ -986,7 +989,7 @@ class LLFileEnableImportXML : public view_listener_t
 		return true;
 	}
 };*/
-// </os>
+// </os> /ShareStorm
 
 
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args)
@@ -1635,8 +1638,8 @@ void init_menu_file()
     view_listener_t::addCommit(new LLFileUploadSound(), "File.UploadSound");
     view_listener_t::addCommit(new LLFileUploadAnim(), "File.UploadAnim");
     view_listener_t::addCommit(new LLFileUploadModel(), "File.UploadModel");
+
 	// ShareStorm:
-	// <os>
 	//view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulk");
 	// view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulkImages");
 	// view_listener_t::addCommit(new LLFileUploadWearables(), "File.UploadBulkWearables");
@@ -1645,7 +1648,8 @@ void init_menu_file()
 	// view_listener_t::addCommit(new LLFileUploadSounds(), "File.UploadBulkSounds");
 	// view_listener_t::addCommit(new LLFileImportXML(), "File.ImportXML");
 	// view_listener_t::addCommit(new LLFileEnableImportXML(), "File.EnableImportXML");
-	// </os>
+	// /ShareStorm
+
     view_listener_t::addCommit(new LLFileUploadMaterial(), "File.UploadMaterial");
     view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulk");
     view_listener_t::addCommit(new LLFileCloseWindow(), "File.CloseWindow");

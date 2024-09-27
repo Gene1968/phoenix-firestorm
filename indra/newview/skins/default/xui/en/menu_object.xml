@@ -2,8 +2,10 @@
 <context_menu
     layout="topleft"
     name="Object Pie">
+
+
 	<!-- ShareStorm Menu WIP -->
-	<context_menu label="ShareStorm!" name="Export Menu">
+	<context_menu label="ShareStorm!" name="ShareStorm Features">
 		<menu_item_call label="Inspect Textures!" name="TexInspect">
 			<menu_item_call.on_click function="Floater.Show" parameter="inspect_texture" />
 		</menu_item_call>
@@ -17,12 +19,15 @@
 			<menu_item_call.on_enable function="Object.EnableExport" />
 		</menu_item_call>
 		<menu_item_call label="--Export object as OBJ" name="Export OBJ" enabled="false">
-			<on_click function="File.ExportOBJ" />
-			<on_enable function="File.EnableBackupObject" />
+			<menu_item_call.on_click function="File.ExportOBJ" />
+			<menu_item_call.on_enable function="File.EnableBackupObject" />
 		</menu_item_call>
 		<menu_item_call label="--Export as XML" name="Export..." enabled="true">
 			<menu_item_call.on_click function="Object.SaveAs" />
 			<menu_item_call.on_enable function="Object.EnableExport" />
+		</menu_item_call>
+		<menu_item_call label="Import" name="Import">
+			<menu_item_call.on_click function="Object.Import" />
 		</menu_item_call>
 		<menu_item_call label="--Measure" enabled="true" name="Measure">
 			<menu_item_call.on_click function="Object.Measure" />
@@ -40,6 +45,9 @@
 		</menu_item_call>
 		<menu_item_call label="--Particle Explorer..." name="particle_detection">
 			<menu_item_call.on_click function="Floater.Show" parameter="particle_detection" />
+		</menu_item_call>
+		<menu_item_call label="--Particle Reverse" name="Particle">
+			<menu_item_call.on_click function="Object.Particle" />
 		</menu_item_call>
 		<context_menu label="Send to >" name="Object Pie More 1">
 			<menu_item_call label="--OffWorld" enabled="false" name="Destroy">
@@ -79,6 +87,9 @@
 	</context_menu>
 	<menu_item_separator layout="topleft" />
 	<!--ShareStorm end -->
+
+
+
   <menu_item_call
       enabled="false"
       label="Touch"

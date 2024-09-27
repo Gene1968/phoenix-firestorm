@@ -712,9 +712,13 @@
 			<menu_item_call label="OXP Linkset..." visibility_control="FSEnableObjectExports" name="import linkset">
 				<menu_item_call.on_click function="File.ImportLinkset" parameter="" />
 			</menu_item_call>
-			<menu_item_call label="--Import.XML" name="Import..." enabled="false">
-				<on_click function="Object.Import" />
-				<on_enable function="Object.EnableImport" />
+			<menu_item_call label="?-Import XML" name="Import...">
+				<menu_item_call.on_click function="Object.Import" />
+				<menu_item_call.on_enable function="Object.EnableImport" />
+			</menu_item_call>
+			<menu_item_call label="?-Import XML2" name="Import..." enabled="true">
+				<menu_item_call.on_click function="File.ImportXML" parameter="" />
+				<menu_item_call.on_visible function="File.EnableImportXML" parameter="" />
 			</menu_item_call>
 			<menu_item_call label="-XML + .asset files (variable cost)...dae" name="Upload Assets">
 				<on_click function="File.UploadXMLModel" />
