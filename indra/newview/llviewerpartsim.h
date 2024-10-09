@@ -178,12 +178,14 @@ public:
     friend class LLViewerPartGroup;
 
     bool aboveParticleLimit() const { return sParticleCount > sMaxParticleCount; }
-
     static void setMaxPartCount(const S32 max_parts)    { sMaxParticleCount = max_parts; }
     static S32  getMaxPartCount()                       { return sMaxParticleCount; }
-    static void incPartCount(const S32 count)           { sParticleCount += count; }
-    static void decPartCount(const S32 count)           { sParticleCount -= count; }
 
+    // <FS:Beq> FIRE-34600 - bugsplat AVX2 particle count mismatch
+    // Deprecate these and use native operators for consistency
+    // static void incPartCount(const S32 count)           { sParticleCount += count; }
+    // static void decPartCount(const S32 count)           { sParticleCount -= count; }
+    // </FS:Beq>
     U32 mID;
 
 protected:
@@ -195,7 +197,7 @@ protected:
     LLFrameTimer mSimulationTimer;
 
     static S32 sMaxParticleCount;
-    static S32 sParticleCount;
+    static std::atomic<S32> sParticleCount; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
     static F32 sParticleAdaptiveRate;
     static F32 sParticleBurstRate;
 
@@ -207,7 +209,7 @@ protected:
 
 //debug use only
 public:
-    static S32 sParticleCount2;
+    static std::atomic<S32> sParticleCount2; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
 
     static void checkParticleCount(U32 size = 0) ;
 };

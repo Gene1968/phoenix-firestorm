@@ -47,8 +47,8 @@ const F32 PART_SIM_BOX_SIDE = 16.f;
 
 //static
 S32 LLViewerPartSim::sMaxParticleCount = 0;
-S32 LLViewerPartSim::sParticleCount = 0;
-S32 LLViewerPartSim::sParticleCount2 = 0;
+std::atomic<S32> LLViewerPartSim::sParticleCount{0}; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
+std::atomic<S32> LLViewerPartSim::sParticleCount2{0}; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
 // This controls how greedy individual particle burst sources are allowed to be, and adapts according to how near the particle-count limit we are.
 F32 LLViewerPartSim::sParticleAdaptiveRate = 0.0625f;
 F32 LLViewerPartSim::sParticleBurstRate = 0.5f;
@@ -205,7 +205,7 @@ LLViewerPartGroup::~LLViewerPartGroup()
     }
     mParticles.clear();
 
-    LLViewerPartSim::decPartCount(count);
+    LLViewerPartSim::sParticleCount -= count; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
 }
 
 void LLViewerPartGroup::cleanup()
@@ -268,7 +268,7 @@ bool LLViewerPartGroup::addPart(LLViewerPart* part, F32 desired_size)
 
     mParticles.push_back(part);
     part->mSkipOffset=mSkippedTime;
-    LLViewerPartSim::incPartCount(1);
+    ++LLViewerPartSim::sParticleCount; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
     return true;
 }
 
@@ -279,15 +279,11 @@ void LLViewerPartGroup::updateParticles(const F32 lastdt)
 
     LLVector3 gravity(0.f, 0.f, GRAVITY);
 
-    // <FS:Beq> FIRE-34600 off by one particle count triggering bugsplat (LL_ERR)
-    S32 end = (S32) mParticles.size();
     LLViewerPartSim::checkParticleCount(static_cast<U32>(mParticles.size()));
-    std::atomic_signal_fence(std::memory_order_seq_cst);
-    // </FS:Beq>
 
     LLViewerCamera* camera = LLViewerCamera::getInstance();
     LLViewerRegion *regionp = getRegion();
-    //S32 end = (S32) mParticles.size();// <FS:Beq> FIRE-34600 off by one particle count triggering bugsplat (LL_ERR)
+    S32 end = (S32) mParticles.size();
     for (S32 i = 0 ; i < (S32)mParticles.size();)
     {
         LLVector3 a(0.f, 0.f, 0.f);
@@ -403,8 +399,7 @@ void LLViewerPartGroup::updateParticles(const F32 lastdt)
         // Kill dead particles (either flagged dead, or too old)
         if ((part->mLastUpdateTime > part->mMaxAge) || (LLViewerPart::LL_PART_DEAD_MASK == part->mFlags))
         {
-            mParticles[i] = mParticles.back() ;
-            mParticles.pop_back() ;
+            vector_replace_with_last(mParticles, mParticles.begin() + i); // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
             delete part ;
         }
         else
@@ -414,8 +409,7 @@ void LLViewerPartGroup::updateParticles(const F32 lastdt)
             {
                 // Transfer particles between groups
                 LLViewerPartSim::getInstance()->put(part) ;
-                mParticles[i] = mParticles.back() ;
-                mParticles.pop_back() ;
+                vector_replace_with_last(mParticles, mParticles.begin() + i); // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
             }
             else
             {
@@ -432,7 +426,7 @@ void LLViewerPartGroup::updateParticles(const F32 lastdt)
         {
             gPipeline.markRebuild(mVOPartGroupp->mDrawable, LLDrawable::REBUILD_ALL);
         }
-        LLViewerPartSim::decPartCount(removed);
+        LLViewerPartSim::sParticleCount -= removed; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
     }
 
     // Kill the viewer object if this particle group is empty
@@ -485,7 +479,7 @@ void LLViewerPartSim::checkParticleCount(U32 size)
 
     if(size > (U32)LLViewerPartSim::sParticleCount2)
     {
-        LL_ERRS() << "curren particle size: " << LLViewerPartSim::sParticleCount2 << " array size: " << size << LL_ENDL ;
+        LL_ERRS() << "current particle size: " << LLViewerPartSim::sParticleCount2 << " array size: " << size << LL_ENDL ; // <FS:Beq/> FIRE-34600 - bugsplat AVX2 particle count mismatch
     }
 }
 
@@ -531,12 +525,12 @@ void LLViewerPartSim::destroyClass()
 //static
 bool LLViewerPartSim::shouldAddPart()
 {
-    if (sParticleCount >= MAX_PART_COUNT)
+    if (sParticleCount < MAX_PART_COUNT)
     {
         return false;
     }
 
-    if (sParticleCount > PART_THROTTLE_THRESHOLD*sMaxParticleCount)
+    if ( sParticleCount > PART_THROTTLE_THRESHOLD*sMaxParticleCount)
     {
         F32 frac = (F32)sParticleCount/(F32)sMaxParticleCount;
         frac -= PART_THROTTLE_THRESHOLD;
@@ -560,7 +554,7 @@ bool LLViewerPartSim::shouldAddPart()
 
 void LLViewerPartSim::addPart(LLViewerPart* part)
 {
-    if (sParticleCount < MAX_PART_COUNT)
+    if (LLViewerPartSim::sParticleCount < MAX_PART_COUNT)
     {
         put(part);
     }
@@ -795,13 +789,13 @@ void LLViewerPartSim::updateSimulation()
     if (LLDrawable::getCurrentFrame()%16==0)
     {
         if (sParticleCount > sMaxParticleCount * 0.875f
-            && sParticleAdaptiveRate < 2.0f)
+             && sParticleAdaptiveRate < 2.0f)
         {
             sParticleAdaptiveRate *= PART_ADAPT_RATE_MULT;
         }
         else
         {
-            if (sParticleCount < sMaxParticleCount * 0.5f
+            if ( sParticleCount < sMaxParticleCount * 0.5f
                 && sParticleAdaptiveRate > 0.03125f)
             {
                 sParticleAdaptiveRate *= PART_ADAPT_RATE_MULT_RECIP;
