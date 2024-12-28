@@ -2487,10 +2487,11 @@ class LLAdvancedDebugAvatarTextures : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-        if (gAgent.isGodlike())
-        {
-            handle_debug_avatar_textures();
-        }
+		// ShareStorm ?:
+        // if (gAgent.isGodlike())
+        // {
+			handle_debug_avatar_textures();
+        // }
         return true;
     }
 };
@@ -5081,6 +5082,170 @@ class FSSelfForceSit : public view_listener_t
         return true;
     }
 };
+
+// ShareStorm restored methods:
+// tried LLObjectMeasure from Theos, but it didn't like: LLEvent, LLPointer, LLFloaterChat, addChat. forgot to remove 'LLPointer<LLEvent> event, '
+// LLObjectTexture - tried?
+// LLObjectKey - investigate whether renamed to LLUUID or uuid ?
+// no errors, but no response from Particle Reverse `FCTeam Reverse Particle`:
+class LLObjectParticle : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+		for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+			 iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+		{
+			LLSelectNode* node = *iter;
+			if(node->getObject()->isParticleSource())
+			{
+				LLPartSysData thisPartSysData = node->getObject()->mPartSourcep->mPartSysData;
+
+				std::ostringstream script_stream;
+				std::string flags_st="( 0 ";
+				std::string pattern_st="";
+
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_INTERP_COLOR_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_INTERP_COLOR_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_INTERP_SCALE_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_INTERP_SCALE_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_BOUNCE_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_BOUNCE_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_WIND_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_WIND_MASK\n");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_FOLLOW_SRC_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_FOLLOW_SRC_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_FOLLOW_VELOCITY_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_FOLLOW_VELOCITY_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_TARGET_POS_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_TARGET_POS_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_TARGET_LINEAR_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_TARGET_LINEAR_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_EMISSIVE_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_EMISSIVE_MASK");
+
+				switch (thisPartSysData.mPattern)
+				{
+					case 0x01:	pattern_st=" PSYS_SRC_PATTERN_DROP ";		break;
+					case 0x02:	pattern_st=" PSYS_SRC_PATTERN_EXPLODE ";	break;
+					case 0x04:	pattern_st=" PSYS_SRC_PATTERN_ANGLE ";		break;
+					case 0x08:	pattern_st=" PSYS_SRC_PATTERN_ANGLE_CONE ";	break;
+					case 0x10:	pattern_st=" PSYS_SRC_PATTERN_ANGLE_CONE_EMPTY ";	break;
+					default:	pattern_st="0";								break;
+				}
+
+				script_stream << "// *****  Reverse Particle V 1.00 FCTeam  *****\n";
+				script_stream << "default\n";
+				script_stream << "{\n";
+				script_stream << "\tstate_entry()\n";
+				script_stream << "\t{\n";
+				script_stream << "\t\tllParticleSystem([\n";
+				script_stream << "\t\t\tPSYS_PART_FLAGS," << flags_st << " ), \n";
+				script_stream << "\t\t\tPSYS_SRC_PATTERN," << pattern_st  << ",\n";
+				script_stream << "\t\t\tPSYS_PART_START_ALPHA," << thisPartSysData.mPartData.mStartColor.mV[3] << ",\n";
+				script_stream << "\t\t\tPSYS_PART_END_ALPHA," << thisPartSysData.mPartData.mEndColor.mV[3] << ",\n";
+				script_stream << "\t\t\tPSYS_PART_START_COLOR,<"<<thisPartSysData.mPartData.mStartColor.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mStartColor.mV[1] << ",";
+				script_stream << thisPartSysData.mPartData.mStartColor.mV[2] << "> ,\n";
+				script_stream << "\t\t\tPSYS_PART_END_COLOR,<"<<thisPartSysData.mPartData.mEndColor.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mEndColor.mV[1] << ",";
+				script_stream << thisPartSysData.mPartData.mEndColor.mV[2] << "> ,\n";
+				script_stream << "\t\t\tPSYS_PART_START_SCALE,<" << thisPartSysData.mPartData.mStartScale.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mStartScale.mV[1] << ",0>,\n";
+				script_stream << "\t\t\tPSYS_PART_END_SCALE,<" << thisPartSysData.mPartData.mEndScale.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mEndScale.mV[1] << ",0>,\n";
+				script_stream << "\t\t\tPSYS_PART_MAX_AGE," << thisPartSysData.mPartData.mMaxAge << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_MAX_AGE," <<  thisPartSysData.mMaxAge << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_ACCEL,<"<<  thisPartSysData.mPartAccel.mV[0] << ",";
+				script_stream << thisPartSysData.mPartAccel.mV[1] << ",";
+				script_stream << thisPartSysData.mPartAccel.mV[2] << ">,\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_PART_COUNT," << (U32) thisPartSysData.mBurstPartCount << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_RADIUS," << thisPartSysData.mBurstRadius << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_RATE," << thisPartSysData.mBurstRate << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_SPEED_MIN," << thisPartSysData.mBurstSpeedMin << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_SPEED_MAX," << thisPartSysData.mBurstSpeedMax << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_ANGLE_BEGIN," << thisPartSysData.mInnerAngle << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_ANGLE_END," << thisPartSysData.mOuterAngle << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_OMEGA,<" << thisPartSysData.mAngularVelocity.mV[0]<< ",";
+				script_stream << thisPartSysData.mAngularVelocity.mV[1] << ",";
+				script_stream << thisPartSysData.mAngularVelocity.mV[2] << ">,\n";
+				script_stream << "\t\t\tPSYS_SRC_TEXTURE, (key)\"" << node->getObject()->mPartSourcep->getImage()->getID()<< "\",\n";
+				script_stream << "\t\t\tPSYS_SRC_TARGET_KEY, (key)\"" << thisPartSysData.mTargetUUID << "\"\n";
+				script_stream << " \t\t]);\n";
+				script_stream << "\t}\n";
+				script_stream << "}\n";
+				LLSD args;
+				args["MESSAGE"] = "\nReverse engineering Script has been copied to your clipboard, paste it in a new script\n";
+				LLNotificationsUtil::add("SystemMessage", args);
+
+				gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(script_stream.str()));
+			}
+		}
+		return true;
+	}
+};
+// no errors, but no response from Export as XML:
+class LLObjectSaveAs : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+	{
+//TO FIX		LLFloaterExport* floater = new LLFloaterExport();
+//TO FIX		floater->center();
+		return true;
+	}
+};
+// no errors, then Import.XML opens file picker, but then nothing. Must select object first:
+class LLObjectImport : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		if(object)
+		{
+			if(!object->permCopy())
+				new_value = false;
+			else if(!object->permModify())
+				new_value = false;
+			else if(!object->permMove())
+				new_value = false;
+			else if(object->numChildren() != 0)
+				new_value = false;
+			else if(object->getParent())
+				new_value = false;
+		}
+		if(new_value == false) return true;
+		
+		LLFilePicker& picker = LLFilePicker::instance();
+		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+		{
+			return true;
+		}
+		std::string file_name = picker.getFirstFile();
+//TO FIX		LLXmlImportOptions* options = new LLXmlImportOptions(file_name);
+//TO FIX		options->mSupplier = object;
+//TO FIX		new LLFloaterXmlImportOptions(options);
+		return true;
+	}
+};
+// ! TP to Safety and rez platform if allowed.
+class OSSafety : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLAvatarActions::goToPanic();
+		return TRUE;
+	}
+};
+// ! TP to Ground Level
+class OSGround : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLAvatarActions::goToGround();
+		return true;
+	}
+};
+
 
 bool enable_forcesit_self()
 {
@@ -12380,6 +12545,15 @@ void initialize_menus()
     enable.add("Agent.IsMicrophoneOn", boost::bind(&LLAgent::isMicrophoneOn, _2));
     enable.add("Agent.IsActionAllowed", boost::bind(&LLAgent::isActionAllowed, _2));
 
+
+	// ShareStorm: <os>
+	view_listener_t::addMenu(new OSSafety() , "Avatar.TpSafety");
+	view_listener_t::addMenu(new OSGround() , "Avatar.TpGround");
+	// view_listener_t::addMenu(new CopyObjectUUID() , "Object.CopyObjectUUID");
+	// view_listener_t::addMenu(new OSDeleteAllYours() , "OS.DeleteAllYours");
+	// </os>
+
+
     // File menu
     init_menu_file();
 
@@ -12848,6 +13022,16 @@ void initialize_menus()
     view_listener_t::addMenu(new LLObjectMute(), "Object.Mute");
     view_listener_t::addMenu(new LLObjectDerender(), "Object.Derender");
     view_listener_t::addMenu(new LLObjectDerenderPermanent(), "Object.DerenderPermanent"); // <FS:Ansariel> Optional derender & blacklist
+
+// ShareStorm <edit>
+	// view_listener_t::addMenu(new LLObjectMeasure(), "Object.Measure");
+	// view_listener_t::addMenu(new LLObjectTexture(), "Object.Texture");
+	// view_listener_t::addMenu(new LLObjectKey(), "Object.Key");
+	view_listener_t::addMenu(new LLObjectParticle(), "Object.Particle");
+	view_listener_t::addMenu(new LLObjectSaveAs(), "Object.SaveAs");
+	view_listener_t::addMenu(new LLObjectImport(), "Object.Import");
+// </edit>
+
     enable.add("Object.EnableDerender", boost::bind(&enable_derender_object));  // <FS:CR> FIRE-10082 - Don't enable derendering own attachments when RLVa is enabled as well
     view_listener_t::addMenu(new LLObjectTexRefresh(), "Object.TexRefresh");    // ## Zi: Texture Refresh
     view_listener_t::addMenu(new LLEditParticleSource(), "Object.EditParticles");
@@ -12898,6 +13082,8 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAttachmentPointFilled(), "Attachment.PointFilled");
     view_listener_t::addMenu(new LLAttachmentEnableDrop(), "Attachment.EnableDrop");
     view_listener_t::addMenu(new LLAttachmentEnableDetach(), "Attachment.EnableDetach");
+	// ShareStorm from original Singularity copybot Grimore:
+    // view_listener_t::addMenu(new LLObjectEnableExport(), "Attachment.EnableExport");
 
     // Land pie menu
     view_listener_t::addMenu(new LLLandBuild(), "Land.Build");

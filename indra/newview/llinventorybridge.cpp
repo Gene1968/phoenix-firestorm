@@ -3675,6 +3675,41 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
         pasteLinkFromClipboard();
         return;
     }
+	// ShareStorm
+	// <os>
+	/* else if ("open hex" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if (!item) return;
+		DOFloaterHex::show(mUUID);
+	}
+	else if ("open text" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if (!item) return;
+		HGFloaterTextEditor::show(mUUID);
+	}
+	else if ("rez object" == action)// </os>
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		LLVector3 rezpos = gAgent.getPositionAgent() + (gAgent.getAtAxis() * 5.0f);
+		LLAvatarActions::rezInvObject(item, rezpos);
+	}
+	else if ("rez_spam" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		LLVector3 rezpos(ll_frand(256.f) - 1.f, ll_frand(256.f) - 1.f, ll_frand(50.f) - 1.f);
+		U32 i = 0;
+		LLUUID id;
+		do
+		{
+			id.generate();
+			LLAvatarActions::rezInvObject(item, rezpos);
+			i += 1;
+		} 
+		while (i < 512);
+	} */
+	// </os>
     else if ("properties" == action)
     {
         showProperties();

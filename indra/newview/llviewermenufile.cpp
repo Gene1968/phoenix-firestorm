@@ -385,9 +385,10 @@ void LLMediaFilePicker::notify(const std::vector<std::string>& filenames)
 //============================================================================
 
 #if LL_WINDOWS
-static std::string SOUND_EXTENSIONS = "wav";
+static std::string SOUND_EXTENSIONS = "wav dsf";
 static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
-static std::string ANIM_EXTENSIONS =  "bvh anim";
+static std::string ANIM_EXTENSIONS =  "bvh anim animatn";// ShareStorm
+static std::string LSL_EXTENSIONS = "lsl";
 static std::string XML_EXTENSIONS = "xml";
 static std::string SLOBJECT_EXTENSIONS = "slobject";
 #endif
@@ -414,6 +415,8 @@ std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
         return MATERIAL_EXTENSIONS;
     case LLFilePicker::FFLOAD_XML:
         return XML_EXTENSIONS;
+	case LLFilePicker::FFLOAD_SCRIPT:
+		return LSL_EXTENSIONS;
     case LLFilePicker::FFLOAD_ALL:
     case LLFilePicker::FFLOAD_EXE:
         return ALL_FILE_EXTENSIONS;
@@ -892,6 +895,103 @@ class FSFileImportLinkset : public view_listener_t
 };
 // </FS:CR>
 
+
+// ShareStorm:
+// <os>
+/*class LLFileUploadWearables : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		if( gAgentCamera.cameraMouselook() )
+		{
+			gAgentCamera.changeCameraToDefault();
+		}
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(FFLOAD_WEARABLE, "", "wearable", true);
+		filepicker->run(boost::bind(&LLFileUploadBulk::onConfirmBulkUploadTemp_continued, false, filepicker));
+		return true;
+	}
+};
+
+class LLFileUploadAssets : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		if( gAgentCamera.cameraMouselook() )
+		{
+			gAgentCamera.changeCameraToDefault();
+		}
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(FFLOAD_ASSET, "", "asset", true);
+		filepicker->run(boost::bind(&LLFileUploadBulk::onConfirmBulkUploadTemp_continued, false, filepicker));
+		return true;
+	}
+};
+
+class LLFileUploadAnimations : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		if( gAgentCamera.cameraMouselook() )
+		{
+			gAgentCamera.changeCameraToDefault();
+		}
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(FFLOAD_ANIM, "", "anim", true);
+		filepicker->run(boost::bind(&LLFileUploadBulk::onConfirmBulkUploadTemp_continued, false, filepicker));
+		return true;
+	}
+};
+
+class LLFileUploadSounds : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		if( gAgentCamera.cameraMouselook() )
+		{
+			gAgentCamera.changeCameraToDefault();
+		}
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(FFLOAD_WAV, "", "wav", true);
+		filepicker->run(boost::bind(&LLFileUploadBulk::onConfirmBulkUploadTemp_continued, false, filepicker));
+		return true;
+	}
+};
+
+class LLFileImportXML : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(FFLOAD_XML, "", "xml");
+		filepicker->run(boost::bind(&LLFileImportXML::callback, filepicker));		
+		return true;
+	}
+private:
+	static void callback(AIFilePicker* filepicker)
+	{
+		if(filepicker->hasFilename() && !LLXmlImport::sImportInProgress) //stop multiple imports
+		{
+			std::string file_name = filepicker->getFilename();
+			new LLFloaterXmlImportOptions(new LLXmlImportOptions(file_name));
+		}
+	}
+};
+
+class LLFileEnableImportXML : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		bool new_value = !LLXmlImport::sImportInProgress;
+
+		// horrendously opaque, this code
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};*/
+// </os> /ShareStorm
+
+
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args)
 {
     LL_WARNS() << error_message << LL_ENDL;
@@ -1074,7 +1174,30 @@ class LLFileQuit : public view_listener_t
 };
 
 
-void handle_compress_image()
+// ShareStorm adding:
+/* class LLFileTakeSnapshot final : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent>, const LLSD& userdata) override
+	{
+		LLFloaterSnapshot::show(NULL);
+		return true;
+	}
+};
+class LLFileEnableSaveAs final : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent>, const LLSD& userdata) override
+	{
+		bool new_value = !HBFileSelector::isInUse() &&
+						 gFloaterViewp->getFrontmost() &&
+						 gFloaterViewp->getFrontmost()->canSaveAs();
+		gMenuHolderp->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+}; */
+
+
+
+void handle_compress_image(void*)
 {
     LLFilePicker& picker = LLFilePicker::instance();
     if (picker.getMultipleOpenFiles(LLFilePicker::FFLOAD_IMAGE))
@@ -1515,6 +1638,18 @@ void init_menu_file()
     view_listener_t::addCommit(new LLFileUploadSound(), "File.UploadSound");
     view_listener_t::addCommit(new LLFileUploadAnim(), "File.UploadAnim");
     view_listener_t::addCommit(new LLFileUploadModel(), "File.UploadModel");
+
+	// ShareStorm:
+	//view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulk");
+	// view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulkImages");
+	// view_listener_t::addCommit(new LLFileUploadWearables(), "File.UploadBulkWearables");
+	// view_listener_t::addCommit(new LLFileUploadAssets(), "File.UploadBulkAssets");
+	// view_listener_t::addCommit(new LLFileUploadAnimations(), "File.UploadBulkAnimations");
+	// view_listener_t::addCommit(new LLFileUploadSounds(), "File.UploadBulkSounds");
+	// view_listener_t::addCommit(new LLFileImportXML(), "File.ImportXML");
+	// view_listener_t::addCommit(new LLFileEnableImportXML(), "File.EnableImportXML");
+	// /ShareStorm
+
     view_listener_t::addCommit(new LLFileUploadMaterial(), "File.UploadMaterial");
     view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulk");
     view_listener_t::addCommit(new LLFileCloseWindow(), "File.CloseWindow");
@@ -1542,4 +1677,9 @@ void init_menu_file()
     // </FS:Ansariel>
 
     // "File.SaveTexture" moved to llpanelmaininventory so that it can be properly handled.
+
+	// ShareStorm adding:
+    // view_listener_t::addCommit(new LLFileTakeSnapshot(), "File.TakeSnapshot");
+    // view_listener_t::addCommit(new LLFileEnableSaveAs(), "File.EnableSaveAs");
+
 }

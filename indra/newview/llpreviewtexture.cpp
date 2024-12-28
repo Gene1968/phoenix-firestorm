@@ -379,7 +379,12 @@ void LLPreviewTexture::draw()
 // virtual
 bool LLPreviewTexture::canSaveAs() const
 {
-    return mIsFullPerm && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+// ShareStorm from original Singularity copybot Grimore:
+#ifdef TOGGLE_HACKED_GODLIKE_VIEWER
+    return gAgent.isGodlike() && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+#else
+	return mIsFullPerm && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+#endif
 }
 
 

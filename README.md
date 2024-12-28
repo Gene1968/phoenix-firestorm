@@ -26,3 +26,53 @@ Build instructions for each operating system can be found using the links below 
 ## Contribute
 
 Help make Firestorm better! You can get involved with improvements by filing bugs and suggesting enhancements via [JIRA](https://jira.firestormviewer.org) or [creating pull requests](doc/FS_PR_GUIDELINES.md).
+
+
+
+## ShareStorm Features
+
+Successfully building for Windows from the currently latest FireStorm 7.1.9, added a number of the enhancements, working on more.  Verified on OS so far.
+
+Some OS regions (eg: Arcadia Store on OSG) somehow detect that this isn't the official build, regardless of any spoofing, even when it was built from only pure FS source.  The only difference I knew of is the patch number such as 74804 or 74745 in "Phoenix-FirestormOS-Release64-7-1-9-74804_Setup.exe," vs 9209 from their last actual release (or maybe since we can't NSI-sign the binary?).  Seems lame that they ban nightly builders and future releases.  For now I've left out my config/app/pkg/file renaming in hopes of coming back to solve this.  Perhaps when FS puts out their next official release I'll rebase to that, and if it helps then I'll stop pulling more often.  But then I bet Aardvark has to update her region script with every release as well.  Thumbs down.  Hey I'm not there to steal - just trying to browse with more utilities to inspect & learn to improve my builds.
+
+Implemented and confirmed working:
+- Both OS & SL
+- Inspect Textures! / floater / Copy to Inv
+- Teleport to Safety Ctrl+PgUp
+- Teleport to Ground Ctrl+PgDn
+- Export DAE with textures (combine with Inspect Textures + Copy to Inventory. This makes its [temp.]textures show as co-exportable!)
+- Import DAE with textures
+- Export OXP
+- Import OXP
+- Inject Particles
+- Avatar Textures
+
+
+Testing and working on:
+- Export XML
+- Import XML
+- test in SL?
+- Export object as OBJ
+- lltexturectrl
+
+Assessing:
+- XML Export
+- Login Spoofing
+- Import OBJ
+- bulk import varieties
+- AddParticles
+- Measure
+- (Rip Selected Objects Particles Alt+Shift+P)
+- Particle Explorer
+- Send to &gt;
+	- OffWorld
+	- Inventory
+	- Owner
+	- Take Copy
+	- Trash
+	- Explode
+- more
+
+! I hate pie menus, so I work first on the regular rt-click menu and then maybe copy stuff over if I don't forget.\ \
+! Like most every other attempt at this, I've only done the default skin.  Could be persuaded to fix more skins or take your pull request, but someone else must test. \ \
+! Like most every other attempt at this, I've only done EN (or US-EN depending on the build).  I could be asked nicely to apply to your language too if it helps you and if you test for me.  :) \ \

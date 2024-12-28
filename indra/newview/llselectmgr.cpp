@@ -59,6 +59,9 @@
 #include "lldrawable.h"
 #include "llfloatergltfasseteditor.h"
 #include "llfloaterinspect.h"
+// <ShareStorm>
+#include "llfloaterinspecttexture.h"
+// </ShareStorm>
 #include "llfloaterproperties.h" // <FS:Ansariel> Keep legacy properties floater
 #include "llfloaterreporter.h"
 #include "llfloaterreg.h"
@@ -7544,6 +7547,13 @@ void dialog_refresh_all()
     {
         inspect_instance->dirty();
     }
+// <ShareStorm>
+	LLFloaterInspectTexture* inspect_texture_instance = LLFloaterReg::getTypedInstance<LLFloaterInspectTexture>("inspect_texture");
+	if(inspect_texture_instance)
+	{
+		inspect_texture_instance->dirty();
+	}
+// </ShareStorm>
 
     LLSidepanelTaskInfo *panel_task_info = LLSidepanelTaskInfo::getActivePanel();
     if (panel_task_info)

@@ -411,6 +411,22 @@
       width="140">
         Forgot password?
     </text>
+	<!-- ShareStorm Login Spoof -->
+	<button follows="right|bottom"
+		font="SansSerifMedium"
+		text_color="EmphasisColor"
+		top_pad="0"
+		height="23"
+		image_unselected="PushButton_Login"
+		image_pressed="PushButton_Login_Pressed"
+		image_hover_unselected="PushButton_Login_Over"
+		label="--Login Spoof"
+		label_color="White"
+		layout="topleft"
+		name="privacy_btn"
+		width="140"
+	/>
+	<!-- End -->
   </layout_panel>
   <layout_panel
       height="152"
