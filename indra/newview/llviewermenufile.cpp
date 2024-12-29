@@ -1197,7 +1197,7 @@ class LLFileEnableSaveAs final : public view_listener_t
 
 
 
-void handle_compress_image(void*)
+void handle_compress_image()
 {
     LLFilePicker& picker = LLFilePicker::instance();
     if (picker.getMultipleOpenFiles(LLFilePicker::FFLOAD_IMAGE))
