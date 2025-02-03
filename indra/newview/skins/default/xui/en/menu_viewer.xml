@@ -864,10 +864,14 @@
 				<menu_item_check.on_click function="Self.ToggleMoveLock" />
 				<menu_item_check.on_enable function="Self.EnableMoveLock" />
 			</menu_item_check>
-			<menu_item_check label="Force Ground Sit" shortcut="control|alt|S" name="Force Toggle Sitting">
+			<menu_item_check label="Force Ground Sit" name="Force Toggle Sitting">
 				<menu_item_check.on_check function="Self.getForceSit" />
 				<menu_item_check.on_click function="Self.ForceSit" />
 				<menu_item_check.on_enable function="Self.EnableForceSit" />
+			</menu_item_check>
+			<menu_item_check label="Phantom" name="Avatar Phantom">
+				<menu_item_check.on_check function="Self.getPhantom" />
+				<menu_item_check.on_click function="Self.togglePhantom" />
 			</menu_item_check>
 			<menu_item_call label="Teleport To Safety (Up)" shortcut="control|pgup" name="Teleport To Safety">
 				<menu_item_call.on_click function="Avatar.TpSafety" />

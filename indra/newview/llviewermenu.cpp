@@ -5619,7 +5619,8 @@ bool check_toggle_hacked_godmode()
 
 bool enable_toggle_hacked_godmode()
 {
-  return LLGridManager::getInstance()->isInSLBeta();
+  // ShareStorm: return LLGridManager::getInstance()->isInSLBeta();
+	return true;
 }
 #endif
 

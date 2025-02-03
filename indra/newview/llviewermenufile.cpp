@@ -991,6 +991,28 @@ class LLFileEnableImportXML : public view_listener_t
 };*/
 // </os> /ShareStorm
 
+// ShareStorm adding:
+/* class LLFileTakeSnapshot final : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent>, const LLSD& userdata) override
+	{
+		LLFloaterSnapshot::show(NULL);
+		return true;
+	}
+};
+class LLFileEnableSaveAs final : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent>, const LLSD& userdata) override
+	{
+		bool new_value = !HBFileSelector::isInUse() &&
+						 gFloaterViewp->getFrontmost() &&
+						 gFloaterViewp->getFrontmost()->canSaveAs();
+		gMenuHolderp->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+}; */
+
+
 
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args)
 {
@@ -1172,29 +1194,6 @@ class LLFileQuit : public view_listener_t
         return true;
     }
 };
-
-
-// ShareStorm adding:
-/* class LLFileTakeSnapshot final : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent>, const LLSD& userdata) override
-	{
-		LLFloaterSnapshot::show(NULL);
-		return true;
-	}
-};
-class LLFileEnableSaveAs final : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent>, const LLSD& userdata) override
-	{
-		bool new_value = !HBFileSelector::isInUse() &&
-						 gFloaterViewp->getFrontmost() &&
-						 gFloaterViewp->getFrontmost()->canSaveAs();
-		gMenuHolderp->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-}; */
-
 
 
 void handle_compress_image()
@@ -1650,6 +1649,10 @@ void init_menu_file()
 	// view_listener_t::addCommit(new LLFileEnableImportXML(), "File.EnableImportXML");
 	// /ShareStorm
 
+	// ShareStorm adding:
+    // view_listener_t::addCommit(new LLFileTakeSnapshot(), "File.TakeSnapshot");
+    // view_listener_t::addCommit(new LLFileEnableSaveAs(), "File.EnableSaveAs");
+
     view_listener_t::addCommit(new LLFileUploadMaterial(), "File.UploadMaterial");
     view_listener_t::addCommit(new LLFileUploadBulk(), "File.UploadBulk");
     view_listener_t::addCommit(new LLFileCloseWindow(), "File.CloseWindow");
@@ -1677,9 +1680,4 @@ void init_menu_file()
     // </FS:Ansariel>
 
     // "File.SaveTexture" moved to llpanelmaininventory so that it can be properly handled.
-
-	// ShareStorm adding:
-    // view_listener_t::addCommit(new LLFileTakeSnapshot(), "File.TakeSnapshot");
-    // view_listener_t::addCommit(new LLFileEnableSaveAs(), "File.EnableSaveAs");
-
 }

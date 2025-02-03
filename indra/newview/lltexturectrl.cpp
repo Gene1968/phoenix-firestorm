@@ -1849,7 +1849,7 @@ void LLFloaterTexturePicker::onPickerCallback(const std::vector<std::string>& fi
 
 void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te )
 {
-// </ShareStorm>!
+// <ShareStorm>!
     // LLUUID inventory_item_id = findItemID(te.getID(), true);
     // if (inventory_item_id.notNull())
     // {
