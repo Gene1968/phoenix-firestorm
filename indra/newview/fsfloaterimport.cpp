@@ -67,6 +67,11 @@
 #include "llcoproceduremanager.h"
 #include "llsdutil.h"
 
+
+
+#include "llmaterialmgr.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>
+
 struct FSResourceData
 {
     LLUUID uuid;
@@ -237,16 +242,35 @@ void FSFloaterImport::loadFile()
     llifstream filestream(mFileFullName.c_str(), std::ios_base::in | std::ios_base::binary);
     if(filestream.is_open())
     {
-        filestream.seekg(0, std::ios::end);
-        S32 file_size = (S32)filestream.tellg();
-        filestream.seekg(0, std::ios::beg);
-        if (LLUZipHelper::unzip_llsd(mManifest, filestream, file_size) == LLUZipHelper::ZR_OK)
+// <ShareStorm>:
+        if (mFilename.size() >= 4 && mFilename.substr(mFilename.size() - 4) == ".xml")
         {
-            file_loaded = true;
+            // For debugging -- not compatible with other XML exporters
+            LLSDSerialize::fromXML(mManifest, filestream);
+
+            if (mManifest)
+            {
+                file_loaded = true;
+            }
+            else
+            {
+                LL_WARNS("import") << "Failed to deserialize " << mFileFullName << LL_ENDL;
+            }
         }
         else
         {
-            LL_WARNS("import") << "Failed to deserialize " << mFileFullName << LL_ENDL;
+// </ShareStorm>
+            filestream.seekg(0, std::ios::end);
+            S32 file_size = (S32)filestream.tellg();
+            filestream.seekg(0, std::ios::beg);
+            if (LLUZipHelper::unzip_llsd(mManifest, filestream, file_size) == LLUZipHelper::ZR_OK)
+            {
+                file_loaded = true;
+            }
+            else
+            {
+                LL_WARNS("import") << "Failed to deserialize " << mFileFullName << LL_ENDL;
+            }
         }
     }
     else
@@ -328,6 +352,8 @@ void FSFloaterImport::populateBackupInfo()
 
 void FSFloaterImport::processPrim(LLSD& prim)
 {
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);// <ShareStorm>
+
     if (prim.has("texture"))
     {
         LLSD& textures = prim["texture"];
@@ -342,6 +368,31 @@ void FSFloaterImport::processPrim(LLSD& prim)
     if (prim.has("sculpt"))
     {
         addAsset(prim["sculpt"]["texture"].asUUID(), LLAssetType::AT_TEXTURE);
+// <ShareStorm>:
+    }
+
+    if (enhanced_export && prim.has("light_texture"))
+    {
+        addAsset(prim["light_texture"]["texture"].asUUID(), LLAssetType::AT_TEXTURE);
+    }
+
+    if (enhanced_export && prim.has("materials"))
+    {
+        LLSD materials = prim["materials"];
+        for (LLSD::array_iterator m_itr = materials.beginArray() ;
+             m_itr != materials.endArray() ;
+             ++m_itr)
+        {
+            LLMaterial* mat = new LLMaterial();
+            mat->fromLLSD(*m_itr);
+
+            if (!mat->getNormalID().isNull())
+                addAsset(mat->getNormalID(), LLAssetType::AT_TEXTURE);
+
+            if (!mat->getSpecularID().isNull())
+                addAsset(mat->getSpecularID(), LLAssetType::AT_TEXTURE);
+        }
+// </ShareStorm>
     }
 
     if (!prim.has("content"))
@@ -726,6 +777,7 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         return false;
     }
 
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);// <ShareStorm>
     LLSelectMgr::getInstance()->selectObjectAndFamily(object, true);
 
     LLUUID prim_uuid = mManifest["linkset"][mLinkset][mObject].asUUID();
@@ -794,7 +846,31 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
             LL_DEBUGS("import") << "Setting materials" << LL_ENDL;
             LLMaterial* mat = new LLMaterial();
             mat->fromLLSD(*m_itr);
+
+
+
+// <ShareStorm>:
+            if (enhanced_export && mAssetMap[mat->getNormalID()].notNull())
+            {
+                LL_DEBUGS("import") << "Replaced " << mat->getNormalID().asString();
+                mat->setNormalID(mAssetMap[mat->getNormalID()]);
+                LL_CONT << mat->getNormalID().asString() << LL_ENDL;
+            }
+
+            if (enhanced_export && mAssetMap[mat->getSpecularID()].notNull())
+            {
+                LL_DEBUGS("import") << "Replaced " << mat->getSpecularID().asString();
+                mat->setSpecularID(mAssetMap[mat->getSpecularID()]);
+                LL_CONT << mat->getSpecularID().asString() << LL_ENDL;
+            }
+
             object->setTEMaterialParams(te, mat);
+// </ShareStorm>
+
+
+            if (enhanced_export)
+                LLMaterialMgr::getInstance()->put(object->getID(), te, *mat);// <ShareStorm>
+
             ++te;
         }
     }
@@ -836,6 +912,19 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         LL_DEBUGS("import") << "Found light_texture for " << prim_uuid.asString() << LL_ENDL;
         LLLightImageParams new_light_image_param_block;
         new_light_image_param_block.fromLLSD(prim["light_texture"]);
+
+
+
+// <ShareStorm>:
+        if (enhanced_export && mAssetMap[new_light_image_param_block.getLightTexture()].notNull())
+        {
+            LL_DEBUGS("import") << "Replaced " << new_light_image_param_block.getLightTexture().asString();
+            new_light_image_param_block.setLightTexture(mAssetMap[new_light_image_param_block.getLightTexture()]);
+            LL_CONT << " with " << new_light_image_param_block.getLightTexture() << LL_ENDL;
+        }
+// </ShareStorm>
+
+
         object->setParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE, new_light_image_param_block, true);
     }
 

@@ -36,35 +36,34 @@ Successfully building for Windows from the currently latest FireStorm 7.1.9, add
 Some OS regions (eg: Arcadia Store on OSG) somehow detect that this isn't the official build, regardless of any spoofing, even when it was built from only pure FS source.  The only difference I knew of is the patch number such as 74804 or 74745 in "Phoenix-FirestormOS-Release64-7-1-9-74804_Setup.exe," vs 9209 from their last actual release (or maybe since we can't NSI-sign the binary?).  Seems lame that they ban nightly builders and future releases.  For now I've left out my config/app/pkg/file renaming in hopes of coming back to solve this.  Perhaps when FS puts out their next official release I'll rebase to that, and if it helps then I'll stop pulling more often.  But then I bet Aardvark has to update her region script with every release as well.  Thumbs down.  Hey I'm not there to steal - just trying to browse with more utilities to inspect & learn to improve my builds.
 
 Implemented and confirmed working:
-- Both OS & SL
+- Toggle Hacked Godmode
 - Inspect Textures! / floater / Copy to Inv
+- Export DAE with all textures! (combine with Inspect Textures -> "Copy All to Inventory." putting [temp.]textures in your inventory. Then when you click back on the object, those will show in the export floater as co-exportable!  (sometimes minus a single one))
+- Import DAE with textures
+- Export OXP for non-mesh
+- Import OXP
 - Teleport to Safety Ctrl+PgUp
 - Teleport to Ground Ctrl+PgDn
-- Export DAE with textures (combine with Inspect Textures + Copy to Inventory. This makes its [temp.]textures show as co-exportable!)
-- Import DAE with textures
-- Export OXP
-- Import OXP
 - Inject Particles
 - Avatar Textures
-
+- Both OS & SL
+- Login Spoofing - thanks to LOstorm!
+- all other LOstorm 16 features
 
 Testing and working on:
-- Export XML
+- Export XML Export
 - Import XML
-- test in SL?
 - Export object as OBJ
 - lltexturectrl
 
-Assessing:
-- XML Export
-- Login Spoofing
+Assessing missing code:
 - Import OBJ
 - bulk import varieties
 - AddParticles
 - Measure
 - (Rip Selected Objects Particles Alt+Shift+P)
 - Particle Explorer
-- Send to &gt;
+- Send to >
 	- OffWorld
 	- Inventory
 	- Owner

@@ -889,7 +889,7 @@
 			</menu_item_check>
 		</menu>
 		<menu_item_separator name="separator3" label="-----------" />
-		<!-- ShareStorm Start -->
+<!-- ShareStorm Start -->
 		<menu_item_call label="--New Local Asset" name="New Pretend Item">
 			<menu_item_call.on_click function="Floater.Show" parameter="new_local_inventory" />
 		</menu_item_call>
@@ -971,12 +971,14 @@
 			<menu_item_check.on_check function="IsGodCustomerService" />
 			<menu_item_check.on_click function="Advanced.HandleToggleHackedGodmode" />
 		</menu_item_check>
-		<menu_item_separator />
 		<menu_item_check label="Hacked Godmode" name="HackedGodmode">
 			<menu_item_check.on_check function="Advanced.CheckToggleHackedGodmode" />
 			<menu_item_check.on_click function="Advanced.HandleToggleHackedGodmode" />
 		</menu_item_check>
-		<!-- ShareStorm End -->
+		<menu_item_call label="ShareStorm Extra Settings" name="ShareStorm Extras">
+			<menu_item_call.on_click function="Floater.Toggle" parameter="lo_extras" />
+		</menu_item_call>
+<!-- ShareStorm End -->
 	</menu>
 	<!-- Custom Uploads Menu: -->
 <!-- <menu create_jump_keys="true" label="Upload" layout="topleft" name="Upload" tear_off="true" visible="true">

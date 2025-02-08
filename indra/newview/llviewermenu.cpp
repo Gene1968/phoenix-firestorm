@@ -181,6 +181,9 @@
 #include "particleeditor.h"
 #include "permissionstracker.h"
 
+#include "loextras.h"// <ShareStorm>
+#include "llpreviewtexture.h"
+
 using namespace LLAvatarAppearanceDefines;
 
 typedef LLPointer<LLViewerObject> LLViewerObjectPtr;
@@ -2046,19 +2049,20 @@ class LLAdvancedEnableAppearanceToXML : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
+        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
         LLViewerObject *obj = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
         if (obj && obj->isAnimatedObject() && obj->getControlAvatar())
         {
-            return gSavedSettings.getBOOL("DebugAnimatedObjects");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAnimatedObjects");// <ShareStorm>
         }
         else if (obj && obj->isAttachment() && obj->getAvatar())
         {
-            return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");// <ShareStorm>
         }
         else if (obj && obj->isAvatar())
         {
             // This has to be a non-control avatar, because control avs are invisible and unclickable.
-            return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");// <ShareStorm>
         }
         else
         {
@@ -2487,7 +2491,7 @@ class LLAdvancedDebugAvatarTextures : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-		// ShareStorm ?:
+		// <ShareStorm> ?:
         // if (gAgent.isGodlike())
         // {
 			handle_debug_avatar_textures();
@@ -3985,6 +3989,9 @@ class LLLandEnableBuyPass : public view_listener_t
 
 bool enable_object_edit()
 {
+    if (lolistorm_check_flag(LO_CONVENIENCE))
+        return true;// <ShareStorm>
+
     if (!isAgentAvatarValid()) return false;
 
     // *HACK:  The new "prelude" Help Islands have a build sandbox area,
@@ -5083,7 +5090,7 @@ class FSSelfForceSit : public view_listener_t
     }
 };
 
-// ShareStorm restored methods:
+// <ShareStorm> restored methods:
 // tried LLObjectMeasure from Theos, but it didn't like: LLEvent, LLPointer, LLFloaterChat, addChat. forgot to remove 'LLPointer<LLEvent> event, '
 // LLObjectTexture - tried?
 // LLObjectKey - investigate whether renamed to LLUUID or uuid ?
@@ -5619,7 +5626,7 @@ bool check_toggle_hacked_godmode()
 
 bool enable_toggle_hacked_godmode()
 {
-  // ShareStorm: return LLGridManager::getInstance()->isInSLBeta();
+  // <ShareStorm>: return LLGridManager::getInstance()->isInSLBeta();
 	return true;
 }
 #endif
@@ -12583,7 +12590,7 @@ void initialize_menus()
     enable.add("Agent.IsActionAllowed", boost::bind(&LLAgent::isActionAllowed, _2));
 
 
-	// ShareStorm: <os>
+	// <ShareStorm>: <os>
 	view_listener_t::addMenu(new OSSafety() , "Avatar.TpSafety");
 	view_listener_t::addMenu(new OSGround() , "Avatar.TpGround");
 	// view_listener_t::addMenu(new CopyObjectUUID() , "Object.CopyObjectUUID");
@@ -13060,7 +13067,7 @@ void initialize_menus()
     view_listener_t::addMenu(new LLObjectDerender(), "Object.Derender");
     view_listener_t::addMenu(new LLObjectDerenderPermanent(), "Object.DerenderPermanent"); // <FS:Ansariel> Optional derender & blacklist
 
-// ShareStorm <edit>
+// <ShareStorm>: <edit>
 	// view_listener_t::addMenu(new LLObjectMeasure(), "Object.Measure");
 	// view_listener_t::addMenu(new LLObjectTexture(), "Object.Texture");
 	// view_listener_t::addMenu(new LLObjectKey(), "Object.Key");
@@ -13119,7 +13126,7 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAttachmentPointFilled(), "Attachment.PointFilled");
     view_listener_t::addMenu(new LLAttachmentEnableDrop(), "Attachment.EnableDrop");
     view_listener_t::addMenu(new LLAttachmentEnableDetach(), "Attachment.EnableDetach");
-	// ShareStorm from original Singularity copybot Grimore:
+	// <ShareStorm> from original Singularity copybot Grimore:
     // view_listener_t::addMenu(new LLObjectEnableExport(), "Attachment.EnableExport");
 
     // Land pie menu

@@ -852,6 +852,8 @@ set(viewer_SOURCE_FILES
     llworldmapview.cpp
     llxmlrpclistener.cpp
     llxmlrpctransaction.cpp
+    lofloaterspoof.cpp
+    lofloaterextras.cpp
     noise.cpp
     particleeditor.cpp
 
@@ -1666,6 +1668,8 @@ set(viewer_HEADER_FILES
     llworldmapview.h
     llxmlrpclistener.h
     llxmlrpctransaction.h
+    lofloaterspoof.h
+    lofloaterextras.h
     noise.h
     particleeditor.h
     permissionstracker.h

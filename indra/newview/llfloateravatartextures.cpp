@@ -40,7 +40,8 @@
 #include "lllocaltextureobject.h"
 #include "rlvhandler.h"
 
-// <ShareStorm>
+// <ShareStorm>:
+#include "loextras.h"
 #include "llfocusmgr.h"
 #include "llnotificationsutil.h"
 #include "llinventorypanel.h"
@@ -61,12 +62,14 @@ LLFloaterAvatarTextures::~LLFloaterAvatarTextures()
 
 bool LLFloaterAvatarTextures::postBuild()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>:
+
     for (U32 i=0; i < TEX_NUM_INDICES; i++)
     {
         const std::string tex_name = LLAvatarAppearance::getDictionary()->getTexture(ETextureIndex(i))->mName;
         mTextures[i] = getChild<LLTextureCtrl>(tex_name);
         // <FS:Ansariel> Mask avatar textures and disable
-        mTextures[i]->setIsMasked(true);
+        mTextures[i]->setIsMasked(!bypass_perms);// <ShareStorm>:
         mTextures[i]->setEnabled(false);
         // </FS:Ansariel>
     }
@@ -75,7 +78,7 @@ bool LLFloaterAvatarTextures::postBuild()
     childSetAction("Dump", onClickDump, this);
 
     // <FS:Ansariel> Hide dump button if not in god mode
-    childSetVisible("Dump", gAgent.isGodlike());
+    childSetVisible("Dump", gAgent.isGodlike() || bypass_perms);// <ShareStorm>
 
     refresh();
     return true;
@@ -91,6 +94,7 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
                                  LLTextureCtrl* ctrl,
                                  ETextureIndex te)
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>:
     LLUUID id = IMG_DEFAULT_AVATAR;
     const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture(te);
     if (tex_entry && tex_entry->mIsLocalTexture)
@@ -121,10 +125,14 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
     }
     else
     {
-        ctrl->setImageAssetID(id);
+// <ShareStorm>: ctrl->setImageAssetID(id);
+        ctrl->setValue(id);
         // <FS:Ansariel> Hide full texture uuid
-        //ctrl->setToolTip(tex_entry->mName + " : " + id.asString());
-        ctrl->setToolTip(tex_entry->mName + " : " + id.asString().substr(0,7));
+// <ShareStorm>:
+        if (bypass_perms)
+            ctrl->setToolTip(tex_entry->mName + " : " + id.asString());
+        else
+            ctrl->setToolTip(tex_entry->mName + " : " + id.asString().substr(0,7));
         // </FS:Ansariel>
     }
 }
@@ -178,8 +186,9 @@ void LLFloaterAvatarTextures::refresh()
 // static
 void LLFloaterAvatarTextures::onClickDump(void* data)
 {
-// <ShareStorm>
-    // if (gAgent.isGodlike())
+// <ShareStorm>:
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    // if (gAgent.isGodlike() || bypass_perms)
     // {
         const LLVOAvatarSelf* avatarp = gAgentAvatarp;
         if (!avatarp) return;
@@ -295,10 +304,12 @@ void LLFloaterAvatarTextures::onClickDump(void* data)
                 LL_INFOS() << "TE " << i << " name:" << tex_entry->mName << " id:" << te->getID() << LL_ENDL;
             }
         }
-    // }
+    //}
+
 // <ShareStorm>
 	LLSD args;
 	args["MESSAGE"] = msg;
 	LLNotificationsUtil::add("SystemMessage", args);
 // </ShareStorm>
+
 }

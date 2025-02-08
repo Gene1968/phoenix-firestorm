@@ -670,6 +670,8 @@ void MediaPluginCEF::receiveMessage(const char* message_string)
                 // a concern). Leaving them here, explicitly turn off vs removing
                 // entirely from this source file so that others are aware of them
                 // in the future.
+                // ShareStorm LOstorm -- this is used to load the login page news html:
+                // if needed settings.disable_web_security = mDisableWebSecurity;
                 settings.disable_web_security = false;
                 settings.file_access_from_file_urls = false;
 

@@ -150,6 +150,8 @@ void gridDownloadComplete( LLSD const &aData, LLGridManager* mOwner, GridEntry* 
     }
 }
 
+
+// ShareStorm no:  const char* DEFAULT_LOGIN_PAGE = "x-lostorm:///login.html";
 const char* DEFAULT_LOGIN_PAGE = "https://phoenixviewer.com/app/loginV3/";
 
 const char* SYSTEM_GRID_SLURL_BASE = "secondlife://%s/secondlife/";
