@@ -3,6 +3,7 @@
 <context_menu
  layout="topleft"
  name="Avatar Pie">
+
 	<!--ShareStorm Menu-->
 	<context_menu label="ShareStorm Tools" name="ShareStorm">
 		<menu_item_call enabled="false" label="Mesh Export" name="Collada">
@@ -42,6 +43,7 @@
 		</menu_item_call>
 	</context_menu>
 	<!--ShareStorm End-->
+
     <menu_item_call
      label="View Profile"
      name="Profile...">

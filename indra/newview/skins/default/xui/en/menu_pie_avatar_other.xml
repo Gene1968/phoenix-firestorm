@@ -251,22 +251,6 @@
 
     </pie_menu>
 
-	<!-- ShareStorm Pie Menu -->
-	<pie_menu label="ShareStorm Menu >" name="ShareStorm More">
-		<pie_slice enabled="false" label="Textures"	name="Textures">
-			<pie_slice.on_click	function="Avatar.TexInspect" />
-		</pie_slice>
-		<pie_slice	label="XML Export" name="Export...">
-			<pie_slice.on_click function="Object.SaveAs" />
-			<pie_slice.on_enable function="Object.EnableExport" />
-		</pie_slice>
-		<pie_slice	label="Av Anims" name="Av Anims">
-			<pie_slice.on_click function="Avatar.Anims" />
-		</pie_slice>
-			<pie_slice label="Tex Refresh" name="Texture Refresh">
-			<pie_slice.on_click function="Avatar.TexRefresh" />
-		</pie_slice>
-	<!-- end ShareStorm Pie Menu -->
     <pie_slice
         label="IM"
         name="Send IM...">
@@ -275,23 +259,32 @@
         <pie_slice.on_enable
             function="RLV.CanShowName" />
     </pie_slice>
-	<!-- ShareStorm edit -->
-	<pie_menu label="ShareStorm Menu>" name="ShareStorm More">
+	<!-- ShareStorm Pie Menu -->
+	<pie_menu label="ShareStorm Menu >" name="ShareStorm More">
+		<pie_slice enabled="false" label="Textures"	name="Textures">
+			<pie_slice.on_click function="Avatar.TexInspect" />
+		</pie_slice>
+		<pie_slice label="Av Anims" name="Av Anims">
+			<pie_slice.on_click function="Avatar.Anims" />
+		</pie_slice>
+			<pie_slice label="Tex Refresh" name="Texture Refresh">
+			<pie_slice.on_click function="Avatar.TexRefresh" />
+		</pie_slice>
 		<pie_slice enabled="false" label="Export Xml" name="Export...">
-			<pie_slice.on_click	function="Object.SaveAs" />
+			<pie_slice.on_click function="Object.SaveAs" />
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
-			<pie_slice label="Particle RIP" name="Particles">
-			<pie_slice.on_click	function="Object.RipParticles" />
+		<pie_slice label="Particle RIP" name="Particles">
+			<pie_slice.on_click function="Object.RipParticles" />
 		</pie_slice>
 		<pie_slice label="Avatar Textures" name="Debug...">
 			<pie_slice.on_click function="Avatar.Debug" />
 			<pie_slice.on_visible function="IsGodCustomerService"/>
 		</pie_slice>
-			<pie_slice label="Avatar Anims" name="hsAnims">
-				<pie_slice.on_click function="Avatar.Anims" />
+		<pie_slice label="Avatar Anims" name="hsAnims">
+			<pie_slice.on_click function="Avatar.Anims" />
 		</pie_slice>
-			<pie_slice enabled="false" label=" HS Textures"	name="hsTextures">
+		<pie_slice enabled="false" label=" HS Textures" name="hsTextures">
 			<pie_slice.on_click	function="Avatar.TexInspect" />
 		</pie_slice>
 			<pie_slice label="Avatar HUDs" name="Attachments">
@@ -306,8 +299,6 @@
 			<pie_slice.on_enable function="Object.EnableExport" />
 		</pie_slice>
 	</pie_menu>
-	<!-- end ShareStorm edit -->
-	<!-- ShareStorm ? -->
 	<pie_menu label="Export" name="Export Menu">
 		<menu_item_call enabled="false" hidden="false" label="XML..." mouse_opaque="true" name="Save As...">
 			<on_click function="Avatar.SaveAs" />
@@ -327,5 +318,6 @@
 		<menu_item_call enabled="true" label="Textures" mouse_opaque="true" name="Inspect Textures">
 			<on_click function="Avatar.TextureInspect" />
 		</menu_item_call>
-
+	</pie_menu>
+	<!-- end ShareStorm Pie Menu -->
 </pie_menu>
