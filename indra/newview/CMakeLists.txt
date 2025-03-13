@@ -150,6 +150,7 @@ set(viewer_SOURCE_FILES
     fslslbridgerequest.cpp
     fslslpreproc.cpp
     fslslpreprocviewer.cpp
+    fsmaniprotatejoint.cpp
     fsmoneytracker.cpp
     fsnamelistavatarmenu.cpp
     fsnearbychatbarlistener.cpp
@@ -973,6 +974,7 @@ set(viewer_HEADER_FILES
     fslslpreproc.h
     fslslpreprocviewer.h
     fsmoneytracker.h
+    fsmaniprotatejoint.h
     fsnamelistavatarmenu.h
     fsnearbychatbarlistener.h
     fsnearbychatcontrol.h
