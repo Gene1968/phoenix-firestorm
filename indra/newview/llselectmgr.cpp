@@ -2146,7 +2146,7 @@ bool LLSelectMgr::selectionSetGLTFMaterial(const LLUUID& mat_id)
                     asset_id = BLANK_MATERIAL_ASSET_ID;
                 }
             }
-
+            objectp->clearTEWaterExclusion(te);
             // Blank out most override data on the object and send to server
             objectp->setRenderMaterialID(te, asset_id);
 
@@ -2630,6 +2630,7 @@ void LLSelectMgr::selectionSetMedia(U8 media_type, const LLSD &media_data)
                     }
                     else {
                         // Add/update media
+                        object->clearTEWaterExclusion(te);
                         object->setTEMediaFlags(te, mMediaFlags);
                         LLVOVolume *vo = dynamic_cast<LLVOVolume*>(object);
                         llassert(NULL != vo);
@@ -7532,7 +7533,10 @@ void dialog_refresh_all()
     // *TODO: Eliminate all calls into outside classes below, make those
     // objects register with the update signal.
 
-    gFloaterTools->dirty();
+    if (gFloaterTools)
+    {
+        gFloaterTools->dirty();
+    }
 
     gMenuObject->needsArrange();
 
@@ -7774,7 +7778,8 @@ void LLSelectMgr::updatePointAt()
             LLVector3 select_offset;
             const LLPickInfo& pick = gViewerWindow->getLastPick();
             LLViewerObject *click_object = pick.getObject();
-            if (click_object && click_object->isSelected())
+            bool was_hud = pick.mPickHUD && click_object && !click_object->isHUDAttachment();
+            if (click_object && click_object->isSelected() && !was_hud)
             {
                 // clicked on another object in our selection group, use that as target
                 select_offset.setVec(pick.mObjectOffset);
@@ -8030,6 +8035,14 @@ void LLSelectMgr::setAgentHUDZoom(F32 target_zoom, F32 current_zoom)
 {
     gAgentCamera.mHUDTargetZoom = target_zoom;
     gAgentCamera.mHUDCurZoom = current_zoom;
+}
+
+void LLSelectMgr::clearWaterExclusion()
+{
+    // reset texture to default plywood
+    LLSelectMgr::getInstance()->selectionSetImage(DEFAULT_OBJECT_TEXTURE);
+    // reset texture repeats, that might be altered by invisiprim script from wiki
+    LLSelectMgr::getInstance()->selectionTexScaleAutofit(2.f);
 }
 
 /////////////////////////////////////////////////////////////////////////////
