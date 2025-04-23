@@ -854,8 +854,12 @@ public:
             ypos += y_inc;
         }
         // disable use of glReadPixels which messes up nVidia nSight graphics debugging
-        static LLCachedControl<bool> debug_show_color(gSavedSettings, "DebugShowColor", false);
-        if (debug_show_color() && !LLRender::sNsightDebugSupport)
+        // <FS:minerjr>
+        //static LLCachedControl<bool> debug_show_color(gSavedSettings, "DebugShowColor", false);
+        //if (debug_show_color() && !LLRender::sNsightDebugSupport)
+        static LLCachedControl<S32> debug_show_color(gSavedSettings, "DebugShowColor", 0); // <FS:minerjr> The value is stored as a S32 and not a Bool
+        if (debug_show_color == 1 && !LLRender::sNsightDebugSupport) // <FS:minerjr> Which causes an exception when in RelWithDebug
+        // </FS:minerjr>
         {
             U8 color[4];
             LLCoordGL coord = gViewerWindow->getCurrentMouse();
@@ -5428,6 +5432,14 @@ LLPickInfo LLViewerWindow::pickImmediate(S32 x, S32 y_from_bot, bool pick_transp
         // "Show Debug Alpha" means no object actually transparent
         pick_transparent = true;
     }
+
+    // <FS:Sek> Pick from center of screen in mouselook
+    if (gAgentCamera.getCameraMode() == CAMERA_MODE_MOUSELOOK)
+    {
+        x = gViewerWindow->getWorldViewRectScaled().getWidth() / 2;
+        y_from_bot = gViewerWindow->getWorldViewRectScaled().getHeight() / 2;
+    }
+    // </FS:Sek>
 
     // shortcut queueing in mPicks and just update mLastPick in place
     MASK key_mask = gKeyboard->currentMask(true);
