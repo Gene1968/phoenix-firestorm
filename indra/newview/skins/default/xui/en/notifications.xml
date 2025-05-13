@@ -13999,7 +13999,7 @@ Flickr verification failed. Please try again, and be sure to double check the ve
    icon="notifytip.tga"
    name="ExodusFlickrUploadComplete"
    type="notifytip">
-Your snapshot can now be viewed [http://www.flickr.com/photos/upload/edit/?ids=[ID] here].
+Your snapshot can now be viewed [https://www.flickr.com/photos/me/[ID] here].
   </notification>
   <!-- </FS:TS> FIRE-5453 -->
 
@@ -14698,6 +14698,20 @@ Some antivirus programs may mistakenly block parts of [APP_NAME], slowing down i
 For detailed instructions on how to whitelist [APP_NAME] - including a list of files and folders to exclude - please visit our guide:
 
 https://wiki.firestormviewer.org/antivirus_whitelisting
+  </notification>
+
+   <notification
+   icon="alertmodal.tga"
+   label="Confirm Pose Overwrite"
+   name="ConfirmPoserOverwrite"
+   type="alertmodal">
+    <unique/>
+    Overwrite existing pose “[POSE_NAME]”?
+    <tag>confirm</tag>
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="Okay"/>
   </notification>
 
 </notifications>

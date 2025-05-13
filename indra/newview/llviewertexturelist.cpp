@@ -417,7 +417,7 @@ void LLViewerTextureList::dump()
         LL_CONT << " # of Volumes ";
         for (S32 index = 0; index < LLRender::NUM_VOLUME_TEXTURE_CHANNELS; index++)
         {
-            LL_CONT << image->getNumVolumes(index) + " ";
+            LL_CONT << image->getNumVolumes(index) << " ";
         }
         // </FS:minerjr> [FIRE-35081]
         LL_CONT << " http://asset.siva.lindenlab.com/" << image->getID() << ".texture"
@@ -808,6 +808,14 @@ LLViewerFetchedTexture* LLViewerTextureList::createImage(const LLUUID &image_id,
         imagep->setExplicitFormat(internal_format, primary_format);
     }
 
+    // <FS:minerjr> [FIRE-35428] - Mega prim issue - fix compressed sculpted textures
+    // Sculpted textures use the RGBA data for coodinates, so any compression can cause artifacts.
+    if (boost_priority == LLViewerFetchedTexture::BOOST_SCULPTED)
+    {
+        // Disable the compression of BOOST_SCULPTED textures
+        if (imagep->getGLTexture())imagep->getGLTexture()->setAllowCompression(false);
+    }
+    // </FS:minerjr> [FIRE-35428]
     addImage(imagep, get_element_type(boost_priority));
 
     if (boost_priority != 0)
@@ -835,7 +843,11 @@ LLViewerFetchedTexture* LLViewerTextureList::createImage(const LLUUID &image_id,
     }
 
     // <FS:Ansariel> Keep Fast Cache option
-    if(fast_cache_fetching_enabled)
+    // <FS:minerjr> [FIRE-35428] - Mega prim issue - fix compressed sculpted textures
+    //if(fast_cache_fetching_enabled)
+    // If the texture is Sculpted, don't allow it to be added to fast cache as it can affect the texture.
+    if(fast_cache_fetching_enabled && boost_priority != LLViewerFetchedTexture::BOOST_SCULPTED)
+    // </FS:minerjr> [FIRE-35428]
     {
         mFastCacheList.insert(imagep);
         imagep->setInFastCacheList(true);
@@ -1225,7 +1237,7 @@ void LLViewerTextureList::updateImageDecodePriority(LLViewerFetchedTexture* imag
                     vsize = vsize + (vsize * face->mCloseToCamera * texture_camera_boost);
                     // Update the max on screen vsize based upon the on screen vsize
                     close_to_camera += face->mCloseToCamera;
-                    LL_DEBUGS() << face->getViewerObject()->getID() << " TID " << imagep->getID() << " #F " << imagep->getNumFaces(i) << " OS Vsize: " << vsize << " Vsize: " << (vsize * bias) << " CTC: " << face->mCloseToCamera << " Channel " << i << " Face Index " << fi << LL_ENDL;
+                    // LL_DEBUGS() << face->getViewerObject()->getID() << " TID " << imagep->getID() << " #F " << imagep->getNumFaces(i) << " OS Vsize: " << vsize << " Vsize: " << (vsize * bias) << " CTC: " << face->mCloseToCamera << " Channel " << i << " Face Index " << fi << LL_ENDL;
                     max_on_screen_vsize = llmax(max_on_screen_vsize, vsize);
                     max_vsize = llmax(max_vsize, vsize * bias);
                     // </FS:minerjr> [FIRE-35081]
