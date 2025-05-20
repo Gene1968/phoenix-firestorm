@@ -1952,9 +1952,9 @@ bool idle_startup()
     // <FS:Ansariel> Wait for notification confirmation
     if (STATE_LOGIN_CONFIRM_NOTIFICATON == LLStartUp::getStartupState())
     {
-        display_startup();
+        do_startup_frame();
         gViewerWindow->getProgressView()->setVisible(false);
-        display_startup();
+        do_startup_frame();
         ms_sleep(1);
         return false;
     }
@@ -2300,10 +2300,10 @@ bool idle_startup()
         //so I just moved nearby history loading a few states further
         if (gSavedPerAccountSettings.getBOOL("LogShowHistory"))
         {
-            FSFloaterNearbyChat* nearby_chat = FSFloaterNearbyChat::getInstance();
-            if (nearby_chat) nearby_chat->loadHistory();
+            if (FSFloaterNearbyChat* nearby_chat = FSFloaterNearbyChat::getInstance())
+                nearby_chat->loadHistory();
         }
-        display_startup();
+        do_startup_frame();
         // </FS:Ansariel> [FS communication UI]
 
         // <FS:KC> FIRE-18250: Option to disable default eye movement
@@ -2551,13 +2551,14 @@ bool idle_startup()
         LL_INFOS() << "Requesting Money Balance" << LL_ENDL;
         LLStatusBar::sendMoneyBalanceRequest();
 
-        do_startup_frame();
         // <FS:Ansariel> Moved before inventory creation.
         // request all group information
         LL_INFOS("Agent_GroupData") << "GROUPDEBUG: Requesting Agent Data during startup" << LL_ENDL;
         gAgent.sendAgentDataUpdateRequest();
-        display_startup();
         // </FS:Ansariel>
+
+        do_startup_frame();
+
         // Inform simulator of our language preference
         LLAgentLanguage::update();
 
@@ -2810,7 +2811,7 @@ bool idle_startup()
         // Create the inventory views
         LL_INFOS() << "Creating Inventory Views" << LL_ENDL;
         LLFloaterReg::getInstance("inventory");
-        //do_startup_frame();
+        do_startup_frame();
 
 // [RLVa:KB] - Checked: RLVa-1.1.0
         if (RlvHandler::isEnabled())
@@ -2900,7 +2901,7 @@ bool idle_startup()
             //ok, we're done, set it back to false.
             gSavedSettings.setBOOL("FSFirstRunAfterSettingsRestore", false);
         }
-        display_startup();
+        do_startup_frame();
         // </FS:CR>
 
         if (gSavedSettings.getBOOL("HelpFloaterOpen"))
@@ -3076,7 +3077,7 @@ bool idle_startup()
             }
         }
 #endif // OPENSIM
-        display_startup();
+        do_startup_frame();
         // </FS:CR>
 
         LLStartUp::setStartupState( STATE_PRECACHE );
