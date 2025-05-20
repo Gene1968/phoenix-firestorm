@@ -66,6 +66,7 @@
 #include "llappviewer.h"
 #include "fscommon.h"
 
+#include "llimportobject.h"// <ShareStorm>
 #include "loextras.h"// <ShareStorm>
 
 #include <boost/algorithm/string_regex.hpp>
@@ -229,8 +230,11 @@ bool FSFloaterObjectExport::postBuild()
     mObjectList = getChild<LLScrollListCtrl>("selected_objects");
     mTexturePanel = getChild<LLPanel>("textures_panel");
     childSetAction("export_btn", boost::bind(&FSFloaterObjectExport::onClickExport, this));
+	childSetAction("make_copy_btn", boost::bind(&FSFloaterObjectExport::onClickMakeCopy, this));// <ShareStorm>
 
     LLSelectMgr::getInstance()->mUpdateSignal.connect(boost::bind(&FSFloaterObjectExport::updateSelection, this));
+
+    // getChild<LLButton>("make_copy_btn")->setClickedCallback(boost::bind(&FSFloaterObjectExport::onClickMakeCopy, this));
 
     return true;
 }
@@ -1237,6 +1241,54 @@ void FSFloaterObjectExport::onClickExport()
 {
     LLFilePickerReplyThread::startPicker(boost::bind(&FSFloaterObjectExport::onExportFileSelected, this, _1),
         LLFilePicker::FFSAVE_EXPORT, LLDir::getScrubbedFileName(mObjectName + ".oxp"));
+}
+
+
+// <ShareStorm> attempt at restoring the Copy button:
+void FSFloaterObjectExport::onClickMakeCopy()
+{
+	LL_DEBUGS("export") << "Copying object " << mObjectName << LL_ENDL;
+
+	static LLCachedControl<bool> sExportContents(gSavedSettings, "XmlExportInventory");
+	if (sExportContents)
+	{
+		gSavedSettings.setBOOL("XmlExportInventory", FALSE);
+	}
+	LLSD sd = getLLSD();
+
+	if(sd.size())
+	{
+		// not working: LLXmlImport::import(new LLXmlImportOptions(sd));
+	}
+	else
+	{
+		std::string msg = "No copyable items selected";
+		LLChat chat(msg);
+		// LLFloaterChat::addChat(chat);
+		return;
+	}
+	
+	closeFloater();
+}
+// </ShareStorm>
+
+LLSD FSFloaterObjectExport::getLLSD()
+{
+    LLSD sd;
+    if (!mObjectSelection)
+    {
+        return sd;
+    }
+
+    LLObjectSelection::valid_root_iterator iter = mObjectSelection->valid_root_begin();
+    LLSelectNode* node = *iter;
+    if (!node)
+    {
+        return sd;
+    }
+
+    sd = getLinkSet(node);
+    return sd;
 }
 
 void FSFloaterObjectExport::onExportFileSelected(const std::vector<std::string>& filenames)

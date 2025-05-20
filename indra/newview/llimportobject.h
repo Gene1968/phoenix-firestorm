@@ -27,7 +27,7 @@ public:
         U32 localid;
         LLAssetType::EType type;
         LLInventoryType::EType inv_type;
-	LLWearableType wear_type;
+	LLWearableType::EType wear_type;
         LLTransactionID tid;
         LLUUID assetid;
 	LLUUID folderid;
