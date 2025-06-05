@@ -117,7 +117,7 @@ void FSPrimfeedAuth::initiateAuthRequest()
     {
         if (sPrimfeedAuth)
         {
-            LLNotificationsUtil::add("PrimfeedAuthorisationAlreadyInProgress");
+            LLNotificationsUtil::add("PrimfeedAuthorizationAlreadyInProgress");
             return;
         }
         // If no token stored, begin the login request; otherwise check user status.
@@ -131,6 +131,7 @@ void FSPrimfeedAuth::initiateAuthRequest()
                 sPrimfeedAuth.reset();
             }
         );
+        FSPrimfeedConnect::instance().setConnectionState(FSPrimfeedConnect::PRIMFEED_CONNECTING);
     }
     else
     {
@@ -149,20 +150,16 @@ void FSPrimfeedAuth::resetAuthStatus()
     event_data["status"] = "reset";
     event_data["success"] = "false";
     sPrimfeedAuthPump->post(event_data);
+    FSPrimfeedConnect::instance().setConnectionState(FSPrimfeedConnect::PRIMFEED_DISCONNECTED);
 }
 
 
 FSPrimfeedAuth::FSPrimfeedAuth(authorized_callback_t callback)
-    : mCallback(callback), mAuthenticating(false)
+    : mCallback(callback)
 {
-    mInstantMessageConnection = LLIMModel::instance().addNewMsgCallback(
-        [this](const LLSD &message) {
-            LL_DEBUGS("FSPrimfeedAuth") << "Received chat message: " << message["message"].asString() << LL_ENDL;
-            this->onChatMessage(message);
-        });
     mChatMessageConnection = LLNotificationsUI::LLNotificationManager::instance().getChatHandler()->addNewChatCallback(
         [this](const LLSD &message) {
-            LL_DEBUGS("FSPrimfeedAuth") << "Received instant message: " << message["message"].asString() << LL_ENDL;
+            LL_DEBUGS("FSPrimfeedAuth") << "Received chat message: " << message["message"].asString() << LL_ENDL;
             this->onChatMessage(message);
         });
 }
@@ -184,21 +181,6 @@ FSPrimfeedAuth::~FSPrimfeedAuth()
             LL_WARNS("FSPrimfeedAuth") << "Unknown exception during chat connection disconnect." << LL_ENDL;
         }
     }     
-    if (mInstantMessageConnection.connected())
-    {
-        try
-        {
-            mInstantMessageConnection.disconnect();
-        }
-        catch (const std::exception& e)
-        {
-            LL_WARNS("FSPrimfeedAuth") << "Exception during instant message disconnect: " << e.what() << LL_ENDL;
-        }
-        catch (...)
-        {
-            LL_WARNS("FSPrimfeedAuth") << "Unknown exception during instant message disconnect." << LL_ENDL;
-        }
-    }     
 }
 
 // Factory method to create a shared pointer to FSPrimfeedAuth.
@@ -216,7 +198,7 @@ std::shared_ptr<FSPrimfeedAuth> FSPrimfeedAuth::create(authorized_callback_t cal
         return nullptr;
     }
 
-    auth->mAuthenticating = true;
+    FSPrimfeedConnect::instance().setConnectionState(FSPrimfeedConnect::PRIMFEED_CONNECTING);
 
     // If no token stored, begin the login request; otherwise check user status.
     if (gSavedPerAccountSettings.getString("FSPrimfeedOAuthToken").empty())
@@ -243,6 +225,7 @@ void FSPrimfeedAuth::beginLoginRequest()
     LLCore::HttpHeaders::ptr_t pHeader(new LLCore::HttpHeaders());
     LLCore::HttpOptions::ptr_t options(new LLCore::HttpOptions());
 
+    pHeader->append(HTTP_OUT_HEADER_USER_AGENT, FS_PF_USER_AGENT);
     pHeader->append("pf-viewer-api-key", viewer_api_key);
     pHeader->append("pf-user-uuid", user_uuid);
 
@@ -344,6 +327,7 @@ void FSPrimfeedAuth::validateRequest()
 
     // Create and populate the headers.
     LLCore::HttpHeaders::ptr_t pHeader(new LLCore::HttpHeaders());
+    pHeader->append(HTTP_OUT_HEADER_USER_AGENT, FS_PF_USER_AGENT);
     pHeader->append("Authorization", "Bearer " + mOauthToken);
     pHeader->append("pf-viewer-api-key", viewer_api_key);
     pHeader->append("pf-viewer-request-id", mRequestId);
@@ -416,6 +400,7 @@ void FSPrimfeedAuth::checkUserStatus()
 
     // Create and populate the headers.
     LLCore::HttpHeaders::ptr_t pHeader(new LLCore::HttpHeaders());
+    pHeader->append(HTTP_OUT_HEADER_USER_AGENT, FS_PF_USER_AGENT);
     pHeader->append("Authorization", "Bearer " + mOauthToken);
     pHeader->append("pf-viewer-api-key", viewer_api_key);
 
@@ -453,7 +438,6 @@ void FSPrimfeedAuth::gotUserStatus(bool success, const LLSD &response)
     if (success && response.has("plan"))
     {
         gSavedPerAccountSettings.setString("FSPrimfeedOAuthToken", mOauthToken);
-        gSavedPerAccountSettings.setString("FSPrimfeedRequestId", mRequestId);
         gSavedPerAccountSettings.setString("FSPrimfeedPlan", response["plan"].asString());
         gSavedPerAccountSettings.setString("FSPrimfeedProfileLink", response["link"].asString());
         gSavedPerAccountSettings.setString("FSPrimfeedUsername", response["username"].asString());
