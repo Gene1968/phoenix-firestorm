@@ -2,6 +2,6 @@
 #define LOLISTORM_LOVERSION_H
 
 #define LO_VERSION_MAJOR 16
-#define LO_VERSION_MINOR 0
+#define LO_VERSION_MINOR 2
 
 #endif // ShareStorm LOLISTORM_LOSPOOF_H
