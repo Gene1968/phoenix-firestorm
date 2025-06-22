@@ -7928,6 +7928,13 @@ void LLSelectMgr::deselect()
 //-----------------------------------------------------------------------------
 bool LLSelectMgr::canDuplicate() const
 {
+
+	// <ShareStorm> allow drag duplicate, but still doesn't work, due to maybe server side:
+	// bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+	// if (bypass_perms) return true;
+	// </ShareStorm>
+
+
 //  return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstCopyableObject() != NULL; // HACK: casting away constness - MG
 // [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Added: RLVa-1.2.0a
     return
