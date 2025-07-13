@@ -29,10 +29,6 @@
 	<string name="APP_NAME_ABBR">
 		FS
 	</string>
-	<!-- starting up -->
-	<string name="StartupDetectingHardware">
-		硬體檢測中...
-	</string>
 	<string name="StartupLoading">
 		[APP_NAME]載入中...
 	</string>
@@ -681,6 +677,9 @@ support@secondlife.com.
 	</string>
 	<string name="TooltipCantCreateOutfit">
 		一個或者多個物件不能在"服裝目錄"中使用
+	</string>
+	<string name="TooltipCantMoveOutfitIntoOutfit">
+		無法將一套服裝移動到另一套服裝中
 	</string>
 	<string name="TooltipDragOntoOwnChild">
 		你不能將檔案夾移動到其子檔案夾內
@@ -5102,6 +5101,10 @@ support@secondlife.com.
 	<string name="inventory_item_offered_rlv">
 		庫存物件已傳送給 [NAME]
 	</string>
+	<string name="bot_warning">
+您正在与人工智能机器人 [NAME] 聊天。请勿分享任何个人信息。
+了解更多：https://second.life/scripted-agents。
+	</string>
 	<string name="share_alert">
 		將庫存物件拖拽到這裡
 	</string>
@@ -6109,7 +6112,7 @@ support@secondlife.com.
 		編輯外觀
 	</string>
 	<string name="Command_Avatar_Label">
-		化身
+		化身入門禮包
 	</string>
 	<string name="Command_Build_Label">
 		建造
