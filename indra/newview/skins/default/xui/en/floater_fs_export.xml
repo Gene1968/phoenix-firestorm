@@ -101,6 +101,17 @@
 			 top="117"
 			 left="4"
 			 width="122" />
+			<!-- <ShareStorm> edit copybot button -->
+				<button
+				layout="topleft"
+				follows="left|bottom"
+				height="23"
+				label="--Copy..."
+				name="make_copy_btn"
+				top="117"
+				left_pad="4"
+				width="122" />
+			<!-- </ShareStorm> end edit -->
 		</layout_panel>
 		<layout_panel
 		 follows="all"

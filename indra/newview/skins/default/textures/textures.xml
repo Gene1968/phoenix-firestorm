@@ -424,6 +424,11 @@ with the same filename but different name
   <texture name="Inv_InboxClosed"		file_name="icons/Inv_SysClosed.png" />
   <texture name="Inv_OutboxOpen"		file_name="icons/Inv_SysOpen.png" />
   <texture name="Inv_OutboxClosed"		file_name="icons/Inv_SysClosed.png" />
+  
+  <!-- ShareStorm Custom -->
+  <texture name="Inv_Inv_LocalInventoryOpen"		file_name="icons/Inv_SysOpen.png" />
+  <texture name="Inv_LocalInventoryClosed"	file_name="icons/Inv_SysClosed.png" />
+  
   <texture name="Inv_SettingsOpen"		file_name="icons/Inv_SysOpen.png" />
   <texture name="Inv_SettingsClosed"	file_name="icons/Inv_SysClosed.png" />
   <texture name="Inv_MaterialsClosed"	file_name="icons/Inv_SysOpen.png" />
@@ -436,6 +441,11 @@ with the same filename but different name
   <texture name="Inv_PhoenixClosed"		file_name="icons/Inv_SysClosed.png" />
   <texture name="Inv_RLVOpen"			file_name="icons/Inv_SysOpen.png" />
   <texture name="Inv_RLVClosed"			file_name="icons/Inv_SysClosed.png" />
+ 
+  <!-- ShareStorm Local Inv -->
+  <texture name="Inv_LocalInventoryOpen"		file_name="legacy/inv_folder_localinventory.tga" />
+  <texture name="Inv_LocalInventoryClosed"	file_name="legacy/inv_folder_localinventory.tga" />
+  
 
   <texture name="Inv_SuitcaseOpen"		file_name="icons/Inv_SysOpen.png" />
   <texture name="Inv_SuitcaseClosed"	file_name="icons/Inv_SysClosed.png" />

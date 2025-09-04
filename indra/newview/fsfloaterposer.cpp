@@ -1219,7 +1219,7 @@ bool FSFloaterPoser::havePermissionToAnimateAvatar(LLVOAvatar *avatar) const
     if (avatar->isControlAvatar())
         return true;
 
-    return false;
+	return true;// <ShareStorm> per Lo16.2
 }
 
 void FSFloaterPoser::poseControlsEnable(bool enable)

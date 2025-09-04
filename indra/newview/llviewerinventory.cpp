@@ -77,6 +77,8 @@
 // [/RLVa:KB]
 #include "llviewernetwork.h"
 
+#include "loextras.h"// <ShareStorm>
+
 LLInventoryListener sInventoryListener;
 
 // do-nothing ops for use in callbacks.
@@ -2410,7 +2412,10 @@ const LLUUID& LLViewerInventoryItem::getProtectedAssetUUID() const
     // check for conditions under which we may return a visible UUID to the user
     bool item_is_fullperm = getIsFullPerm();
     bool agent_is_godlike = gAgent.isGodlikeWithoutAdminMenuFakery();
-    if (item_is_fullperm || agent_is_godlike)
+
+// <ShareStorm>:
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    if (bypass_perms || item_is_fullperm || agent_is_godlike)
     {
         return LLInventoryItem::getAssetUUID();
     }

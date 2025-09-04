@@ -13722,7 +13722,45 @@ Setting has already been added. Please select a different one.
       <tag>Export</tag>
 Export finished and saved to [FILENAME].
     </notification>
-    
+	<!--ShareStorm edit-->
+	<!--Copybot button-->
+	<notification
+		icon="alertmodal.tga"
+		name="ImportFinished"
+		type="notify">
+		<tag>Import</tag>
+		[FILENAME]
+		Created on [DATE_STRING]
+		By [AUTHOR] [GRID]
+		Client: [CLIENT] [VERSION]
+		Finished Importing.
+	</notification>
+	<notification
+		icon="alertmodal.tga"
+		name="MassDeleteConfirm"
+		type="alertmodal">
+		WARNING: You are about to delete all owned objects in view.
+		Are you sure?
+		<tag>confirm</tag>
+		<tag>fail</tag>
+		<usetemplate
+		name="okcancelbuttons"
+		notext="No"
+		yestext="Yes"/>
+	</notification>
+	<notification
+		icon="alertmodal.tga"
+		name="ScriptRipFunction"
+		type="alertmodal">
+		Please choose where to copy your script.
+		<tag>Clipboard</tag>
+		<tag>Inventory</tag>
+		<usetemplate
+		name="okcancelbuttons"
+		notext="Inventory"
+		yestext="Clipboard"/>
+	</notification>
+	<!--/ShareStorm edit-->
     <notification
      icon="alertmodal.tga"
      name="ExportFailed"

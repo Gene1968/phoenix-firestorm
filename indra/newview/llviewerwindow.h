@@ -489,8 +489,15 @@ private:
     S32             getChatConsoleBottomPad(); // Vertical padding for child console rect, varied by bottom clutter
     LLRect          getChatConsoleRect(); // Get optimal cosole rect.
 
+
+// <ShareStorm> for LLObjectParticle
+public:
+	LLWindow*		mWindow;						// graphical window object
+
 private:
-    LLWindow*       mWindow;                        // graphical window object
+// </ShareStorm>
+
+
     bool            mActive;
     bool            mUIVisible;
 

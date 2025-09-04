@@ -13,7 +13,7 @@ if (WINDOWS)
             optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libexpat.lib)
 else ()
     target_link_libraries( ll::expat  INTERFACE
-            debug ${ARCH_PREBUILT_DIRS_DEBUG}/libexpat.a
+			debug ${ARCH_PREBUILT_DIRS_RELEASE}/libexpat.a// <ShareStorm> per Lo16.2 (?)
             optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libexpat.a)
 endif ()
 target_include_directories( ll::expat SYSTEM INTERFACE ${LIBS_PREBUILT_DIR}/include )

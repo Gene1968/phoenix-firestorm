@@ -156,6 +156,10 @@
                     function="Tools.LookAtSelection"
                     parameter="zoom" />
             </pie_slice>
+		<!-- ShareStorm ? -->
+		<pie_slice enabled="true" label="Export" name="Object Export">
+			<pie_slice.on_click function="Object.Export" />
+		</pie_slice>
             <pie_slice
                 enabled="true"
                 label="Tex Refresh"
@@ -210,6 +214,13 @@
 				<pie_separator/>
 				<pie_separator/>
 				<pie_separator/>
+		<!-- ShareStorm edit -->
+		<pie_separator />
+		<pie_slice label="Xml" name="Export...">
+			<pie_slice.on_click function="Object.SaveAs" />
+			<pie_slice.on_enable function="Object.EnableExport" />
+		</pie_slice>
+		<!-- end ShareStorm edit -->
 				<pie_slice
 					label="Dump XML"
 					name="Dump XML">
@@ -248,7 +259,38 @@
 				</pie_slice>
 			</pie_menu>
         </pie_menu>
-
+	<!-- ShareStorm edit -->
+	<pie_menu label="ShareStorm Menu>" name="ShareStorm More">
+		<pie_slice label="Xml" name="Export...">
+			<pie_slice.on_click function="Object.SaveAs" />
+			<pie_slice.on_enable function="Object.EnableExport" />
+		</pie_slice>
+		<pie_slice label="Particle RIP" name="Particles">
+			<pie_slice.on_click function="Object.RipParticles" />
+		</pie_slice>
+			<pie_slice label="Av Textures" name="Debug...">
+			<pie_slice.on_click function="Avatar.Debug" />
+		</pie_slice>
+			<pie_slice label="Av Anims" name="hsAnims">
+			<pie_slice.on_click function="Avatar.Anims" />
+		</pie_slice>
+			<pie_slice  label=" HS Textures" name="hsTextures">
+			<pie_slice.on_click function="Avatar.TexInspect" />
+		</pie_slice>
+			<pie_slice  label="OXP Backup" name="Backup">
+			<pie_slice.on_click	function="Object.Export" />
+			<pie_slice.on_enable function="Object.EnableExport" />
+		</pie_slice>
+		<pie_slice label="Collada" name="Collada Export">
+			<pie_slice.on_click function="Object.ExportCollada" />
+			<pie_slice.on_enable function="Object.EnableExport" />
+		</pie_slice>
+		<pie_slice label="Inspect" name="Avatar Inspect">
+			<pie_slice.on_click function="Floater.Show" parameter="inspect" />
+			<pie_slice.on_enable function="Object.EnableInspect" />
+		</pie_slice>
+	</pie_menu>
+	<!-- end ShareStorm edit -->
         <pie_slice
             label="Inspect"
             name="Avatar Inspect">
