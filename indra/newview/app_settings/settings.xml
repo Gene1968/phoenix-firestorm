@@ -24476,7 +24476,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>FSUseBuiltInHistory</key>
     <map>
@@ -27496,6 +27496,17 @@ Change of this parameter will affect the layout of buttons in notification toast
     <map>
       <key>Comment</key>
       <string>When enabled, uses the Active Opacity value when IM window is focused</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>FSDisableNeighbourRegionConnections</key>
+    <map>
+      <key>Comment</key>
+      <string>Do not connect to neighbouring regions, only to the current region (limits region crossing) - experimental</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
