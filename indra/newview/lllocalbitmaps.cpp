@@ -196,7 +196,7 @@ bool LLLocalBitmap::updateSelf(EUpdateType optional_firstupdate)
 #ifndef LL_WINDOWS
             const std::time_t temp_time = boost::filesystem::last_write_time(boost::filesystem::path(mFilename));
 #else
-            const std::time_t temp_time = boost::filesystem::last_write_time(boost::filesystem::path(utf8str_to_utf16str(mFilename)));
+            const std::time_t temp_time = boost::filesystem::last_write_time(boost::filesystem::path(ll_convert<std::wstring>(mFilename)));
 #endif
             LLSD new_last_modified = asctime(localtime(&temp_time));
 
@@ -219,7 +219,10 @@ bool LLLocalBitmap::updateSelf(EUpdateType optional_firstupdate)
                     LLPointer<LLViewerFetchedTexture> texture = new LLViewerFetchedTexture
                         ("file://"+mFilename, FTT_LOCAL_FILE, mWorldID, LL_LOCAL_USE_MIPMAPS);
 
-                    texture->createGLTexture(LL_LOCAL_DISCARD_LEVEL, raw_image);
+                    if (!texture->createGLTexture(LL_LOCAL_DISCARD_LEVEL, raw_image))
+                    {
+                        LL_WARNS() << "Failed to create GL texture for local bitmap: " << mFilename << " " << mWorldID << LL_ENDL;
+                    }
                     texture->ref();
 
                     gTextureList.addImage(texture, TEX_LIST_STANDARD);

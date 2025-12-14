@@ -69,6 +69,7 @@ private:
 };
 
 class LLViewerMediaImpl;
+class LLMediaCtrl;
 
 class LLViewerMedia: public LLSingleton<LLViewerMedia>
 {
@@ -162,22 +163,26 @@ public:
 
     LLSD getHeaders();
     LLCore::HttpHeaders::ptr_t getHttpHeaders();
+    bool getOpenIDCookie(LLMediaCtrl* media_instance) const;
 
 private:
     void onAuthSubmit(const LLSD& notification, const LLSD& response);
-    bool parseRawCookie(const std::string raw_cookie, std::string& name, std::string& value, std::string& path, bool& httponly, bool& secure);
+    static bool parseRawCookie(const std::string raw_cookie, std::string& name, std::string& value, std::string& path, bool& httponly, bool& secure);
     void setOpenIDCookie(const std::string& url);
     void onTeleportFinished();
 
     static void openIDSetupCoro(std::string openidUrl, std::string openidToken);
     static void getOpenIDCookieCoro(std::string url);
+    void setMaxInstances(S32 max_instances);
 
     bool mAnyMediaShowing;
     bool mAnyMediaPlaying;
+    S32 mMaxIntances = 8;
     LLURL mOpenIDURL;
     std::string mOpenIDCookie;
     LLPluginClassMedia* mSpareBrowserMediaSource;
     boost::signals2::connection mTeleportFinishConnection;
+    boost::signals2::connection mMaxInstancesConnection;
 };
 
 // Implementation functions not exported into header file
@@ -341,6 +346,12 @@ public:
     /*virtual*/ void handleMediaEvent(LLPluginClassMedia* plugin, LLPluginClassMediaOwner::EMediaEvent);
 
     // LLEditMenuHandler overrides
+    /*virtual*/ void    undo();
+    /*virtual*/ bool    canUndo() const;
+
+    /*virtual*/ void    redo();
+    /*virtual*/ bool    canRedo() const;
+
     /*virtual*/ void    cut();
     /*virtual*/ bool    canCut() const;
 
@@ -349,6 +360,12 @@ public:
 
     /*virtual*/ void    paste();
     /*virtual*/ bool    canPaste() const;
+
+    /*virtual*/ void    doDelete();
+    /*virtual*/ bool    canDoDelete() const;
+
+    /*virtual*/ void    selectAll();
+    /*virtual*/ bool    canSelectAll() const;
 
     void addObject(LLVOVolume* obj) ;
     void removeObject(LLVOVolume* obj) ;

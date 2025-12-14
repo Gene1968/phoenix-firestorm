@@ -5676,13 +5676,6 @@ void set_god_level(U8 god_level)
 
     // changing god-level can affect which menus we see
     show_debug_menus();
-
-    // changing god-level can invalidate search results
-    LLFloaterSearch *search = dynamic_cast<LLFloaterSearch*>(LLFloaterReg::getInstance("search"));
-    if (search)
-    {
-        search->godLevelChanged(god_level);
-    }
 }
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
@@ -8266,8 +8259,8 @@ void handle_look_at_selection(const LLSD& param)
 }
 
 // <FS:Ansariel> Option to try via exact position
-//void handle_zoom_to_object(const LLUUID& object_id)
-void handle_zoom_to_object(const LLUUID& object_id, const LLVector3d& object_pos)
+//bool handle_zoom_to_object(const LLUUID& object_id)
+bool handle_zoom_to_object(const LLUUID& object_id, const std::optional<LLVector3d>& object_pos)
 // </FS:Ansariel> Option to try via exact position
 {
     // <FS:Zi> Fix camera zoom to look at the avatar's face from the front
@@ -8276,7 +8269,7 @@ void handle_zoom_to_object(const LLUUID& object_id, const LLVector3d& object_pos
 
     LLViewerObject* object = gObjectList.findObject(object_id);
 
-    if (object)
+    if (object && object->isReachable())
     {
         gAgentCamera.setFocusOnAvatar(false, ANIMATE);
 
@@ -8289,38 +8282,42 @@ void handle_zoom_to_object(const LLUUID& object_id, const LLVector3d& object_pos
         // obj_to_cam.normVec();
 
 
-        //  LLVector3d object_center_global = gAgent.getPosGlobalFromAgent(bbox.getCenterAgent());
+        // LLVector3d object_center_global = gAgent.getPosGlobalFromAgent(bbox.getCenterAgent());
 
-        //  gAgentCamera.setCameraPosAndFocusGlobal(object_center_global + LLVector3d(obj_to_cam * distance),
+        // gAgentCamera.setCameraPosAndFocusGlobal(object_center_global + LLVector3d(obj_to_cam * distance),
         //                                  object_center_global,
+        //                                  object_id );
 
-        LLVector3d object_center_global=object->getPositionGlobal();
+        LLVector3d object_center_global = object->getPositionGlobal();
 
-        float eye_distance=gSavedSettings.getF32("CameraZoomDistance");
-        float eye_z_offset=gSavedSettings.getF32("CameraZoomEyeZOffset");
-        LLVector3d focus_z_offset=LLVector3d(0.0f,0.0f,gSavedSettings.getF32("CameraZoomFocusZOffset"));
+        float      eye_distance   = gSavedSettings.getF32("CameraZoomDistance");
+        float      eye_z_offset   = gSavedSettings.getF32("CameraZoomEyeZOffset");
+        LLVector3d focus_z_offset = LLVector3d(0.0f, 0.0f, gSavedSettings.getF32("CameraZoomFocusZOffset"));
 
-        LLVector3d eye_offset(eye_distance,0.0f,eye_z_offset);
-        eye_offset=eye_offset*object->getRotationRegion();
+        LLVector3d eye_offset(eye_distance, 0.0f, eye_z_offset);
+        eye_offset = eye_offset * object->getRotationRegion();
 
-        gAgentCamera.setCameraPosAndFocusGlobal(object_center_global+eye_offset,
-                                        object_center_global+focus_z_offset,
+        gAgentCamera.setCameraPosAndFocusGlobal(object_center_global + eye_offset, object_center_global + focus_z_offset, object_id);
         // </FS:Zi>
-                                            object_id );
+
+        return true;
     }
     // <FS:Ansariel> Option to try via exact position
-    else if (object_pos != LLVector3d(-1.f, -1.f, -1.f))
+    else if (object_pos.has_value())
     {
-        LLVector3d obj_to_cam = object_pos - gAgent.getPositionGlobal();
+        LLVector3d obj_to_cam = object_pos.value() - gAgent.getPositionGlobal();
         obj_to_cam.normVec();
         obj_to_cam = obj_to_cam * -4.f;
         obj_to_cam.mdV[VZ] += 0.5;
 
         gAgentCamera.changeCameraToThirdPerson();
         gAgentCamera.unlockView();
-        gAgentCamera.setCameraPosAndFocusGlobal(object_pos + obj_to_cam, object_pos, object_id);
+        gAgentCamera.setCameraPosAndFocusGlobal(object_pos.value() + obj_to_cam, object_pos.value(), object_id);
+
+        return true;
     }
     // </FS:Ansariel> Option to try via exact position
+    return false;
 }
 
 class LLAvatarInviteToGroup : public view_listener_t
@@ -8734,6 +8731,13 @@ void handle_edit_shape()
 {
     LLFloaterSidePanelContainer::showPanel("appearance", LLSD().with("type", "edit_shape"));
 }
+
+// <FS:Zi> Omnifilter support
+void handle_omnifilter()
+{
+    LLFloaterReg::showInstance("omnifilter");
+}
+// </FS:Zi>
 
 void handle_hover_height()
 {
@@ -12823,6 +12827,7 @@ void initialize_menus()
     commit.add("NowWearing", boost::bind(&handle_now_wearing));
     commit.add("EditOutfit", boost::bind(&handle_edit_outfit));
     commit.add("EditShape", boost::bind(&handle_edit_shape));
+    commit.add("Omnifilter", boost::bind(&handle_omnifilter));      // <FS:Zi> Omnifilter support
     commit.add("HoverHeight", boost::bind(&handle_hover_height));
     commit.add("EditPhysics", boost::bind(&handle_edit_physics));
     // <FS:TT> Client LSL Bridge
@@ -13183,9 +13188,6 @@ void initialize_menus()
     // Develop (Fonts debugging)
     commit.add("Develop.Fonts.Dump", boost::bind(&LLFontGL::dumpFonts));
     commit.add("Develop.Fonts.DumpTextures", boost::bind(&LLFontGL::dumpFontTextures));
-    
-    //Develop (dump data)
-    commit.add("Develop.TextureList.Dump", boost::bind(&LLViewerTextureList::dumpTexturelist));
 
     // <FS:Beq/> Add telemetry controls to the viewer Develop menu (Toggle profiling)
     view_listener_t::addMenu(new FSProfilerToggle(), "Develop.ToggleProfiling");

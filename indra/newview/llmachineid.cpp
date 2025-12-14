@@ -296,7 +296,7 @@ bool LLWMIMethods::getGenericSerialNumber(const BSTR &select, const LPCWSTR &var
         if (validate_as_uuid)
         {
             std::wstring ws(serialNumber, serial_size);
-            std::string str = ll_convert_wide_to_string(ws);
+            std::string str = ll_convert<std::string>(ws);
 
             if (!LLUUID::validate(str))
             {
@@ -318,7 +318,7 @@ bool LLWMIMethods::getGenericSerialNumber(const BSTR &select, const LPCWSTR &var
                 continue;
             }
         }
-        LL_INFOS("AppInit") << " Serial Number : " << vtProp.bstrVal << LL_ENDL;
+        LL_INFOS("AppInit") << " Serial Number : " << ll_convert_wide_to_string(std::wstring(vtProp.bstrVal, SysStringLen(vtProp.bstrVal))) << LL_ENDL;
 
         unsigned int j = 0;
 

@@ -797,7 +797,7 @@ void LLModelPreview::rebuildUploadData()
         for (U32 model_ind = 0; model_ind < mModel[lod].size(); ++model_ind)
         {
             bool found_model = false;
-            for (LLMeshUploadThread::instance_list::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
+            for (LLMeshUploadThread::instance_list_t::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
             {
                 LLModelInstance& instance = *iter;
                 if (instance.mLOD[lod] == mModel[lod][model_ind])
@@ -3069,7 +3069,7 @@ void LLModelPreview::updateStatusMessages()
         total_submeshes[i] = 0;
     }
 
-    for (LLMeshUploadThread::instance_list::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
+    for (LLMeshUploadThread::instance_list_t::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
     {
         LLModelInstance& instance = *iter;
 
@@ -3387,7 +3387,7 @@ void LLModelPreview::updateStatusMessages()
     //        physStatusIcon->setImage(img);
     //    }
     //}
-#ifndef HAVOK_TPV
+#if !LL_HAVOK
     has_physics_error |= PhysicsError::NOHAVOK;
 #endif
 
@@ -3627,7 +3627,16 @@ void LLModelPreview::updateStatusMessages()
         //enable = enable && !use_hull && fmp->childGetValue("physics_optimize").asBoolean();
 
         //enable/disable "analysis" UI
-        LLPanel* panel = fmp->getChild<LLPanel>("physics analysis");
+#if LL_HAVOK
+        LLPanel* panel = fmp->getChild<LLPanel>("physics simplification");
+        panel->setVisible(true);
+
+        panel = fmp->getChild<LLPanel>("physics analysis havok");
+        panel->setVisible(true);
+#else
+        LLPanel* panel = fmp->getChild<LLPanel>("physics analysis vhacd");
+        panel->setVisible(true);
+#endif
         LLView* child = panel->getFirstChild();
         while (child)
         {
@@ -3651,6 +3660,8 @@ void LLModelPreview::updateStatusMessages()
             fmp->childSetVisible("simplify_cancel", false);
             fmp->childSetVisible("Decompose", true);
             fmp->childSetVisible("decompose_cancel", false);
+            fmp->childSetVisible("Analyze", true);
+            fmp->childSetVisible("analyze_cancel", false);
 
             if (phys_hulls > 0)
             {
@@ -3660,6 +3671,7 @@ void LLModelPreview::updateStatusMessages()
             if (phys_tris || phys_hulls > 0)
             {
                 fmp->childEnable("Decompose");
+                fmp->childEnable("Analyze");
             }
         }
         else
@@ -4609,7 +4621,7 @@ bool LLModelPreview::render()
 
         if (!show_skin_weight)
         {
-            for (LLMeshUploadThread::instance_list::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
+            for (LLMeshUploadThread::instance_list_t::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
             {
                 LLModelInstance& instance = *iter;
 
@@ -4709,7 +4721,7 @@ bool LLModelPreview::render()
 
                     gGL.blendFunc(LLRender::BF_SOURCE_ALPHA, LLRender::BF_ONE_MINUS_SOURCE_ALPHA);
 
-                    for (LLMeshUploadThread::instance_list::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
+                    for (LLMeshUploadThread::instance_list_t::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
                     {
                         LLModelInstance& instance = *iter;
 
@@ -4840,7 +4852,7 @@ bool LLModelPreview::render()
                         // gGL.diffuseColor4f(1.f, 0.f, 0.f, 1.f); // <FS:Beq/> restore proper functionality
                         const LLVector4a scale(0.5f);
 
-                        for (LLMeshUploadThread::instance_list::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
+                        for (LLMeshUploadThread::instance_list_t::iterator iter = mUploadData.begin(); iter != mUploadData.end(); ++iter)
                         {
                             LLModelInstance& instance = *iter;
 

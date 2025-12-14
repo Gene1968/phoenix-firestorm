@@ -10,6 +10,7 @@
 		<menu_item_check label="裝扮收藏夾" name="WearableFavorites" />
 		<menu_item_call label="精選" name="Picks" />
 		<menu_item_call label="體驗" name="Experiences" />
+		<menu_item_call label="全方位過濾器" name="Omnifilter" />
 		<menu_item_call label="檔案" name="Profile" />
 		<menu_item_call label="當前裝扮" name="NowWearing" />
 		<menu_item_check label="更換裝扮" name="ChangeOutfit" />
@@ -630,7 +631,7 @@
 			</menu>
 			<menu_item_call label="強制參數為預設值" name="Force Params to Default" />
 			<menu_item_check label="動畫資訊" name="Animation Info" />
-			<menu_item_check label="顯示注視點" name="Show Look At" />
+			<menu_item_check label="顯示注視目標" name="Show Look At" />
 			<menu_item_check label="顯示目標選擇指示" name="Show Point At" />
 			<menu_item_check label="旋軸的更新除錯" name="Debug Joint Updates" />
 			<menu_item_check label="停用細節層次" name="Disable LOD" />
@@ -664,9 +665,6 @@
 		<menu_item_call label="要求管理員狀態" name="Request Admin Options" />
 		<menu_item_call label="離開管理員狀態" name="Leave Admin Options" />
 		<menu_item_check label="顯示管理員選項" name="View Admin Options" />
-		<menu label="轉儲" name="Dump">
-			<menu_item_call label="林登檢視器紋理清單" name="LLViewerTexturelist"/>
-		</menu>
 	</menu>
 	<menu label="管理員" name="Admin">
 		<menu label="物件" name="AdminObject">

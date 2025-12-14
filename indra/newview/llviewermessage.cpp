@@ -152,6 +152,7 @@
 #include "llfloaterbump.h"
 #include "llfloaterreg.h"
 #include "llfriendcard.h"
+#include "omnifilterengine.h"       // <FS:Zi> Omnifilter support
 #include "permissionstracker.h"     // <FS:Zi> Permissions Tracker
 #include "tea.h" // <FS:AW opensim currency support>
 #include "NACLantispam.h"
@@ -3251,6 +3252,73 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
             chat.mText += mesg;
         }
 
+        // <FS:Zi> Omnifilter support
+        static LLCachedControl<bool> use_omnifilter(gSavedSettings, "OmnifilterEnabled");
+        if (use_omnifilter)
+        {
+            OmnifilterEngine::Haystack haystack;
+            haystack.mContent = chat.mText;
+            haystack.mSenderName = from_name;   // we don't use chat.mFromName here because that will include display names etc.
+            haystack.mOwnerID = chat.mFromID;
+
+            switch (chat.mChatType)
+            {
+            case CHAT_TYPE_WHISPER:
+            case CHAT_TYPE_NORMAL:
+            case CHAT_TYPE_SHOUT:
+            case CHAT_TYPE_DEBUG_MSG:
+            case CHAT_TYPE_REGION:
+            case CHAT_TYPE_OWNER:
+            case CHAT_TYPE_DIRECT:
+            {
+                switch (chat.mSourceType)
+                {
+                case CHAT_SOURCE_AGENT:        // this is the type for regular chat
+                {
+                    haystack.mType = OmnifilterEngine::eType::NearbyChat;
+                    break;
+                }
+                case CHAT_SOURCE_OBJECT:       // this is the type for object chat
+                {
+                    haystack.mType = OmnifilterEngine::eType::ObjectChat;
+                    break;
+                }
+                default:
+                {
+                    LL_DEBUGS("Omnifilter") << "unhandled source type " << (U32)chat.mSourceType << LL_ENDL;
+                    break;
+                }
+                }
+                const OmnifilterEngine::Needle* needle = OmnifilterEngine::getInstance()->match(haystack);
+
+                if (needle)
+                {
+                    // we need to make sure to put the typing stopped flag on the chatting avatar (if it is an avatar)
+                    if (chatter && chatter->isAvatar())
+                    {
+                        LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, false);
+                        ((LLVOAvatar*)chatter)->stopTyping();
+                    }
+
+                    if (needle->mChatReplace.empty())
+                    {
+                        return;
+                    }
+
+                    chat.mText = needle->mChatReplace;
+                }
+
+                break;
+            }
+            default:
+            {
+                LL_DEBUGS("Omnifilter") << "unhandled chat type " << (U32)chat.mChatType << LL_ENDL;
+                break;
+            }
+            }
+        }
+        // </FS:Zi>
+
         // We have a real utterance now, so can stop showing "..." and proceed.
         if (chatter && chatter->isAvatar())
         {
@@ -4029,13 +4097,16 @@ void process_crossed_region(LLMessageSystem* msg, void**)
         return;
     }
     LL_INFOS("Messaging") << "process_crossed_region()" << LL_ENDL;
-    gAgentAvatarp->resetRegionCrossingTimer();
-    // <FS:Ansariel> FIRE-12004: Attachments getting lost on TP; this is apparently the place to
-    //               hook in for region crossings - we get an info from the simulator that we
-    //               crossed a region and then the viewer starts the handover process. We only
-    //               receive this message if we can actually cross the region and aren't blocked
-    //               for some reason (e.g. banned, group access...)
-    gAgentAvatarp->setIsCrossingRegion(true);
+    if (isAgentAvatarValid())
+    {
+        gAgentAvatarp->resetRegionCrossingTimer();
+        // <FS:Ansariel> FIRE-12004: Attachments getting lost on TP; this is apparently the place to
+        //               hook in for region crossings - we get an info from the simulator that we
+        //               crossed a region and then the viewer starts the handover process. We only
+        //               receive this message if we can actually cross the region and aren't blocked
+        //               for some reason (e.g. banned, group access...)
+        gAgentAvatarp->setIsCrossingRegion(true);
+    }
 
     U32 sim_ip;
     msg->getIPAddrFast(_PREHASH_RegionData, _PREHASH_SimIP, sim_ip);
@@ -4284,6 +4355,14 @@ void send_agent_update(bool force_send, bool send_reliable)
     msg->addVector3Fast(_PREHASH_CameraUpAxis, LLViewerCamera::getInstance()->getUpAxis());
 
     static F32 last_draw_disatance_step = 1024;
+    F32 memory_limited_draw_distance = gAgentCamera.mDrawDistance;
+
+    if (LLViewerTexture::isSystemMemoryCritical())
+    {
+        // If we are low on memory, reduce requested draw distance
+        memory_limited_draw_distance = llmax(gAgentCamera.mDrawDistance / LLViewerTexture::getSystemMemoryBudgetFactor(), gAgentCamera.mDrawDistance / 2.f);
+    }
+
     if (tp_state == LLAgent::TELEPORT_ARRIVING || LLStartUp::getStartupState() < STATE_MISC)
     {
         // Inform interest list, prioritize closer area.
@@ -4292,25 +4371,25 @@ void send_agent_update(bool force_send, bool send_reliable)
         // closer ones.
         // Todo: revise and remove once server gets distance sorting.
         last_draw_disatance_step = llmax((F32)(gAgentCamera.mDrawDistance / 2.f), 50.f);
+        last_draw_disatance_step = llmin(last_draw_disatance_step, memory_limited_draw_distance);
         msg->addF32Fast(_PREHASH_Far, last_draw_disatance_step);
     }
-    else if (last_draw_disatance_step < gAgentCamera.mDrawDistance)
+    else if (last_draw_disatance_step < memory_limited_draw_distance)
     {
         static LLFrameTimer last_step_time;
         if (last_step_time.getElapsedTimeF32() > 1.f)
         {
             // gradually increase draw distance
-            // Idealy this should be not per second, but based on how loaded
-            // mesh thread is, but hopefully this is temporary.
             last_step_time.reset();
-            F32 step = gAgentCamera.mDrawDistance * 0.1f;
-            last_draw_disatance_step = llmin(last_draw_disatance_step + step, gAgentCamera.mDrawDistance);
+            F32 step = memory_limited_draw_distance * 0.1f;
+            last_draw_disatance_step = llmin(last_draw_disatance_step + step, memory_limited_draw_distance);
         }
         msg->addF32Fast(_PREHASH_Far, last_draw_disatance_step);
     }
     else
     {
-        msg->addF32Fast(_PREHASH_Far, gAgentCamera.mDrawDistance);
+        last_draw_disatance_step = memory_limited_draw_distance;
+        msg->addF32Fast(_PREHASH_Far, memory_limited_draw_distance);
     }
 
     msg->addU32Fast(_PREHASH_ControlFlags, control_flags);
@@ -4889,7 +4968,7 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
     msg->getUUIDFast(_PREHASH_DataBlock, _PREHASH_OwnerID, owner_id);
 
     // <FS:ND> Protect against corrupted sounds
-    if (gAudiop->isCorruptSound(sound_id))
+    if (gAudiop && gAudiop->isCorruptSound(sound_id))
         return;
     // </FS:ND>
 
@@ -4944,7 +5023,7 @@ void process_attached_sound(LLMessageSystem *msg, void **user_data)
     msg->getUUIDFast(_PREHASH_DataBlock, _PREHASH_OwnerID, owner_id);
 
     // <FS:ND> Protect against corrupted sounds
-    if (gAudiop->isCorruptSound(sound_id))
+    if (gAudiop && gAudiop->isCorruptSound(sound_id))
         return;
     // </FS:ND>
 
@@ -8273,6 +8352,7 @@ void process_script_dialog(LLMessageSystem* msg, void**)
     payload["object_id"] = object_id;
     payload["chat_channel"] = chat_channel;
     payload["object_name"] = object_name;
+    payload["owner_id"] = owner_id;    // <FS:Zi> Omnifilter support
 
     // <FS:Ansariel> FIRE-17158: Remove "block" button for script dialog of own objects
     bool own_object = false;

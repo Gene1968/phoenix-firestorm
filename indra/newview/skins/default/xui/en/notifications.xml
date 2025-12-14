@@ -1718,7 +1718,7 @@ Would you like to shutdown the viewer and launch it manually again in order to a
    icon="alertmodal.tga"
    name="ChangeLanguage"
    type="alertmodal">
-The selected language will be applied after restarting [APP_NAME].
+The selected language or time format will be applied after restarting [APP_NAME].
   </notification>
 
   <notification
@@ -2328,6 +2328,25 @@ Expected [VALIDS].
    type="alertmodal">
 Could not open uploaded sound file for reading:
 [FILE]
+  <tag>fail</tag>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="ModelUploaderMissingPhysicsApple"
+   type="alertmodal">
+Model upload is not yet available on Apple Silicon, but will be supported in an upcoming release.
+
+Workaround: Right-click the [APP_NAME] app in Finder, select
+&apos;Get Info&apos;, then check &apos;Open using Rosetta&apos;
+  <tag>fail</tag>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="ModelUploaderMissingPhysics"
+   type="alertmodal">
+Physics library is not present, some of the model uploader's functionality might not work or might not work correctly.
   <tag>fail</tag>
   </notification>
 
@@ -6860,6 +6879,22 @@ Do you want to replace it with the selected object?
    name="TooManyWearables"
    type="alertmodal">
     You can't wear a folder containing more than [AMOUNT] items.  You can change this limit in Advanced &gt; Show Debug Settings &gt; WearFolderLimit.
+    <tag>fail</tag>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="CantLinkNotecard"
+   type="alertmodal">
+    You must save the notecard before creating a link to it.
+    <tag>fail</tag>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="CantLinkMaterial"
+   type="alertmodal">
+    You must save the material before creating a link to it.
     <tag>fail</tag>
   </notification>
 
@@ -13471,6 +13506,17 @@ They can use http://opensimulator.org/wiki/inventory to fix the issues.
 
   <notification
    icon="alertmodal.tga"
+   name="PreferenceQualityWithLowMemory"
+   type="alert">
+Your system has [TOTAL_MEM]MB of memory, which might not be enough to run viewer at higher settings and might result in issues.
+      <usetemplate
+       name="okcancelbuttons"
+       notext="Cancel"
+       yestext="Continue"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="DefaultObjectPermissions"
    type="alert">
 	There was a problem saving the default object permissions: [REASON].  Please try setting the default permissions later.
@@ -14134,6 +14180,19 @@ the region &quot;[REGION]&quot;?
     Can't create another pick because the maximum number of picks have been created already.
     <usetemplate
      name="okbutton"
+     yestext="OK"/>
+  </notification>
+  <notification
+   icon="alertmodal.tga"
+   name="ConfirmGlobalOnlineStatusToggle"
+   type="alertmodal">
+Are you sure you want to change your online status visibility for all friends at once?
+
+Due to server load, this mass change can take a while to become effective and may cause temporary issues for some friends seeing your online status.
+    <tag>confirm</tag>
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
      yestext="OK"/>
   </notification>
   <notification
@@ -14803,6 +14862,18 @@ https://wiki.firestormviewer.org/antivirus_whitelisting
   </notification>
 
   <notification
+   icon="notifytip.tga"
+   name="FSLargeOutfitsWarningInThisSession"
+   type="alertmodal">
+    <unique/>
+    A large number of outfits were detected: [AMOUNT]. This may cause viewer hangs or disconnects. Consider reducing the number of outfits for better performance (below [MAX]). THIS IS ONLY A SUGGESTION - if your computer is functioning normally, you can safely ignore it.
+    <usetemplate
+     ignoretext="Outfit count warning"
+     name="okignore"
+     yestext="OK" />
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="PrimfeedLoginRequestFailed"
    persist="false"
@@ -14858,4 +14929,89 @@ You have already linked this account to Primfeed. Use the reset button if you wi
    type="alertmodal">
 Primfeed user login successful, but status checks have failed. Please check the Primfeed is working.
   </notification>
+<!-- <FS:Zi> generic error notifications for file system issues -->
+  <notification
+   icon="alertmodal.tga"
+   name="NotRegularFileError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+Expected to find a regular file at:
+[FILE_NAME]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="NotFolderError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+Expected to find a regular folder at:
+[FILE_NAME]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GenericFileEmptyError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+File exists but is empty:
+[FILE_NAME]
+
+Error message:
+[ERROR_MESSAGE] ([ERROR_CODE])
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GenericFileOpenReadError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+Could not open file for reading:
+[FILE_NAME]
+
+Error message:
+[ERROR_MESSAGE] ([ERROR_CODE])
+  </notification>
+  <notification
+   icon="alertmodal.tga"
+   name="GenericFileOpenWriteError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+Could not open file for writing:
+[FILE_NAME]
+
+Error message:
+[ERROR_MESSAGE] ([ERROR_CODE])
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GenericFileReadError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+Could not read from file:
+[FILE_NAME]
+
+Error message:
+[ERROR_MESSAGE] ([ERROR_CODE])
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GenericFileWriteError"
+   persist="false"
+   tag="fail"
+   type="alertmodal">
+Could not write to file:
+[FILE_NAME]
+
+Error message:
+[ERROR_MESSAGE] ([ERROR_CODE])
+  </notification>
+<!-- </FS:Zi> -->
 </notifications>

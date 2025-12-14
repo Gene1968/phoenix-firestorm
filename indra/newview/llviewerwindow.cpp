@@ -50,7 +50,6 @@
 #include "llviewerinput.h"
 #include "llviewermenu.h"
 //<FS:Beq> physics display changes
-#include "llspatialpartition.h"
 #include "llphysicsshapebuilderutil.h"
 #include "llvolumemgr.h"
 //</FS:Beq>
@@ -219,7 +218,6 @@
 #include "llviewerwindowlistener.h"
 #include "llcleanup.h"
 #include "llimview.h"
-#include "llviewermenufile.h"
 
 // [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.2.0c)
 #include "rlvactions.h"
@@ -294,9 +292,6 @@ static const F32 MIN_DISPLAY_SCALE = 0.75f;
 
 // <FS:Ansariel> FIRE-31852: Now it aggressively executes gestures within focussed floaters...
 //static const char KEY_MOUSELOOK = 'M';
-
-static LLCachedControl<std::string> sSnapshotBaseName(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseName", "Snapshot"));
-static LLCachedControl<std::string> sSnapshotDir(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseDir", ""));
 
 LLTrace::SampleStatHandle<> LLViewerWindow::sMouseVelocityStat("Mouse Velocity");
 
@@ -845,8 +840,16 @@ public:
             addText(xpos, ypos, "Projection Matrix");
             ypos += y_inc;
 
+#if LL_DARWIN
+// For sprintf deprecation
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
             // View last column is always <0,0,0,1>
             MATRIX_ROW_F32_TO_STR(gGLModelView, 12,camera_lines[3]); addText(xpos, ypos, std::string(camera_lines[3])); ypos += y_inc;
+#if LL_DARWIN
+#pragma clang diagnostic pop
+#endif
             MATRIX_ROW_N32_TO_STR(gGLModelView,  8,camera_lines[2]); addText(xpos, ypos, std::string(camera_lines[2])); ypos += y_inc;
             MATRIX_ROW_N32_TO_STR(gGLModelView,  4,camera_lines[1]); addText(xpos, ypos, std::string(camera_lines[1])); ypos += y_inc; mBackRectCamera2.mTop = ypos + 2;
             MATRIX_ROW_N32_TO_STR(gGLModelView,  0,camera_lines[0]); addText(xpos, ypos, std::string(camera_lines[0])); ypos += y_inc;
@@ -1566,16 +1569,41 @@ void LLViewerWindow::handleMouseLeave(LLWindow *window)
     LLToolTipMgr::instance().blockToolTips();
 }
 
-bool LLViewerWindow::handleCloseRequest(LLWindow *window)
+bool LLViewerWindow::handleCloseRequest(LLWindow *window, bool from_user)
 {
     if (!LLApp::isExiting() && !LLApp::isStopped())
     {
-        // User has indicated they want to close, but we may need to ask
-        // about modified documents.
-        LLAppViewer::instance()->userQuit();
-        // Don't quit immediately
+        if (from_user)
+        {
+            // User has indicated they want to close, but we may need to ask
+            // about modified documents.
+            LLAppViewer::instance()->userQuit();
+            // Don't quit immediately
+        }
+        else
+        {
+            // OS is asking us to quit, assume we have time and start cleanup
+            LLAppViewer::instance()->requestQuit();
+        }
     }
     return false;
+}
+
+bool LLViewerWindow::handleSessionExit(LLWindow* window)
+{
+    if (!LLApp::isExiting() && !LLApp::isStopped())
+    {
+        // Viewer received WM_ENDSESSION and app will be killed soon if it doesn't respond
+        LLAppViewer* app = LLAppViewer::instance();
+        app->sendSimpleLogoutRequest();
+        app->earlyExitNoNotify();
+
+        // Not viewer's fault, remove marker files so
+        // that statistics won't consider this to be a crash
+        app->removeMarkerFiles();
+        return false;
+    }
+    return true;
 }
 
 void LLViewerWindow::handleQuit(LLWindow *window)
@@ -2012,7 +2040,7 @@ LLViewerWindow::LLViewerWindow(const Params& p)
         p.ignore_pixel_depth,
         0,
         max_core_count,
-        max_gl_version, //don't use window level anti-aliasing
+        max_gl_version, //don't use window level anti-aliasing, windows only
         useLegacyCursors); // <FS:LO> Legacy cursor setting from main program
 
     if (NULL == mWindow)
@@ -2159,6 +2187,7 @@ LLViewerWindow::LLViewerWindow(const Params& p)
 
 std::string LLViewerWindow::getLastSnapshotDir()
 {
+    static LLCachedControl<std::string> sSnapshotDir(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseDir", ""));
     return sSnapshotDir;
 }
 
@@ -2504,79 +2533,23 @@ void LLViewerWindow::initWorldUI()
         gToolBarView->setVisible(true);
     }
 
-    if (!gNonInteractive)
+    // Don't preload cef instances on low end hardware
+    const F32Gigabytes MIN_PHYSICAL_MEMORY(8);
+    F32Gigabytes physical_mem = LLMemory::getMaxMemKB();
+    if (physical_mem <= 0)
     {
-        // <FS:AW  opensim destinations and avatar picker>
-        // LLMediaCtrl* destinations = LLFloaterReg::getInstance("destinations")->getChild<LLMediaCtrl>("destination_guide_contents");
-        // if (destinations)
-        // {
-        //  destinations->setErrorPageURL(gSavedSettings.getString("GenericErrorPageURL"));
-        //  std::string url = gSavedSettings.getString("DestinationGuideURL");
-        //  url = LLWeb::expandURLSubstitutions(url, LLSD());
-        //  destinations->navigateTo(url, "text/html");
-        // }
-        // LLMediaCtrl* avatar_welcome_pack = LLFloaterReg::getInstance("avatar_welcome_pack")->findChild<LLMediaCtrl>("avatar_picker_contents");
-        // if (avatar_welcome_pack)
-        // {
-        //  avatar_welcome_pack->setErrorPageURL(gSavedSettings.getString("GenericErrorPageURL"));
-        //  std::string url = gSavedSettings.getString("AvatarWelcomePack");
-        //  url = LLWeb::expandURLSubstitutions(url, LLSD());
-        //  avatar_welcome_pack->navigateTo(url, "text/html");
-        // }
-        std::string destination_guide_url;
-#ifdef OPENSIM // <FS:AW optional opensim support>
-        if (LLGridManager::getInstance()->isInOpenSim())
-        {
-            if (LLLoginInstance::getInstance()->hasResponse("destination_guide_url"))
-            {
-                destination_guide_url = LLLoginInstance::getInstance()->getResponse("destination_guide_url").asString();
-            }
-        }
-        else
-#endif // OPENSIM  // <FS:AW optional opensim support>
-        {
-            destination_guide_url = gSavedSettings.getString("DestinationGuideURL");
-        }
+        LLMemory::updateMemoryInfo();
+        physical_mem = LLMemory::getMaxMemKB();
+    }
 
-        if(!destination_guide_url.empty())
-        {
-            LLMediaCtrl* destinations = LLFloaterReg::getInstance("destinations")->getChild<LLMediaCtrl>("destination_guide_contents");
-            if (destinations)
-            {
-                destinations->setErrorPageURL(gSavedSettings.getString("GenericErrorPageURL"));
-                destination_guide_url = LLWeb::expandURLSubstitutions(destination_guide_url, LLSD());
-                LL_DEBUGS("WebApi") << "3 DestinationGuideURL \"" << destination_guide_url << "\"" << LL_ENDL;
-                destinations->navigateTo(destination_guide_url, HTTP_CONTENT_TEXT_HTML);
-            }
-        }
+    if (!gNonInteractive && physical_mem > MIN_PHYSICAL_MEMORY)
+    {
+        LL_INFOS() << "Preloading cef instances" << LL_ENDL;
 
-        std::string avatar_picker_url;
-#ifdef OPENSIM // <FS:AW optional opensim support>
-        if (LLGridManager::getInstance()->isInOpenSim())
-        {
-            if (LLLoginInstance::getInstance()->hasResponse("avatar_picker_url"))
-            {
-                avatar_picker_url = LLLoginInstance::getInstance()->getResponse("avatar_picker_url").asString();
-            }
-        }
-        else
-#endif // OPENSIM  // <FS:AW optional opensim support>
-        {
-            avatar_picker_url = gSavedSettings.getString("AvatarWelcomePack");
-        }
-
-        if(!avatar_picker_url.empty())
-        {
-            LLMediaCtrl* avatar_welcome_pack = LLFloaterReg::getInstance("avatar_welcome_pack")->findChild<LLMediaCtrl>("avatar_picker_contents");
-            if (avatar_welcome_pack)
-            {
-                avatar_welcome_pack->setErrorPageURL(gSavedSettings.getString("GenericErrorPageURL"));
-                avatar_picker_url = LLWeb::expandURLSubstitutions(avatar_picker_url, LLSD());
-                LL_DEBUGS("WebApi") << "AvatarPickerURL \"" << avatar_picker_url << "\"" << LL_ENDL;
-                avatar_welcome_pack->navigateTo(avatar_picker_url, HTTP_CONTENT_TEXT_HTML);
-            }
-        }
-        // </FS:AW  opensim destinations and avatar picker>
+        LLFloaterReg::getInstance("destinations");
+        LLFloaterReg::getInstance("avatar_welcome_pack");
+        LLFloaterReg::getInstance("search");
+        LLFloaterReg::getInstance("marketplace");
     }
 
     // <FS:Zi> Autohide main chat bar if applicable
@@ -3761,7 +3734,31 @@ void LLViewerWindow::clearPopups()
 
 void LLViewerWindow::moveCursorToCenter()
 {
-    if (! gSavedSettings.getBOOL("DisableMouseWarp"))
+    bool mouse_warp = false;
+    static LLCachedControl<S32> mouse_warp_mode(gSavedSettings, "MouseWarpMode", 1);
+
+    switch (mouse_warp_mode())
+    {
+    case 0:
+        // For Windows:
+        // Mouse usually uses 'delta' position since it isn't aware of own location, keep it centered.
+        // Touch screen reports absolute or virtual absolute position and warping a physical
+        // touch is pointless, so don't move it.
+        //
+        // MacOS
+        // If 'decoupled', CGAssociateMouseAndMouseCursorPosition can make mouse stay in
+        // one place and not move, do not move it (needs testing).
+        mouse_warp = mWindow->isWrapMouse();
+        break;
+    case 1:
+        mouse_warp = true;
+        break;
+    default:
+        mouse_warp = false;
+        break;
+    }
+
+    if (mouse_warp)
     {
         S32 x = getWorldViewWidthScaled() / 2;
         S32 y = getWorldViewHeightScaled() / 2;
@@ -5853,6 +5850,7 @@ void LLViewerWindow::saveImageNumbered(LLImageFormatted *image, bool force_picke
     // Get a base file location if needed.
     if (force_picker || !isSnapshotLocSet())
     {
+        static LLCachedControl<std::string> sSnapshotBaseName(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseName", "Snapshot"));
         std::string proposed_name(sSnapshotBaseName);
 
         // getSaveFile will append an appropriate extension to the proposed name, based on the ESaveFilter constant passed in.
@@ -5907,7 +5905,7 @@ void LLViewerWindow::saveImageLocal(LLImageFormatted *image, const snapshot_save
 
 // Check if there is enough free space to save snapshot
 #ifdef LL_WINDOWS
-    boost::filesystem::path b_path(utf8str_to_utf16str(lastSnapshotDir));
+    boost::filesystem::path b_path(ll_convert<std::wstring>(lastSnapshotDir));
 #else
     boost::filesystem::path b_path(lastSnapshotDir);
 #endif
@@ -5950,6 +5948,9 @@ void LLViewerWindow::saveImageLocal(LLImageFormatted *image, const snapshot_save
 
         // Shouldn't there be a return here?
     }
+
+    static LLCachedControl<std::string> sSnapshotBaseName(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseName", "Snapshot"));
+    static LLCachedControl<std::string> sSnapshotDir(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseDir", ""));
 
     // Look for an unused file name
     auto is_snapshot_name_loc_set = isSnapshotLocSet();
@@ -6087,8 +6088,8 @@ void LLViewerWindow::playSnapshotAnimAndSound()
 
 bool LLViewerWindow::isSnapshotLocSet() const
 {
-    std::string snapshot_dir = sSnapshotDir;
-    return !snapshot_dir.empty();
+    static LLCachedControl<std::string> sSnapshotDir(LLCachedControl<std::string>(gSavedPerAccountSettings, "SnapshotBaseDir", ""));
+    return !sSnapshotDir().empty();
 }
 
 void LLViewerWindow::resetSnapshotLoc() const

@@ -207,6 +207,7 @@ LLTextBase::LLTextBase(const LLTextBase::Params &p)
     mURLClickSignal(NULL),
     mIsFriendSignal(NULL),
     mIsObjectBlockedSignal(NULL),
+    mIsObjectReachableSignal(NULL),
     mMaxTextByteLength( p.max_text_length ),
     mFont(p.font),
     mFontShadow(p.font_shadow),
@@ -320,6 +321,7 @@ LLTextBase::~LLTextBase()
     delete mURLClickSignal;
     delete mIsFriendSignal;
     delete mIsObjectBlockedSignal;
+    delete mIsObjectReachableSignal;
 }
 
 void LLTextBase::initFromParams(const LLTextBase::Params& p)
@@ -1182,8 +1184,37 @@ S32 LLTextBase::insertStringNoUndo(S32 pos, const LLWString &wstr, LLTextBase::s
         static LLUICachedControl<bool> useBWEmojis("FSUseBWEmojis", false); // <FS:Beq/> Add B&W emoji font support
         LLStyleSP emoji_style;
         LLEmojiDictionary* ed = LLEmojiDictionary::instanceExists() ? LLEmojiDictionary::getInstance() : NULL;
+        LLTextSegment* segmentp = nullptr;
+        segment_vec_t::iterator seg_iter;
+        if (segments && segments->size() > 0)
+        {
+            seg_iter = segments->begin();
+            segmentp = *seg_iter;
+        }
         for (S32 text_kitty = 0, text_len = static_cast<S32>(wstr.size()); text_kitty < text_len; text_kitty++)
         {
+            if (segmentp)
+            {
+                if (segmentp->getEnd() <= pos + text_kitty)
+                {
+                    seg_iter++;
+                    if (seg_iter != segments->end())
+                    {
+                        segmentp = *seg_iter;
+                    }
+                    else
+                    {
+                        segmentp = nullptr;
+                    }
+                }
+                if (segmentp && !segmentp->getPermitsEmoji())
+                {
+                    // Some segments, like LLInlineViewSegment do not permit splitting
+                    // and should not be interrupted by emoji segments
+                    continue;
+                }
+            }
+
             llwchar code = wstr[text_kitty];
             bool isEmoji = ed ? ed->isEmoji(code) : LLStringOps::isEmoji(code);
             if (isEmoji)
@@ -1592,6 +1623,8 @@ void LLTextBase::reshape(S32 width, S32 height, bool called_from_parent)
         // up-to-date mVisibleTextRect
         updateRects();
 
+        // Todo: This might be wrong. updateRects already sets needsReflow conditionaly.
+        // Reflow is expensive and doing it at any twith can be too much.
         needsReflow();
     }
 }
@@ -2414,6 +2447,7 @@ void LLTextBase::createUrlContextMenu(S32 x, S32 y, const std::string &in_url)
     registrar.add("Url.RemoveFriend", boost::bind(&LLUrlAction::removeFriend, url));
     registrar.add("Url.ReportAbuse", boost::bind(&LLUrlAction::reportAbuse, url));
     registrar.add("Url.SendIM", boost::bind(&LLUrlAction::sendIM, url));
+    registrar.add("Url.ZoomInObject", boost::bind(&LLUrlAction::zoomInObject, url));
     registrar.add("Url.ShowOnMap", boost::bind(&LLUrlAction::showLocationOnMap, url));
     registrar.add("Url.ShowParcelOnMap", boost::bind(&LLUrlAction::showParcelOnMap, url));
     registrar.add("Url.CopyLabel", boost::bind(&LLUrlAction::copyLabelToClipboard, url));
@@ -2447,6 +2481,11 @@ void LLTextBase::createUrlContextMenu(S32 x, S32 y, const std::string &in_url)
     enable_registrar.add("FS.EnableBlockAvatar", std::bind(&FSRegistrarUtils::checkIsEnabled, gFSRegistrarUtils, target_id, EFSRegistrarFunctionActionType::FS_RGSTR_CHK_IS_NOT_SELF));
     enable_registrar.add("FS.EnableViewLog", std::bind(&FSRegistrarUtils::checkIsEnabled, gFSRegistrarUtils, target_id, EFSRegistrarFunctionActionType::FS_RGSTR_ACT_VIEW_TRANSCRIPT));
     // </FS:Ansariel>
+
+    // <FS:Zi> Add menu items to copy and/or insert mention URIs into chat
+    registrar.add("Mention.CopyURI", boost::bind(&LLUrlAction::copyURLToClipboard, "secondlife:///app/agent/" + target_id_str + "/mention"));
+    registrar.add("Mention.Chat", boost::bind(&LLTextBase::insertMentionAtCursor, this, "secondlife:///app/agent/" + target_id_str + "/mention"));
+    // </FS:Zi>
 
     // <FS:Zi> FIRE-30725 - Add more group functions to group URL context menu
     registrar.add("FS.JoinGroup", std::bind(&LLUrlAction::executeSLURL, "secondlife:///app/firestorm/" + target_id_str + "/groupjoin", true));
@@ -2509,12 +2548,29 @@ void LLTextBase::createUrlContextMenu(S32 x, S32 y, const std::string &in_url)
             }
         }
 
+        if (mIsObjectReachableSignal)
+        {
+            bool is_reachable = *(*mIsObjectReachableSignal)(LLUUID(LLUrlAction::getObjectId(url)));
+            if (LLView* zoom_btn = menu->getChild<LLView>("zoom_in"))
+            {
+                zoom_btn->setEnabled(is_reachable);
+            }
+        }
+
         // <FS:Zi> hide the moderation tools in the context menu unless we are in a group IM floater
         LLFloater* parent_floater = getParentByType<LLFloater>();
         if (!parent_floater || parent_floater->getName() != "panel_im")
         {
             menu->getChild<LLView>("GroupModerationSubmenu")->setVisible(false);
             menu->getChild<LLView>("GroupModerationSeparator")->setVisible(false);
+        }
+        // </FS:Zi>
+
+        // <FS:Zi> Add menu items to copy and/or insert mention URIs into chat
+        if (!parent_floater || (parent_floater->getName() != "panel_im" && parent_floater->getName() != "nearby_chat"))
+        {
+            menu->getChild<LLView>("MentionURISeparator")->setVisible(false);
+            menu->getChild<LLView>("mention_in_chat")->setVisible(false);
         }
         // </FS:Zi>
 
@@ -3739,6 +3795,15 @@ boost::signals2::connection LLTextBase::setIsObjectBlockedCallback(const is_bloc
     return mIsObjectBlockedSignal->connect(cb);
 }
 
+boost::signals2::connection LLTextBase::setIsObjectReachableCallback(const is_obj_reachable_signal_t::slot_type& cb)
+{
+    if (!mIsObjectReachableSignal)
+    {
+        mIsObjectReachableSignal = new is_obj_reachable_signal_t();
+    }
+    return mIsObjectReachableSignal->connect(cb);
+}
+
 //
 // LLTextSegment
 //
@@ -3778,6 +3843,7 @@ S32 LLTextSegment::getNumChars(S32 num_pixels, S32 segment_offset, S32 line_offs
 void LLTextSegment::updateLayout(const LLTextBase& editor) {}
 F32 LLTextSegment::draw(S32 start, S32 end, S32 selection_start, S32 selection_end, const LLRectf& draw_rect) { return draw_rect.mLeft; }
 bool LLTextSegment::canEdit() const { return false; }
+bool LLTextSegment::getPermitsEmoji() const { return true; }
 void LLTextSegment::unlinkFromDocument(LLTextBase*) {}
 void LLTextSegment::linkToDocument(LLTextBase*) {}
 const LLUIColor& LLTextSegment::getColor() const { static const LLUIColor white = LLUIColorTable::instance().getColor("White", LLColor4::white); return white; }
@@ -4117,7 +4183,7 @@ bool LLNormalTextSegment::getDimensionsF32(S32 first_char, S32 num_chars, F32& w
 {
     height = 0;
     width = 0;
-    if (num_chars > 0)
+    if (num_chars > 0 && (mStart + first_char >= 0))
     {
         height = mFontHeight;
         const LLWString &text = getWText();
@@ -4574,3 +4640,10 @@ void LLTextBase::setWordWrap(bool wrap)
 {
     mWordWrap = wrap;
 }
+
+// <FS:Zi> Add menu items to copy and/or insert mention URIs into chat
+// virtual
+void LLTextBase::insertMentionAtCursor(const std::string& str)
+{
+}
+// </FS:Zi>

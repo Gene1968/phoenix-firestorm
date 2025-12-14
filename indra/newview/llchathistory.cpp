@@ -203,7 +203,14 @@ public:
             std::string url = "secondlife://" + mObjectData["slurl"].asString();
             LLUrlAction::teleportToLocation(url);
         }
-
+        else if (level == "obj_zoom_in")
+        {
+            LLUUID obj_id = mObjectData["object_id"];
+            if (obj_id.notNull())
+            {
+                handle_zoom_to_object(obj_id);
+            }
+        }
     }
 
     bool onObjectIconContextMenuItemVisible(const LLSD& userdata)
@@ -216,6 +223,16 @@ public:
         else if (level == "not_blocked")
         {
             return !LLMuteList::getInstance()->isMuted(getAvatarId(), mFrom, LLMute::flagTextChat);
+        }
+        else if (level == "obj_zoom_in")
+        {
+            LLUUID obj_id = mObjectData["object_id"];
+            if (obj_id.notNull())
+            {
+                LLViewerObject* object = gObjectList.findObject(obj_id);
+                return object && object->isReachable();
+            }
+            return false;
         }
         return false;
     }
@@ -439,6 +456,7 @@ public:
                 time_t current_time = time_corrected();
                 time_t message_time = (time_t)(current_time - LLFrameTimer::getElapsedSeconds() + mTime);
 
+                // Report abuse shouldn't use AM/PM, use 24-hour time
                 time_string = "[" + LLTrans::getString("TimeMonth") + "]/["
                     + LLTrans::getString("TimeDay") + "]/["
                     + LLTrans::getString("TimeYear") + "] ["
@@ -1161,7 +1179,11 @@ LLChatHistory::LLChatHistory(const LLChatHistory::Params& p)
     mEditor = LLUICtrlFactory::create<LLTextEditor>(editor_params, this);
     mEditor->setIsFriendCallback(LLAvatarActions::isFriend);
     mEditor->setIsObjectBlockedCallback(boost::bind(&LLMuteList::isMuted, LLMuteList::getInstance(), _1, _2, 0));
-
+    mEditor->setIsObjectReachableCallback([](const LLUUID& obj_id)
+        {
+            LLViewerObject* object = gObjectList.findObject(obj_id);
+            return object && object->isReachable();
+        });
 }
 
 LLSD LLChatHistory::getValue() const

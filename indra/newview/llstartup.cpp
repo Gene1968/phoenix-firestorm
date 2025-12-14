@@ -61,6 +61,7 @@
 #include "lllocationhistory.h"
 #include "llgltfmateriallist.h"
 #include "llimageworker.h"
+#include "llregex.h"
 
 #include "llloginflags.h"
 #include "llmd5.h"
@@ -232,6 +233,7 @@
 #include "fscommon.h"
 #include "fscorehttputil.h"
 #include "fsdata.h"
+#include "fsfavoritegroups.h" // <FS:PP> Group favorites / pinning
 #include "fsfloatercontacts.h"
 #include "fsfloaterimcontainer.h"
 #include "fsfloaternearbychat.h"
@@ -252,6 +254,7 @@
 #include "llprogressview.h"
 #include "lltoolbarview.h"
 #include "NACLantispam.h"
+#include "omnifilterengine.h"       // <FS:Zi> Omnifilter support
 #include "streamtitledisplay.h"
 #include "tea.h"
 
@@ -398,13 +401,11 @@ void pump_idle_startup_network(void)
 {
     // while there are message to process:
     //     process one then call display_startup()
-    // S32 num_messages = 0; // <FS:Beq/> Avoid set-but-unused in Clang
     {
         LockMessageChecker lmc(gMessageSystem);
         while (lmc.checkAllMessages(gFrameCount, gServicePump))
         {
             display_startup();
-            // ++num_messages; // <FS:Beq/> Avoid set-but-unused in Clang
         }
         lmc.processAcks();
     }
@@ -654,6 +655,7 @@ bool idle_startup()
         LL_WARNS_ONCE() << "gViewerWindow is not initialized" << LL_ENDL;
         return false; // No world yet
     }
+    LL_PROFILE_ZONE_SCOPED;
 
     const F32 PRECACHING_DELAY = gSavedSettings.getF32("PrecachingDelay");
     static LLTimer timeout;
@@ -698,7 +700,26 @@ bool idle_startup()
     system = osString.substr (begIdx, endIdx - begIdx);
     system += "Locale";
 
-    LLStringUtil::setLocale (LLTrans::getString(system));
+    std::string locale = LLTrans::getString(system);
+    if (locale != LLStringUtil::getLocale()) // is there a reason to do this on repeat?
+    {
+        LLStringUtil::setLocale(locale);
+
+        // Not all locales have AMPM, test it
+        if (LLStringOps::sAM.empty()) // Might already be overriden from LLAppViewer::init()
+        {
+            LLDate datetime(0.0);
+            std::string val = datetime.toHTTPDateString("%p");
+            if (val.empty())
+            {
+                LL_DEBUGS("InitInfo") << "Current locale \"" << locale << "\" "
+                    << "doesn't support AM/PM time format" << LL_ENDL;
+                // fallback to declarations in strings.xml
+                LLStringOps::sAM = LLTrans::getString("dateTimeAM");
+                LLStringOps::sPM = LLTrans::getString("dateTimePM");
+            }
+        }
+    }
 
     //note: Removing this line will cause incorrect button size in the login screen. -- bao.
     gTextureList.updateImages(0.01f) ;
@@ -1063,6 +1084,8 @@ bool idle_startup()
 #if !LL_WINDOWS
             // if (NULL == getenv("LL_BAD_OPENAL_DRIVER"))
             if (!gAudiop && NULL == getenv("LL_BAD_OPENAL_DRIVER"))
+#else
+            if (!gAudiop)
 #endif // !LL_WINDOWS
             {
                 gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
@@ -1260,6 +1283,8 @@ bool idle_startup()
             init_menus();
         }
         show_release_notes_if_required();
+
+        OmnifilterEngine::getInstance()->init();    // <FS:Zi> Omnifilter support
 
         if (show_connect_box)
         {
@@ -3296,6 +3321,10 @@ bool idle_startup()
         // Clean up the userauth stuff.
         // LLUserAuth::getInstance()->reset();
 
+        // <FS:PP> Group favorites / pinning
+        FSFavoriteGroups::getInstance()->loadFavorites();
+        // </FS:PP>
+
         LLStartUp::setStartupState( STATE_STARTED );
         do_startup_frame();
 
@@ -3494,6 +3523,27 @@ void release_notes_coro(const std::string url)
     LLWeb::loadURLInternal(url);
 }
 
+void validate_release_notes_coro(const std::string url)
+{
+    LLVersionInfo& versionInfo(LLVersionInfo::instance());
+    const boost::regex version_regex(R"(\b\d+\.\d+\.\d+\.\d+\b)");
+
+    if (url.find(versionInfo.getVersion()) == std::string::npos // has no our build version
+        && ll_regex_search(url, version_regex)) // has any version
+    {
+        LL_INFOS() << "Received release notes url \"" << url << "\" wwith mismatching build, falling back to locally generated url" << LL_ENDL;
+        // Updater only provides notes for a most recent version, if it is not
+        // the current one, fall back to the hardcoded URL.
+        LLSD info(LLAppViewer::instance()->getViewerInfo());
+        std::string alt_url = info["VIEWER_RELEASE_NOTES_URL"].asString();
+        release_notes_coro(alt_url);
+    }
+    else
+    {
+        release_notes_coro(url);
+    }
+}
+
 /**
 * Check if user is running a new version of the viewer.
 * Display the Release Notes if it's not overriden by the "UpdaterShowReleaseNotes" setting.
@@ -3527,7 +3577,7 @@ void show_release_notes_if_required()
                 "showrelnotes",
                 [](const LLSD& url) {
                     LLCoros::instance().launch("releaseNotesCoro",
-                    boost::bind(&release_notes_coro, url.asString()));
+                    boost::bind(&validate_release_notes_coro, url.asString()));
                 return false;
             });
         }
@@ -4888,6 +4938,10 @@ bool process_login_success_response(U32 &first_sim_size_x, U32 &first_sim_size_y
         // <FS:TJ> [FIRE-34775] Use PST/PDT when logged into OpenSim
         LLStringOps::setupUsingPacificTime(!LLGridManager::getInstance()->isInSecondLife());
         // </FS:TJ>
+        // <FS:TJ> [FIRE-36028] Fix OpenSim object permissions
+        LLPermissions::setupIsInOpenSim(!LLGridManager::getInstance()->isInSecondLife());
+        // </FS:TJ>
+
     }
 
     // set up the voice configuration.  Ultimately, we should pass this up as part of each voice

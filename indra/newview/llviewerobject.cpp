@@ -4336,14 +4336,14 @@ void LLViewerObject::boostTexturePriority(bool boost_children /* = true */)
     S32 tex_count = getNumTEs();
     for (i = 0; i < tex_count; i++)
     {
-        // <FS:minerjr>
-        // This isused to fix the textures becoming blury when object interacted with by the user and unselected.
+        // <FS:minerjr> [FIRE-36016] - Re-added Store/Restore boost levels of selected objects
+        // This fixes textures becoming blury (Esepecially with Bias > 1.0f) after an object is selected and unselected.
         // If this is changing the boost level for the TEImage for the first time, store the boost level before modifying it.
         if (getTEImage(i)->getBoostLevel() != LLGLTexture::BOOST_SELECTED)
         {
             getTEImage(i)->storeBoostLevel();
         }
-        // </FS:minerjr>
+        // </FS:minerjr> [FIRE-36016]
         getTEImage(i)->setBoostLevel(LLGLTexture::BOOST_SELECTED);
     }
 
@@ -4352,19 +4352,23 @@ void LLViewerObject::boostTexturePriority(bool boost_children /* = true */)
         LLSculptParams *sculpt_params = (LLSculptParams *)getParameterEntry(LLNetworkData::PARAMS_SCULPT);
         if (sculpt_params)
         {
-	        LLUUID sculpt_id = sculpt_params->getSculptTexture();
-    	    // <FS:minerjr>        
-        	//LLViewerTextureManager::getFetchedTexture(sculpt_id, FTT_DEFAULT, true, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE)->setBoostLevel(LLGLTexture::BOOST_SELECTED);
-        	// This isused to fix the textures becoming blury when object interacted with by the user and unselected.
-        	// If this is changing the boost level for the sculpted for the first time, store the boost level before modifying it.
-        	LLViewerFetchedTexture* sculptedTexture = LLViewerTextureManager::getFetchedTexture(sculpt_id, FTT_DEFAULT, true, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE);
-        	if (sculptedTexture->getBoostLevel() != LLGLTexture::BOOST_SELECTED)
-        	{
-            	sculptedTexture->storeBoostLevel();
-        	}
-        	sculptedTexture->setBoostLevel(LLGLTexture::BOOST_SELECTED);
-        	// </FS:minerjr>
-		}
+            LLUUID sculpt_id = sculpt_params->getSculptTexture();
+            // <FS:minerjr> [FIRE-36016] - Re-added Store/Restore boost levels of selected objects
+            //LLViewerTextureManager::getFetchedTexture(sculpt_id, FTT_DEFAULT, true, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE)->setBoostLevel(LLGLTexture::BOOST_SELECTED);
+            // This fixes textures becoming blury (Esepecially with Bias > 1.0f) after an object is selected and unselected.
+            // If this is changing the boost level for the sculpted for the first time, store the boost level before modifying it.
+            LLViewerFetchedTexture* sculptedTexture = LLViewerTextureManager::getFetchedTexture(sculpt_id, FTT_DEFAULT, true, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE);
+            if (sculptedTexture)
+            {
+                // If the texture is already boost selected, don't store the boost level again. Otherwise, it will overwrite the saved boost level with itself.
+                if (sculptedTexture->getBoostLevel() != LLGLTexture::BOOST_SELECTED)
+                {
+                    sculptedTexture->storeBoostLevel();
+                }
+                sculptedTexture->setBoostLevel(LLGLTexture::BOOST_SELECTED);
+            }
+            // </FS:minerjr> [FIRE-36016]
+        }
     }
 
     if (boost_children)
@@ -5277,11 +5281,10 @@ void LLViewerObject::setNumTEs(const U8 num_tes)
                     if (base_material && override_material)
                     {
                         tep->setGLTFMaterialOverride(new LLGLTFMaterial(*override_material));
-
-                        LLGLTFMaterial* render_material = new LLFetchedGLTFMaterial();
-                        *render_material = *base_material;
-                        render_material->applyOverride(*override_material);
-                        tep->setGLTFRenderMaterial(render_material);
+                    }
+                    if (base_material)
+                    {
+                        initRenderMaterial(i);
                     }
                 }
             }
@@ -5467,6 +5470,9 @@ void LLViewerObject::updateTEMaterialTextures(U8 te)
                 });
         }
         getTE(te)->setGLTFMaterial(mat);
+        initRenderMaterial(te);
+        mat = (LLFetchedGLTFMaterial*) getTE(te)->getGLTFRenderMaterial();
+        llassert(mat == nullptr || dynamic_cast<LLFetchedGLTFMaterial*>(getTE(te)->getGLTFRenderMaterial()) != nullptr);
     }
     else if (mat_id.isNull() && mat != nullptr)
     {
@@ -5856,6 +5862,42 @@ S32 LLViewerObject::setTEMaterialParams(const U8 te, const LLMaterialPtr pMateri
     return retval;
 }
 
+// Set render material if there are overrides or if the base material is has a
+// baked texture. Otherwise, set it to null.
+// If you are setting the material override and not sending an update message,
+// you should probably call this function.
+S32 LLViewerObject::initRenderMaterial(U8 te)
+{
+    LL_PROFILE_ZONE_SCOPED;
+
+    LLTextureEntry* tep = getTE(te);
+    if (!tep) { return 0; }
+    const LLFetchedGLTFMaterial* base_material = static_cast<LLFetchedGLTFMaterial*>(tep->getGLTFMaterial());
+    llassert(base_material);
+    if (!base_material) { return 0; }
+    const LLGLTFMaterial* override_material = tep->getGLTFMaterialOverride();
+    LLFetchedGLTFMaterial* render_material = nullptr;
+    bool need_render_material = override_material;
+    if (!need_render_material)
+    {
+        for (const LLUUID& texture_id : base_material->mTextureId)
+        {
+            if (LLAvatarAppearanceDefines::LLAvatarAppearanceDictionary::isBakedImageId(texture_id))
+            {
+                need_render_material = true;
+                break;
+            }
+        }
+    }
+    if (need_render_material)
+    {
+        render_material = new LLFetchedGLTFMaterial(*base_material);
+        if (override_material) { render_material->applyOverride(*override_material); }
+        render_material->clearFetchedTextures();
+    }
+    return tep->setGLTFRenderMaterial(render_material);
+}
+
 S32 LLViewerObject::setTEGLTFMaterialOverride(U8 te, LLGLTFMaterial* override_mat)
 {
     LL_PROFILE_ZONE_SCOPED;
@@ -5889,22 +5931,13 @@ S32 LLViewerObject::setTEGLTFMaterialOverride(U8 te, LLGLTFMaterial* override_ma
 
     if (retval)
     {
+        retval = initRenderMaterial(te) | retval;
         if (override_mat)
         {
-            LLFetchedGLTFMaterial* render_mat = new LLFetchedGLTFMaterial(*src_mat);
-            render_mat->applyOverride(*override_mat);
-            tep->setGLTFRenderMaterial(render_mat);
-            retval = TEM_CHANGE_TEXTURE;
-
             for (LLGLTFMaterial::local_tex_map_t::value_type &val : override_mat->mTrackingIdToLocalTexture)
             {
                 LLLocalBitmapMgr::getInstance()->associateGLTFMaterial(val.first, override_mat);
             }
-
-        }
-        else if (tep->setGLTFRenderMaterial(nullptr))
-        {
-            retval = TEM_CHANGE_TEXTURE;
         }
     }
 
@@ -6604,6 +6637,24 @@ void LLViewerObject::setAttachedSound(const LLUUID &audio_uuid, const LLUUID& ow
         }
         return;
     }
+
+    // <FS:Ansariel> Asset blacklist
+    FSAssetBlacklist& blacklist = FSAssetBlacklist::instance();
+    if (blacklist.isBlacklisted(audio_uuid, LLAssetType::AT_SOUND))
+    {
+        return;
+    }
+    else if (isAttachment() && blacklist.isBlacklisted(owner_id, LLAssetType::AT_SOUND, FSAssetBlacklist::eBlacklistFlag::WORN))
+    {
+        // Attachment sound
+        return;
+    }
+    else if (blacklist.isBlacklisted(owner_id, LLAssetType::AT_SOUND, FSAssetBlacklist::eBlacklistFlag::REZZED))
+    {
+        // Rezzed object sound
+        return;
+    }
+    // </FS:Ansariel>
 
     if (flags & LL_SOUND_FLAG_LOOP
         && mAudioSourcep && mAudioSourcep->isLoop() && mAudioSourcep->getCurrentData()
@@ -7450,7 +7501,7 @@ void LLAlphaObject::getBlendFunc(S32 face, LLRender::eBlendFactor& src, LLRender
 void LLStaticViewerObject::updateDrawable(bool force_damped)
 {
     // Force an immediate rebuild on any update
-    if (mDrawable.notNull())
+    if (mDrawable.notNull() && mDrawable->getVObj())
     {
         mDrawable->updateXform(true);
         gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL);
@@ -7837,26 +7888,16 @@ void LLViewerObject::setRenderMaterialID(S32 te_in, const LLUUID& id, bool updat
                 // the overrides have not changed due to being only texture
                 // transforms. Re-apply the overrides to the render material here,
                 // if present.
-                const LLGLTFMaterial* override_material = tep->getGLTFMaterialOverride();
-                if (override_material)
+                // Also, sometimes, the material has baked textures, which requires
+                // a copy unique to this object.
+                // Currently, we do not deduplicate render materials.
+                new_material->onMaterialComplete([obj_id = getID(), te]()
                 {
-                    new_material->onMaterialComplete([obj_id = getID(), te]()
-                        {
-                            LLViewerObject* obj = gObjectList.findObject(obj_id);
-                            if (!obj) { return; }
-                            LLTextureEntry* tep = obj->getTE(te);
-                            if (!tep) { return; }
-                            const LLGLTFMaterial* new_material = tep->getGLTFMaterial();
-                            if (!new_material) { return; }
-                            const LLGLTFMaterial* override_material = tep->getGLTFMaterialOverride();
-                            if (!override_material) { return; }
-                            LLGLTFMaterial* render_material = new LLFetchedGLTFMaterial();
-                            *render_material = *new_material;
-                            render_material->applyOverride(*override_material);
-                            tep->setGLTFRenderMaterial(render_material);
-                        });
+                    LLViewerObject* obj = gObjectList.findObject(obj_id);
+                    if (!obj) { return; }
+                    obj->initRenderMaterial(te);
+                });
                 }
-            }
 
             // <FS> [FIRE-35138] Update the saved GLTF material since we got an update
             if (material_changed)
@@ -8037,6 +8078,51 @@ void LLViewerObject::clearTEWaterExclusion(const U8 te)
             sendTEUpdate();
         }
     }
+}
+
+bool LLViewerObject::isReachable()
+{
+    LLViewerRegion* agent_region = gAgent.getRegion();
+    LLViewerRegion* object_region = getRegion();
+
+    if (!agent_region || !object_region)
+    {
+        return false;
+    }
+    if (agent_region == object_region)
+    {
+        return true;
+    }
+
+    std::unordered_set<LLViewerRegion*> visited;
+    std::queue<LLViewerRegion*> pending;
+    visited.insert(agent_region);
+    pending.push(agent_region);
+
+    while (!pending.empty())
+    {
+        LLViewerRegion* current = pending.front();
+        pending.pop();
+
+        std::vector<LLViewerRegion*> neighbors;
+        current->getNeighboringRegions(neighbors);
+
+        for (LLViewerRegion* neighbor : neighbors)
+        {
+            if (!neighbor) continue;
+
+            if (neighbor == object_region)
+            {
+                return true;
+            }
+            // region's neighbors were not checked
+            if (visited.insert(neighbor).second)
+            {
+                pending.push(neighbor);
+            }
+        }
+    }
+    return false;
 }
 
 class ObjectPhysicsProperties : public LLHTTPNode

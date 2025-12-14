@@ -599,7 +599,7 @@ L$が不足しているので、このグループに参加することができ
 		<usetemplate name="okcancelbuttons" notext="いいえ" yestext="はい"/>
 	</notification>
 	<notification name="ChangeLanguage">
-		言語の変更は、[APP_NAME]再起動後に反映されます。
+		言語か時刻フォーマットの変更は、[APP_NAME]再起動後に反映されます。
 	</notification>
 	<notification name="GoToAuctionPage">
 		[CURRENT_GRID]のWebページに移動し、入札あるいはオークションの詳細を確認しますか？
@@ -868,6 +868,15 @@ L$が不足しているので、このグループに参加することができ
 	<notification name="CannotUploadSoundFile">
 		読み込みのためにアップロードされたサウンドファイルを開けません：
 [FILE]
+	</notification>
+	<notification name="ModelUploaderMissingPhysicsApple">
+		Apple Siliconでは、まだモデルのアップロードは利用できませんが、今後のリリースでサポートされる予定です。
+
+回避策：Finderで[APP_NAME]アプリを右クリックし、
+「情報を見る」を選択して、「Rosettaを使用して開く」にチェックを入れます。
+	</notification>
+	<notification name="ModelUploaderMissingPhysics">
+		物理ライブラリが存在しないため、モデルアップローダの一部の機能が動作しないか、正しく動作しない可能性があります。
 	</notification>
 	<notification name="SoundFileNotRIFF">
 		RIFF WAVEファイルとして認識されません：
@@ -2451,7 +2460,7 @@ https://community.secondlife.com/knowledgebase/%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83
 	</notification>
 	<notification name="PayConfirmation">
 		[TARGET]にL$ [AMOUNT]を支払ってもよろしいですか？
-		<usetemplate name="okcancelignore" notext="キャンセル" yestext="支払い"/>
+		<usetemplate name="okcancelbuttons" notext="キャンセル" yestext="支払う"/>
 	</notification>
 	<notification name="PayObjectFailed">
 		支払いに失敗しました：オブジェクトが見つかりませんでした。
@@ -2583,6 +2592,12 @@ https://community.secondlife.com/knowledgebase/%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83
 	</notification>
 	<notification name="TooManyWearables">
 		[AMOUNT]個以上のアイテムを含むフォルダを装着できません。「高度な操作」＞「デバッグ設定を表示」＞「WearFolderLimit」でこの制限を変更できます。
+	</notification>
+	<notification name="CantLinkNotecard">
+		リンクを作成する前に、ノートカードを保存する必要があります。
+	</notification>
+	<notification name="CantLinkMaterial">
+		リンクを作成する前に、ノートカードを保存する必要があります。
 	</notification>
 	<notification label="「取り込み中」モードの警告" name="DoNotDisturbModePay">
 		「取り込み中」をオンにします。この状態では、お金を支払ったり交換したときにアイテムが受信されなくなります。
@@ -3238,7 +3253,7 @@ Webページにリンクすると、他人がこの場所に簡単にアクセ�
 		[NAME_SLURL] は、テレポートであなたを呼んでいます。
 [MESSAGE]
 
-&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;‐[MATURITY_STR]
+&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;－[MATURITY_STR]
 		<form name="form">
 			<button name="Teleport" text="テレポート"/>
 			<button name="Cancel" text="キャンセル"/>
@@ -3248,7 +3263,7 @@ Webページにリンクすると、他人がこの場所に簡単にアクセ�
 		[NAME_SLURL] は、テレポートであなたを呼んでいます。
 [MESSAGE]
 
-&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;‐[MATURITY_STR]
+&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;－[MATURITY_STR]
 
 このリージョンには[REGION_CONTENT_MATURITY]コンテンツが含まれていますが、現在の初期設定は[REGION_CONTENT_MATURITY]コンテンツを除外するように設定されています。初期設定を変更してテレポートを続けるか、このテレポートを取り消すことができます。
 		<form name="form">
@@ -3260,7 +3275,7 @@ Webページにリンクすると、他人がこの場所に簡単にアクセ�
 		[NAME_SLURL] は、テレポートであなたを呼んでいます。
 [MESSAGE]
 
-&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;‐[MATURITY_STR]
+&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;－[MATURITY_STR]
 
 ただし、このリージョンには成人のみアクセスできるコンテンツが含まれています。
 	</notification>
@@ -3268,7 +3283,7 @@ Webページにリンクすると、他人がこの場所に簡単にアクセ�
 		[NAME_SLURL]があなたを自分の場所へのテレポートのオファーを出しました（[POS_SLURL]）：
 
 [MESSAGE]
-&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;‐[MATURITY_STR]
+&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;－[MATURITY_STR]
 		<form name="form">
 			<button name="Teleport" text="テレポート"/>
 			<button name="Cancel" text="キャンセル"/>
@@ -3278,7 +3293,7 @@ Webページにリンクすると、他人がこの場所に簡単にアクセ�
 		[NAME_SLURL]があなたを自分の場所へのテレポートのオファーを出しました（[POS_SLURL]）：
 
 [MESSAGE]
-&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;‐[MATURITY_STR]
+&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;－[MATURITY_STR]
 
 このリージョンには[REGION_CONTENT_MATURITY]コンテンツが含まれていますが、現在の設定では[REGION_CONTENT_MATURITY]コンテンツを除外するように設定されています。設定を変更してテレポートを続行するか、このテレポートをキャンセルすることができます。
 		<form name="form">
@@ -3290,7 +3305,7 @@ Webページにリンクすると、他人がこの場所に簡単にアクセ�
 		[NAME_SLURL]があなたを自分の場所へのテレポートのオファーを出しました（[POS_SLURL]）：
 
 [MESSAGE]
-&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;‐[MATURITY_STR]
+&lt;icon&gt;[MATURITY_ICON]&lt;/icon&gt;－[MATURITY_STR]
 
 ただし、この領域にはAdultのみがアクセスできるコンテンツが含まれています。
 	</notification>
@@ -3936,7 +3951,7 @@ https://wiki.firestormviewer.org/fs_voice
 		サイドパネルから、インベントリや衣装、プロフィールなどに素早くアクセスできます。
 	</notification>
 	<notification label="移動" name="HintMove">
-		歩行や走行は、「移動」パネルを開き、矢印コントロールによって操作します。この操作はキーボードの矢印キーで実行することも可能です。
+		歩いたり走ったりするには、「移動」パネルを開き、矢印コントロールで操作します。この操作はキーボードの矢印キーで実行することも可能です。
 	</notification>
 	<notification name="HintMoveClick">
 		１，クリックで移動
@@ -4133,13 +4148,13 @@ https://wiki.firestormviewer.org/fs_voice
 		<usetemplate ignoretext="選択したオブジェクトをフレキシブルパスに変更する際にナビメッシュから削除されることの確認" name="okcancelignore" notext="キャンセル" yestext="ＯＫ"/>
 	</notification>
 	<global name="UnsupportedGPU">
-		‐あなたのグラフィックカードは、必須動作環境の条件を満たしていません。
+		－あなたのグラフィックカードは、必須動作環境の条件を満たしていません。
 	</global>
 	<global name="UnsupportedCPU">
-		‐あなたのＣＰＵは、必須動作環境の条件を満たしていません。
+		－あなたのＣＰＵは、必須動作環境の条件を満たしていません。
 	</global>
 	<global name="UnsupportedRAM">
-		‐あなたのシステムメモリは、必須動作環境の条件を満たしていません。
+		－あなたのシステムメモリは、必須動作環境の条件を満たしていません。
 	</global>
 	<global name="LLLeapUpdaterFailure">
 		アップデーターサービス[UPDATER_APP]の起動に失敗しました。ビューアが正しくインストールされ、実行に必要な権限があることを確認してください。引き続き問題が発生する場合は、[SUPPORT_SITE]をご覧ください。
@@ -4720,31 +4735,31 @@ https://wiki.firestormviewer.org/fs_voice
 		リージョンが埋まっているため、このリージョンに入場できません。
 	</notification>
 	<notification name="LinkFailedOwnersDiffer">
-		リンクエラー‐所有者が違います。
+		リンクエラー－所有者が違います。
 	</notification>
 	<notification name="LinkFailedNoModNavmeshAcrossRegions">
-		リンクエラー‐リージョンの境界をまたぐナビメッシュは変更できません。
+		リンクエラー－リージョンの境界をまたぐナビメッシュは変更できません。
 	</notification>
 	<notification name="LinkFailedNoPermToEdit">
-		リンクエラー‐編集権限がありません。
+		リンクエラー－編集権限がありません。
 	</notification>
 	<notification name="LinkFailedTooManyPrims">
-		リンクエラー‐プリミティブが多すぎます。
+		リンクエラー－プリミティブが多すぎます。
 	</notification>
 	<notification name="LinkFailedCantLinkNoCopyNoTrans">
-		リンクエラー‐コピー不可と譲渡不可のオブジェクトをリンクできません。
+		リンクエラー－コピー不可と譲渡不可のオブジェクトをリンクできません。
 	</notification>
 	<notification name="LinkFailedNothingLinkable">
-		リンクエラー‐リンクできるものがありません。
+		リンクエラー－リンクできるものがありません。
 	</notification>
 	<notification name="LinkFailedTooManyPathfindingChars">
-		リンクエラー‐経路探索の文字数が多すぎます。
+		リンクエラー－経路探索の文字数が多すぎます。
 	</notification>
 	<notification name="LinkFailedInsufficientLand">
-		リンクエラー‐土地のリソースが足りません。
+		リンクエラー－土地のリソースが足りません。
 	</notification>
 	<notification name="LinkFailedTooMuchPhysics">
-		オブジェクトが使用する物理リソースが多すぎます‐そのダイナミクスが無効になっています。
+		オブジェクトが使用する物理リソースが多すぎます－そのダイナミクスが無効になっています。
 	</notification>
 	<notification name="EstateManagerFailedllTeleportHome">
 		[SLURL] のオブジェクト「[OBJECT_NAME]」で不動産マネージャーのホームをテレポートできません。
@@ -5144,6 +5159,9 @@ http://opensimulator.org/wiki/inventory を使用して問題を修正できま�
 		ファイルを移動できません。以前のパスに復帰させました。
 		<usetemplate ignoretext="ファイルを移動できないとき" name="okignore" yestext="ＯＫ"/>
 	</notification>
+	<notification name="PreferenceQualityWithLowMemory">
+		お使いのシステムには [TOTAL_MEM]㎆のメモリが搭載されていますが、より高い設定でビューアを実行するにはメモリが足りず、問題が発生する可能性があります。
+	</notification>
 	<notification name="DefaultObjectPermissions">
 		デフォルトのオブジェクト権限を保存するときに問題が発生しました：[REASON]
 後でデフォルトの権限を設定してください。
@@ -5405,6 +5423,12 @@ http://opensimulator.org/wiki/inventory を使用して問題を修正できま�
 		すでに最大数のピックが作成されているため、別のピックを作成することはできません。
 		<usetemplate name="okbutton" yestext="ＯＫ"/>
 	</notification>
+	<notification name="ConfirmGlobalOnlineStatusToggle">
+すべてのフレンドのオンラインステータスの表示設定を一括で変更してもよろしいですか？
+
+サーバーの負荷状況により、この一括変更が反映されるまでに時間がかかる場合があります。また、一部のフレンドがあなたのオンラインステータスを表示できないという一時的な問題が発生する可能性があります。
+		<usetemplate name="okcancelbuttons" notext="キャンセル" yestext="ＯＫ"/>
+	</notification>
 	<notification name="GlobalOnlineStatusToggle">
 		サーバーの負荷により、オンライン ステータスの表示を一括で切り替える場合、有効になるまでに時間がかかることがあります。しばらくお待ちください。
 		<usetemplate ignoretext="オンラインステータスの表示の切り替えには時間がかかる場合があることの通知" name="okignore" yestext="ＯＫ"/>
@@ -5515,14 +5539,14 @@ Firestorm Viewer、Phoenix Firestorm Viewer Project Inc.、またはそのチー
 圧縮：[PACK_TIME]秒　[PSIZE]㎅
 解凍：[UNPACK_TIME]秒　[USIZE]㎅
 	</notification>
-	<notification label="二段階認証トークンプロンプト" name="PromptMFAToken">
+	<notification label="多段階認証トークンプロンプト" name="PromptMFAToken">
 		[MESSAGE]
 		<form name="form">
 			<button name="continue" text="確認"/>
 			<button name="cancel" text="キャンセル"/>
 		</form>
 	</notification>
-	<notification label="二段階認証トークンプロンプト" name="PromptMFATokenWithSave">
+	<notification label="多段階認証トークンプロンプト" name="PromptMFATokenWithSave">
 		[MESSAGE]
 		<form name="form">
 			<ignore name="ignore" text="このコンピューターを３０日間記録する"/>
@@ -5543,12 +5567,12 @@ Firestorm Viewer、Phoenix Firestorm Viewer Project Inc.、またはそのチー
 		<usetemplate name="okbutton" yestext="ＯＫ"/>
 	</notification>
 	<notification name="RiggedMeshAttachedToHUD">
-		ＨＵＤポイント「[POINT]」にアタッチされたオブジェクト「[NAME]」にはリグメッシュが含まれています。
+		ＨＵＤポイント「[POINT]」に装着されたオブジェクト「[NAME]」にはリグメッシュが含まれています。
 
 リグメッシュオブジェクトは、アバターに取り付けるように設計されています。あなたにはこのオブジェクトが表示されますが、他の人には表示されません。
 
-他の人にこのオブジェクトを見てもらいたい場合は、オブジェクトを削除して、アバターのアタッチメントポイントに再度アタッチします。
-		<usetemplate ignoretext="リグメッシュがＨＵＤポイントにアタッチされている場合の警告" name="okignore" yestext="ＯＫ"/>
+他の人にこのオブジェクトを見てもらいたい場合は、オブジェクトを削除して、アバターの装着ポイントに再度装着します。
+		<usetemplate ignoretext="リグメッシュがＨＵＤポイントに装着されている場合の警告" name="okignore" yestext="ＯＫ"/>
 	</notification>
 	<notification name="ConfirmOverwriteOutfit">
 		これにより、選択したアウトフィットのアイテムが現在着ているアイテムに置き換えられます。
@@ -5642,7 +5666,7 @@ Firestorm Viewer、Phoenix Firestorm Viewer Project Inc.、またはそのチー
 	</notification>
 	<!-- <FS:Zi> detect and strip empty alpha layers from images on upload -->
 	<notification label="空のアルファチャンネルが含まれた画像" name="ImageEmptyAlphaLayer">
-		アップロードしようとしている画像には、空またはほぼ空のアルファチャンネル（透明情報）が含まれています。これはほとんどの場合望ましくないため、削除する必要があります。画像にアルファチャンネルを追加すると、異なるカメラ角度でテクスチャが互いに反転し、描画が遅くなります。したがって、このテクスチャに空またはほぼ空のアルファチャンネルが本当に必要な場合を除き、削除することを検討してください。
+		アップロードしようとしている画像には、空またはほぼ空のアルファチャンネル（透過情報）が含まれています。これはほとんどの場合望ましくないため、削除する必要があります。画像にアルファチャンネルを追加すると、異なるカメラ角度でテクスチャが互いに反転し、描画が遅くなります。したがって、このテクスチャに空またはほぼ空のアルファチャンネルが本当に必要な場合を除き、削除することを検討してください。
 		<form name="form">
 			<button name="strip" text="アルファチャンネルを削除"/>
 			<button name="use_as_is" text="このまま使用"/>
@@ -5673,6 +5697,10 @@ https://wiki.firestormviewer.org/antivirus_whitelisting
 		「[POSE_NAME]」を上書きしてもよろしいですか？
 		<usetemplate name="okcancelbuttons" notext="キャンセル" yestext="はい"/>
 	</notification>
+	<notification name="FSLargeOutfitsWarningInThisSession">
+		アウトフィットの数が多すぎます：[AMOUNT]個。これにより、ビューアがハングしたり、接続が切断されたりする可能性があります。パフォーマンスを向上させるには、アウトフィットの数を減らすことをご検討ください。（[MAX]個未満）これはあくまで提案です。お使いのコンピュータが正常に動作している場合は、無視して構いません。
+		<usetemplate ignoretext="アウトフィット数の警告" name="okignore" yestext="ＯＫ"/>
+	</notification>
 	<notification name="PrimfeedLoginRequestFailed">
 		Primfeedへのログインリクエストが拒否されました。
 	</notification>
@@ -5694,4 +5722,49 @@ https://wiki.firestormviewer.org/antivirus_whitelisting
 	<notification name="PrimfeedUserStatusFailed">
 		Primfeedへのユーザログインは成功しましたが、ステータスチェックに失敗しました。Primfeedが機能しているかどうかを確認してください。
 	</notification>
+	<!-- <FS:Zi> generic error notifications for file system issues -->
+	<notification name="NotRegularFileError">
+通常のファイルは、以下の場所にあります：
+[FILE_NAME]
+	</notification>
+	<notification name="NotFolderError">
+通常のフォルダは、以下の場所にあります：
+[FILE_NAME]
+	</notification>
+	<notification name="GenericFileEmptyError">
+ファイルは存在しますが中身が空です：
+[FILE_NAME]
+
+エラーメッセージ：
+[ERROR_MESSAGE]（[ERROR_CODE]）
+	</notification>
+	<notification name="GenericFileOpenReadError">
+読み込み用にファイルを開けませんでした：
+[FILE_NAME]
+
+エラーメッセージ：
+[ERROR_MESSAGE]（[ERROR_CODE]）
+	</notification>
+	<notification name="GenericFileOpenWriteError">
+書き込み用にファイルを開けませんでした：
+[FILE_NAME]
+
+エラーメッセージ：
+[ERROR_MESSAGE]（[ERROR_CODE]）
+	</notification>
+	<notification name="GenericFileReadError">
+以下のファイルを読み込めませんでした：
+[FILE_NAME]
+
+エラーメッセージ：
+[ERROR_MESSAGE]（[ERROR_CODE]）
+	</notification>
+	<notification name="GenericFileWriteError">
+以下のファイルに書き込めませんでした：
+[FILE_NAME]
+
+エラーメッセージ：
+[ERROR_MESSAGE]（[ERROR_CODE]）
+	</notification>
+	<!-- </FS:Zi> -->
 </notifications>

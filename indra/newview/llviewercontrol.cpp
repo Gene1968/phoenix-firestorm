@@ -74,6 +74,8 @@
 #include "llrender.h"
 #include "llnavigationbar.h"
 #include "llnotificationsutil.h"
+#include "llfloaterpreference.h"
+#include "llfloaterreg.h"
 #include "llfloatertools.h"
 #include "llpaneloutfitsinventory.h"
 // <FS:Ansariel> [FS Login Panel]
@@ -226,6 +228,21 @@ static bool handleDebugAvatarJointsChanged(const LLSD& newvalue)
 {
     std::string new_string = newvalue.asString();
     LLJoint::setDebugJointNames(new_string);
+    return true;
+}
+
+static bool handleDebugQualityPerformanceChanged(const LLSD& newvalue)
+{
+    // control was set directly or after adjusting Preference setting, no need to update
+    if (gSavedSettings.getU32("RenderQualityPerformance") != gSavedSettings.getU32("DebugQualityPerformance"))
+    {
+        LLFloaterPreference* instance = LLFloaterReg::getTypedInstance<LLFloaterPreference>("preferences");
+        if (instance)
+        {
+            gSavedSettings.setU32("RenderQualityPerformance", newvalue.asInteger());
+            instance->onChangeQuality(newvalue);
+        }
+    }
     return true;
 }
 
@@ -557,23 +574,9 @@ static bool handleRenderDynamicLODChanged(const LLSD& newvalue)
     return true;
 }
 
-// static bool handleReflectionsEnabled(const LLSD& newvalue)
-// {
-//  // <FS:Beq> FIRE-33659 - everything is too dark when reflections are disabled.
-//  if(newvalue.asBoolean())
-//  {
-//      // TODO(Beq): This setting level should probably be governed by render quality settings.
-//      gSavedSettings.setS32("RenderReflectionProbeLevel", 3);
-//  }
-//  else
-//  {
-//      gSavedSettings.setS32("RenderReflectionProbeLevel", 0);
-//  }
-//     return true;
-// }
-
 static bool handleReflectionProbeDetailChanged(const LLSD& newvalue)
 {
+    gPipeline.mReflectionMapManager.refreshSettings();
     if (gPipeline.isInit())
     {
         LLPipeline::refreshCachedSettings();
@@ -583,6 +586,12 @@ static bool handleReflectionProbeDetailChanged(const LLSD& newvalue)
         gPipeline.createGLBuffers();
         LLViewerShaderMgr::instance()->setShaders();
     }
+    return true;
+}
+
+static bool handleReflectionProbeCountChanged(const LLSD& newvalue)
+{
+    gPipeline.mReflectionMapManager.refreshSettings();
     return true;
 }
 
@@ -904,7 +913,27 @@ void handleUsernameFormatOptionChanged(const LLSD& newvalue)
 // <FS:Ansariel> Global online status toggle
 void handleGlobalOnlineStatusChanged(const LLSD& newvalue)
 {
+    if (gSavedPerAccountSettings.getBOOL("GlobalOnlineStatusCurrentlyReverting"))
+    {
+        gSavedPerAccountSettings.setBOOL("GlobalOnlineStatusCurrentlyReverting", false);
+        return;
+    }
     bool visible = newvalue.asBoolean();
+    LLSD payload;
+    payload["visible"] = visible;
+    LLNotificationsUtil::add("ConfirmGlobalOnlineStatusToggle", LLSD(), payload, applyGlobalOnlineStatusChange);
+}
+
+void applyGlobalOnlineStatusChange(const LLSD& notification, const LLSD& response)
+{
+    bool visible = notification["payload"]["visible"].asBoolean();
+    S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
+    if (option != 0)
+    {
+        gSavedPerAccountSettings.setBOOL("GlobalOnlineStatusCurrentlyReverting", true);
+        gSavedPerAccountSettings.setBOOL("GlobalOnlineStatusToggle", !visible);
+        return;
+    }
 
     LLAvatarTracker::buddy_map_t all_buddies;
     LLAvatarTracker::instance().copyBuddyList(all_buddies);
@@ -1317,7 +1346,8 @@ void settings_setup_listeners()
 // [/SL:KB]
     setting_setup_signal_listener(gSavedSettings, "RenderReflectionProbeLevel", handleReflectionProbeDetailChanged);
     setting_setup_signal_listener(gSavedSettings, "RenderReflectionProbeDetail", handleReflectionProbeDetailChanged);
-    // setting_setup_signal_listener(gSavedSettings, "RenderReflectionsEnabled", handleReflectionsEnabled); // <FS:Beq/> FIRE-33659 better way to enable/disable reflections
+    setting_setup_signal_listener(gSavedSettings, "RenderReflectionProbeCount", handleReflectionProbeCountChanged);
+    setting_setup_signal_listener(gSavedSettings, "RenderReflectionsEnabled", handleReflectionProbeDetailChanged);
 #if LL_DARWIN
     setting_setup_signal_listener(gSavedSettings, "RenderAppleUseMultGL", handleAppleUseMultGLChanged);
 #endif
@@ -1427,6 +1457,7 @@ void settings_setup_listeners()
     setting_setup_signal_listener(gSavedSettings, "SpellCheckDictionary", handleSpellCheckChanged);
     setting_setup_signal_listener(gSavedSettings, "LoginLocation", handleLoginLocationChanged);
     setting_setup_signal_listener(gSavedSettings, "DebugAvatarJoints", handleDebugAvatarJointsChanged);
+    setting_setup_signal_listener(gSavedSettings, "DebugQualityPerformance", handleDebugQualityPerformanceChanged);
 
     setting_setup_signal_listener(gSavedSettings, "TargetFPS", handleTargetFPSChanged);
     setting_setup_signal_listener(gSavedSettings, "AutoTuneFPS", handleAutoTuneFPSChanged);
