@@ -48,6 +48,8 @@
 #include "lltimer.h"
 #include "lldir.h"
 
+#include "loextras.h"// <ShareStorm>
+
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #define CONTROL_ERRS LL_ERRS("ControlErrors")
 #else
@@ -104,6 +106,31 @@ LLSD getCount;
 settings_vec_t getCount_v;
 F64 start_time = 0;
 std::string SETTINGS_PROFILE = "settings_profile.log";
+
+
+
+// <ShareStorm>: List of settings to override the "no persist" setting for
+static const std::string lo_persist_override_table[] = {
+    "FSAlwaysFly",
+};
+
+static bool lo_persist_override(const std::string& name)
+{
+    const std::size_t n = sizeof(lo_persist_override_table) / sizeof(std::string);
+
+    if (!lolistorm_check_flag(LO_CONVENIENCE))
+        return false;
+
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        if (name == lo_persist_override_table[i])
+            return true;
+    }
+
+    return false;
+}
+// </ShareStorm>
+
 
 bool LLControlVariable::llsd_compare(const LLSD& a, const LLSD & b)
 {
@@ -384,6 +411,9 @@ bool LLControlVariable::isSane()
 
 bool LLControlVariable::shouldSave(bool nondefault_only)
 {
+    if (mPersist != PERSIST_ALWAYS && lo_persist_override(mName))
+        return true;// <ShareStorm>
+
     // This method is used to decide whether we should save a given
     // variable. Two of the three values of mPersist are easy.
     if (mPersist == PERSIST_NO)
@@ -570,7 +600,8 @@ LLControlVariable* LLControlGroup::declareControl(const std::string& name, eCont
     LLControlVariable* existing_control = getControl(name);
     if (existing_control)
     {
-        if ((persist != LLControlVariable::PERSIST_NO) && existing_control->isType(type))
+		// <ShareStorm>
+        if ((persist != LLControlVariable::PERSIST_NO || lo_persist_override(name)) && existing_control->isType(type))
         {
             if (!existing_control->llsd_compare(existing_control->getDefault(), initial_val))
             {
@@ -1172,8 +1203,10 @@ U32 LLControlGroup::loadFromFile(const std::string& filename, bool set_default_v
                            << filename << "'." << LL_ENDL;
                 }
             }
-            else if(existing_control->isPersisted())
+            else if(existing_control->isPersisted() || lo_persist_override(name))
             {
+	// <ShareStorm>   /\
+
                 // save_values is specifically false for (e.g.)
                 // SessionSettingsFile and UserSessionSettingsFile -- in other
                 // words, for a file that's supposed to be transient.

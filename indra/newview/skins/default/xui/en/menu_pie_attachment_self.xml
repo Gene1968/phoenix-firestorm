@@ -94,6 +94,17 @@
                 <pie_slice.on_enable
                     function="Object.EnableExport" />
             </pie_slice>
+	<!-- ShareStorm edit -->
+	<pie_separator />
+	<pie_separator />
+	<pie_separator />
+	<pie_separator />
+	<pie_separator />
+	<pie_slice label="Xml" name="Export...">
+		<pie_slice.on_click function="Object.SaveAs" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<!-- end ShareStorm edit -->
         </pie_menu>
         <pie_slice
             label="Show in Inv."

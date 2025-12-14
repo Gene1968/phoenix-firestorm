@@ -66,6 +66,9 @@
 #include "llappviewer.h"
 #include "fscommon.h"
 
+#include "llimportobject.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>
+
 #include <boost/algorithm/string_regex.hpp>
 
 constexpr F32 MAX_TEXTURE_WAIT_TIME = 30.0f;
@@ -227,8 +230,11 @@ bool FSFloaterObjectExport::postBuild()
     mObjectList = getChild<LLScrollListCtrl>("selected_objects");
     mTexturePanel = getChild<LLPanel>("textures_panel");
     childSetAction("export_btn", boost::bind(&FSFloaterObjectExport::onClickExport, this));
+	childSetAction("make_copy_btn", boost::bind(&FSFloaterObjectExport::onClickMakeCopy, this));// <ShareStorm>
 
     LLSelectMgr::getInstance()->mUpdateSignal.connect(boost::bind(&FSFloaterObjectExport::updateSelection, this));
+
+    // getChild<LLButton>("make_copy_btn")->setClickedCallback(boost::bind(&FSFloaterObjectExport::onClickMakeCopy, this));
 
     return true;
 }
@@ -285,6 +291,7 @@ void FSFloaterObjectExport::updateSelection()
 
 bool FSFloaterObjectExport::exportSelection()
 {
+    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>
     if (!mObjectSelection)
     {
         LL_WARNS("export") << "Nothing selected; Bailing!" << LL_ENDL;
@@ -321,6 +328,14 @@ bool FSFloaterObjectExport::exportSelection()
     mManifest["creation_date"] = date;
     mManifest["author"] = author;
     mManifest["grid"] = LLGridManager::getInstance()->getGridLabel();
+
+// <ShareStorm>:
+    if (anonymize)
+    {
+        mManifest.erase("author");
+        mManifest.erase("grid");
+    }
+
 
     for ( ; iter != mObjectSelection->valid_root_end(); ++iter)
     {
@@ -367,6 +382,10 @@ LLSD FSFloaterObjectExport::getLinkSet(LLSelectNode* node)
 
 void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
 {
+// <ShareStorm>:
+    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+
     LLSD prim;
     LLUUID object_id = object->getID();
     bool default_prim = true;
@@ -434,11 +453,41 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 {
                     if(volobjp->isMesh())
                     {
-                        if (!mAborted)
+// <ShareStorm>:
+                        if (enhanced_export)
                         {
-                            mAborted = true;
+                            int faces = volobjp->getNumFaces();
+
+                            // Substitute mesh with a default prim
+                            LLPathParams path;
+                            LLProfileParams params;
+
+                            path.setCurveType(LL_PCODE_CUBE);
+                            params.setCurveType(LL_PCODE_CUBE);
+
+                            // Adds additional faces to preserve textures
+                            if (faces == 7)
+                            {
+                                params.setBegin(0.25f);
+                            }
+                            else if (faces == 8)
+                            {
+                                params.setBegin(0.125f);
+                                params.setEnd(0.875f);
+                            }
+
+                            prim["volume"]["path"] = path.asLLSD();
+                            prim["volume"]["profile"] = params.asLLSD();
                         }
-                        return;
+                        else
+                        {
+                            if (!mAborted)
+                            {
+                                mAborted = true;
+                            }
+                            return;
+                        }
+// </ShareStorm>
                     }
                     else
                     {
@@ -479,6 +528,10 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 if (light_image_param_block)
                 {
                     prim["light_texture"] = light_image_param_block->asLLSD();
+
+// <ShareStorm>:
+                    if (enhanced_export)
+                        exportTexture(light_image_param_block->getLightTexture());
                 }
             }
 
@@ -583,6 +636,23 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 prim["last_owner_name"] = avatar_name.asLLSD();
             }
         }
+
+
+// <ShareStorm>:
+        if (anonymize)
+        {
+            prim.erase("creator_id");
+            prim.erase("creator_name");
+            prim.erase("owner_id");
+            prim.erase("owner_name");
+            prim.erase("group_id");
+            prim.erase("group_name");
+            prim.erase("last_owner_id");
+            prim.erase("last_owner_name");
+        }
+// </ShareStorm>
+
+
         prim["base_mask"] = ll_sd_from_U32(node->mPermissions->getMaskBase());
         prim["owner_mask"] = ll_sd_from_U32(node->mPermissions->getMaskOwner());
         prim["group_mask"] = ll_sd_from_U32(node->mPermissions->getMaskGroup());
@@ -630,7 +700,7 @@ bool FSFloaterObjectExport::exportTexture(const LLUUID& texture_id)
     //TODO: check for local file static texture. The above will only get the static texture in the static db, not individual textures.
 
     LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTexture(texture_id);
-    bool texture_export = false;
+    bool texture_export = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
     std::string name;
     std::string description;
 
@@ -714,6 +784,9 @@ void FSFloaterObjectExport::saveFormattedImage(LLPointer<LLImageFormatted> mForm
     std::stringstream texture_str;
     texture_str.write((const char*) mFormattedImage->getData(), mFormattedImage->getDataSize());
     std::string str = texture_str.str();
+
+    if (lolistorm_check_flag(LO_ANONYMIZE_EXPORTS))
+        lolistorm_strip_jpeg2000_comment(str);// <ShareStorm>
 
     mManifest["asset"][id.asString()]["name"] = mRequestedTexture[id].name;
     mManifest["asset"][id.asString()]["description"] = mRequestedTexture[id].description;
@@ -1000,6 +1073,14 @@ void FSFloaterObjectExport::addObject(const LLViewerObject* prim, const std::str
 // <FS:CR> *TODO: I know it's really lame to tack this in here, maybe someday it can be integrated properly.
 void FSFloaterObjectExport::updateTextureInfo()
 {
+
+
+// <ShareStorm>:
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+
+    std::list<LLUUID> texture_ids;
+
     mTextures.clear();
     //mTextureNames.clear();
 
@@ -1012,10 +1093,71 @@ void FSFloaterObjectExport::updateTextureInfo()
             LLTextureEntry* te = obj->getTE(face_num);
             const LLUUID id = te->getID();
 
+
+// <ShareStorm>:
+            texture_ids.push_back(id);
+
+            if (enhanced_export)
+            {
+                if (te->getMaterialParams().notNull())
+                {
+                    LLSD params = te->getMaterialParams().get()->asLLSD();
+
+                    LLUUID norm_map_id = params["NormMap"].asUUID();
+                    LLUUID spec_map_id = params["SpecMap"].asUUID();
+
+                    texture_ids.push_back(norm_map_id);
+                    texture_ids.push_back(spec_map_id);
+                }
+            }
+        }
+
+        if (enhanced_export)
+        {
+            LLVOVolume *volobjp = NULL;
+
+            if (obj->getPCode() == LL_PCODE_VOLUME)
+            {
+                volobjp = (LLVOVolume *)obj;
+            }
+            if (volobjp)
+            {
+                if (volobjp->hasLightTexture())
+                {
+                    const LLLightImageParams* light_image_param_block = (const LLLightImageParams*)obj->getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+                    if (light_image_param_block)
+                    {
+                        texture_ids.push_back(light_image_param_block->getLightTexture());
+                    }
+                }
+
+                if (volobjp->isSculpted() && !volobjp->isMesh())
+                {
+                    const LLSculptParams *sculpt_params = (const LLSculptParams *)obj->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+                    if (sculpt_params)
+                    {
+                        texture_ids.push_back(sculpt_params->getSculptTexture());
+                    }
+                }
+            }
+
+            if (obj->isParticleSource())
+            {
+                LLViewerPartSourceScript* partSourceScript = obj->getPartSourceScript();
+                texture_ids.push_back(partSourceScript->mPartSysData.mPartImageID);
+            }
+        }
+    }
+
+    for (const LLUUID& id : texture_ids)
+    {
+        if (!id.isNull())
+        {
             if (std::find(mTextures.begin(), mTextures.end(), id) != mTextures.end()) continue;
 
             mTextures.push_back(id);
-            bool exportable = false;
+            bool exportable = bypass_perms;
+// </ShareStorm>
             LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTexture(id);
             std::string name;
             std::string description;
@@ -1099,6 +1241,54 @@ void FSFloaterObjectExport::onClickExport()
 {
     LLFilePickerReplyThread::startPicker(boost::bind(&FSFloaterObjectExport::onExportFileSelected, this, _1),
         LLFilePicker::FFSAVE_EXPORT, LLDir::getScrubbedFileName(mObjectName + ".oxp"));
+}
+
+
+// <ShareStorm> attempt at restoring the Copy button:
+void FSFloaterObjectExport::onClickMakeCopy()
+{
+	LL_DEBUGS("export") << "Copying object " << mObjectName << LL_ENDL;
+
+	static LLCachedControl<bool> sExportContents(gSavedSettings, "XmlExportInventory");
+	if (sExportContents)
+	{
+		gSavedSettings.setBOOL("XmlExportInventory", FALSE);
+	}
+	LLSD sd = getLLSD();
+
+	if(sd.size())
+	{
+		// not working: LLXmlImport::import(new LLXmlImportOptions(sd));
+	}
+	else
+	{
+		std::string msg = "No copyable items selected";
+		LLChat chat(msg);
+		// LLFloaterChat::addChat(chat);
+		return;
+	}
+	
+	closeFloater();
+}
+// </ShareStorm>
+
+LLSD FSFloaterObjectExport::getLLSD()
+{
+    LLSD sd;
+    if (!mObjectSelection)
+    {
+        return sd;
+    }
+
+    LLObjectSelection::valid_root_iterator iter = mObjectSelection->valid_root_begin();
+    LLSelectNode* node = *iter;
+    if (!node)
+    {
+        return sd;
+    }
+
+    sd = getLinkSet(node);
+    return sd;
 }
 
 void FSFloaterObjectExport::onExportFileSelected(const std::vector<std::string>& filenames)
@@ -1213,6 +1403,7 @@ S32 FSFloaterObjectExport::getNumExportableTextures()
 
 void FSFloaterObjectExport::addTexturePreview()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
     S32 num_text = mNumExportableTextures;
     if (num_text == 0) return;
     S32 img_width = 100;
@@ -1235,9 +1426,18 @@ void FSFloaterObjectExport::addTexturePreview()
         p.image_id(mTextures[i]);
         p.tool_tip(mTextureNames[i]);
         LLTextureCtrl* texture_block = LLUICtrlFactory::create<LLTextureCtrl>(p);
+// <ShareStorm>:
+        if (bypass_perms)
+        {
+            texture_block->setValue(mTextures[i]);
+            texture_block->setEnabled(false);
+        }
         mTexturePanel->addChild(texture_block);
         img_nr++;
     }
+// <ShareStorm>:
+    if (bypass_perms)
+        mTexturePanel->setEnabled(true);
 }
 
 ///////////////////////////////////////////

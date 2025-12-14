@@ -258,6 +258,8 @@
 #include "streamtitledisplay.h"
 #include "tea.h"
 
+#include "loextras.h"// <ShareStorm>
+
 //
 // exported globals
 //

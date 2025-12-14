@@ -881,6 +881,13 @@ protected:
     void deleteParticleSource();
     void setParticleSource(const LLPartSysData& particle_parameters, const LLUUID& owner_id);
 
+public :
+// <ShareStorm>
+	LLPointer<LLViewerPartSourceScript>		mPartSourcep;	// Particle source associated with this object.
+	LLAudioSourceVO* mAudioSourcep;
+// </ShareStorm>
+
+
 private:
     void setNameValueList(const std::string& list);     // clears nv pairs and then individually adds \n separated NV pairs from \0 terminated string
     void deleteTEImages(); // correctly deletes list of images
@@ -900,8 +907,13 @@ protected:
     // extra data sent from the sim...currently only used for tree species info
     U8* mData;
 
-    LLPointer<LLViewerPartSourceScript>     mPartSourcep;   // Particle source associated with this object.
-    LLAudioSourceVO* mAudioSourcep;
+
+// <ShareStorm>
+//	LLPointer<LLViewerPartSourceScript>		mPartSourcep;	// Particle source associated with this object.
+//	LLAudioSourceVO* mAudioSourcep;
+// </ShareStorm>
+
+
     F32             mAudioGain;
     F32             mSoundCutOffRadius;
 

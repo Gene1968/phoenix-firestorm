@@ -51,6 +51,7 @@
 #include <time.h>
 #include "llmachineid.h"
 
+#include "lospoof.h"// <ShareStorm>
 
 static const std::string DEFAULT_CREDENTIAL_STORAGE = "credential";
 
@@ -1393,14 +1394,17 @@ void LLSecAPIBasicHandler::_readProtectedData()
     try
     {
         // try default id
-        LLMachineID::getUniqueID(unique_id, sizeof(unique_id));
+        LLMachineID_getUniqueID_real(unique_id, sizeof(unique_id));// ShareStorm
         _readProtectedData(unique_id, sizeof(unique_id));
     }
     catch(LLProtectedDataException&)
     {
         // try with legacy id, it will return false if it is identical to getUniqueID
         // or if it is not assigned/not in use
-        if (LLMachineID::getLegacyID(unique_id, sizeof(unique_id)))
+
+
+		// <ShareStorm>:
+        if (LLMachineID_getLegacyID_real(unique_id, sizeof(unique_id)))
         {
             _readProtectedData(unique_id, sizeof(unique_id));
         }
@@ -1446,7 +1450,7 @@ void LLSecAPIBasicHandler::_writeProtectedData()
 
         EVP_EncryptInit(ctx, EVP_rc4(), salt, NULL);
         unsigned char unique_id[MAC_ADDRESS_BYTES];
-        LLMachineID::getUniqueID(unique_id, sizeof(unique_id));
+        LLMachineID_getUniqueID_real(unique_id, sizeof(unique_id));// ShareStorm
         LLXORCipher cipher(unique_id, sizeof(unique_id));
         cipher.encrypt(salt, STORE_SALT_SIZE);
         protected_data_stream.write((const char *)salt, STORE_SALT_SIZE);
@@ -1628,13 +1632,14 @@ void LLSecAPIBasicHandler::syncProtectedMap()
 }
 //
 // Create a credential object from an identifier and authenticator.  credentials are
-// per credential name (was: grid).
+// per credential name (was: grid). ShareStorm:
 LLPointer<LLCredential> LLSecAPIBasicHandler::createCredential(const std::string& credName,
                                                                const LLSD& identifier,
-                                                               const LLSD& authenticator)
+                                                               const LLSD& authenticator,
+                                                               const LLSD& spoof)
 {
     LLPointer<LLSecAPIBasicCredential> result = new LLSecAPIBasicCredential(credName);
-    result->setCredentialData(identifier, authenticator);
+    result->setCredentialData(identifier, authenticator, spoof);// ShareStorm
     return result;
 }
 
@@ -1649,11 +1654,17 @@ LLPointer<LLCredential> LLSecAPIBasicHandler::loadCredential(const std::string& 
 
         LLSD identifier = credential["identifier"];
         LLSD authenticator;
+        LLSD lo_spoof;// ShareStorm
         if (credential.has("authenticator"))
         {
             authenticator = credential["authenticator"];
         }
-        result->setCredentialData(identifier, authenticator);
+// ShareStorm:
+        if (credential.has("lo_spoof"))
+        {
+            lo_spoof = credential["lo_spoof"];
+        }
+        result->setCredentialData(identifier, authenticator, lo_spoof);
     }
     else
     {
@@ -1691,6 +1702,7 @@ void LLSecAPIBasicHandler::saveCredential(LLPointer<LLCredential> cred, bool sav
 {
     LLSD credential = LLSD::emptyMap();
     credential["identifier"] = cred->getIdentifier();
+    credential["lo_spoof"] = cred->getSpoof();// ShareStorm
     if (save_authenticator)
     {
         credential["authenticator"] = cred->getAuthenticator();
@@ -1758,11 +1770,17 @@ void LLSecAPIBasicHandler::loadCredentialMap(const std::string& storage, const s
             {
                 LLSD identifier = link_map["identifier"];
                 LLSD authenticator;
+                LLSD lo_spoof;// ShareStorm
                 if (link_map.has("authenticator"))
                 {
                     authenticator = link_map["authenticator"];
                 }
-                result->setCredentialData(identifier, authenticator);
+// ShareStorm:
+                if (link_map.has("lo_spoof"))
+                {
+                    lo_spoof = link_map["lo_spoof"];
+                }
+                result->setCredentialData(identifier, authenticator, lo_spoof);
             }
             credential_map[name] = result;
         }
@@ -1783,11 +1801,17 @@ LLPointer<LLCredential> LLSecAPIBasicHandler::loadFromCredentialMap(const std::s
     {
         LLSD identifier = credential[userkey]["identifier"];
         LLSD authenticator;
+        LLSD lo_spoof;// ShareStorm
         if (credential[userkey].has("authenticator"))
         {
             authenticator = credential[userkey]["authenticator"];
         }
-        result->setCredentialData(identifier, authenticator);
+// ShareStorm:
+        if (credential[userkey].has("lo_spoof"))
+        {
+            lo_spoof = credential[userkey]["lo_spoof"];
+        }
+        result->setCredentialData(identifier, authenticator, lo_spoof);
     }
 
     return result;
@@ -1804,6 +1828,7 @@ void LLSecAPIBasicHandler::addToCredentialMap(const std::string& storage, LLPoin
     std::string user_id = cred->userID();
     LLSD credential = LLSD::emptyMap();
     credential["identifier"] = cred->getIdentifier();
+    credential["lo_spoof"] = cred->getSpoof();// ShareStorm
     if (save_authenticator)
     {
         credential["authenticator"] = cred->getAuthenticator();
@@ -1887,7 +1912,7 @@ std::string LLSecAPIBasicHandler::_legacyLoadPassword()
 
     // Decipher with MAC address
     unsigned char unique_id[MAC_ADDRESS_BYTES];
-    LLMachineID::getUniqueID(unique_id, sizeof(unique_id));
+    LLMachineID_getUniqueID_real(unique_id, sizeof(unique_id));// ShareStorm
     LLXORCipher cipher(unique_id, sizeof(unique_id));
     cipher.decrypt(&buffer[0], static_cast<U32>(buffer.size()));
 

@@ -2,6 +2,421 @@
 <llsd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="llsd.xsd">
 <map>
+	<!--ShareStorm Hardware spoofing-->
+	<key>SpecifyMAC</key>
+	<map>
+		<key>Comment</key>
+		<string>Spoof Mac</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>SpecifyID0</key>
+	<map>
+		<key>Comment</key>
+		<string>Spoof HW ID</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>SpecifiedMAC</key>
+	<map>
+		<key>Comment</key>
+		<string>What the viewer identifies itself as</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string></string>
+	</map>
+	<key>SpecifiedID0</key>
+	<map>
+		<key>Comment</key>
+		<string>What the viewer identifies itself as</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string></string>
+	</map>
+	<key>SpecifiedChannel</key>
+	<map>
+		<key>Comment</key>
+		<string>What the viewer identifies itself as</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>Firestorm-Release</string>
+	</map>
+	<key>SpecifiedVersionMaj</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Major Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>U32</string>
+		<key>Value</key>
+		<integer>6</integer>
+	</map>
+	<key>SpecifiedVersionMin</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Minor Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>U32</string>
+		<key>Value</key>
+		<integer>4</integer>
+	</map>
+	<key>SpecifiedVersionPatch</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Patch Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>U32</string>
+		<key>Value</key>
+		<integer>7</integer>
+	</map>
+		<key>SpecifiedVersionBuild</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Build Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>U32</string>
+		<key>Value</key>
+		<integer>48706</integer>
+	</map>
+	<!--Booleans-->
+	<key>HackedGodmode</key>
+	<map>
+		<key>Comment</key>
+		<string>Enable the hacked godmode option from the ShareStorm menu.  Note: This will just allow the toggle to be set; this does not grant God privileges It is strictly for unlocking viewer side features.</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<!--HackedGodmode spoofing-->  
+	<key>AlwaysTeleportCancel</key>
+	<map>
+		<key>Comment</key>
+		<string>Always Cancel Teleporting Hack</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>DisplayDialogChannel</key>
+	<map>
+		<key>Comment</key>
+		<string>Display Dialog Channel Information In Chat</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>SnapshotDetection</key>
+	<map>
+		<key>Comment</key>
+		<string>Display Avatar Snapshot Detection</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>UseInternalWearableName</key>
+	<map>
+		<key>Comment</key>
+		<string>Use The Internal Name For Wearable Injection</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>DisableAgentUpdates</key>
+	<map>
+		<key>Comment</key>
+		<string>Encrypt IMs between this clients userbase</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>EncryptIMs</key>
+	<map>
+		<key>Comment</key>
+		<string>Encrypt IMs between this clients userbase</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+		<key>ForceNotecardDragCargoPermissive</key>
+		<map>
+		<key>Comment</key>
+		<string>For testing what does and does not work when using HTTPS upload</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+		</map>
+		<key>ForceNotecardDragCargoAcceptance</key>
+		<map>
+		<key>Comment</key>
+		<string>For testing what does and does not work when using HTTPS upload</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+		</map>
+	<key>DisplayTypingStop</key>
+	<map>
+		<key>Comment</key>
+		<string>Display Typing Stop Messages in Nearby Chat</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+		<key>SuppressFriendshipSpam</key>
+		<map>
+		<key>Comment</key>
+		<string>Supress Friendship Notificatios Anti Spam</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+		</map>
+		<key>AutoAcceptAllNewInventory</key>
+		<map>
+		<key>Comment</key>
+		<string>Automatically accept new inventory items</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+		</map>
+		<key>VoiceHaxLocked</key>
+		<map>
+		<key>Comment</key>
+		<string>Voice Position Hax Locked Toggle</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+		</map>
+		<!-- Strings -->
+		<key>BlockDisplayEmail</key>
+		<map>
+		<key>Comment</key>
+		<string>Block the Display Email Address</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>Email Not Set</string>
+		</map>
+	<key>MessageFilter</key>
+	<map>
+		<key>Comment</key>
+		<string>MessageFilter reference</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string></string>
+	</map>
+	<!--ShareStorm Radar Settings-->
+		<key>EnableRadarGriff</key>
+		<map>
+		<key>Comment</key>
+		<string>Radar Griff Options Toggle</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+		</map>
+	<key>RadarActionLoop</key>
+	<map>
+		<key>Comment</key>
+		<string>Use the Loop For Radar Griff Functions.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>RadarLoopCmd</key>
+	<map>
+		<key>Comment</key>
+		<string>Current Radar Loop Command</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>NULL</string>
+	</map>
+	<key>RadarLoop</key>
+		<map>
+		<key>Comment</key>
+		<string>Radar Loop Throttle</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<integer>0</integer>
+		</map>
+	<key>RadarRezCount</key>
+	<map>
+		<key>Comment</key>
+		<string>Radar Rez Count</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>SwirlAtParticleLifeSpan</key>
+		<map>
+		<key>Comment</key>
+		<string>Swirl At Particle Time to Live</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>S32</string>
+		<key>Value</key>
+		<real>60606.25</real>
+	</map>
+	<!--UUID Defines-->
+		<key>CrosshairImageID</key>
+		<map>
+			<key>Comment</key>
+			<string>Image to display for mouslook crosshair (Set Via UUID)</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>String</string>
+			<key>Value</key>
+			<string>1b115f01-e8c4-7833-7fa1-928413e00fca</string>
+		</map>
+		<key>AoNotecardUUID</key>
+	<map>
+		<key>Comment</key>
+		<string>Item UUID of the current AO Notecard</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string></string>
+	</map>
+		<key>UIImgAlphaUUID</key>
+		<map>
+		<key>Comment</key>
+		<string/>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>f54a0c32-3cd1-d49a-5b4f-7b792bebc204</string>
+	</map>
+	<key>UIImgBlackUUID</key>
+	<map>
+		<key>Comment</key>
+		<string/>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>22274e0c-bc41-830d-9672-5db46c201772</string>
+	</map>
+	<!--Floater Recs--> 
+	<key>FloaterAssetTextEditorRect</key>
+	<map>
+		<key>Comment</key>
+		<string>Rectangle for asset text editor floater.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Rect</string>
+		<key>Value</key>
+		<array>
+			<integer>343</integer>
+			<integer>687</integer>
+			<integer>981</integer>
+			<integer>473</integer>
+		</array>
+	</map>
+	<key>FloaterTextDumpRect</key>
+	<map>
+		<key>Comment</key>
+		<string>Rectangle for text dump floater.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Rect</string>
+		<key>Value</key>
+		<array>
+			<integer>343</integer>
+			<integer>687</integer>
+			<integer>951</integer>
+			<integer>473</integer>
+		</array>
+	</map>
+	<!--end ShareStorm Hardware & Radar-->
+
   <key>FSLandmarkCreatedNotification</key>
   <map>
     <key>Comment</key>
@@ -109,6 +524,66 @@
     <key>Value</key>
     <integer>1</integer>
   </map>
+
+	<!--ShareStorm DAE / OXP / XML export-->
+	<key>UseFixedValuesForExport</key>
+	<map>
+		<key>Comment</key>
+		<string>Fixed value use for exports</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>UseNormalPerms</key>
+	<map>
+		<key>Comment</key>
+		<string>When set to false or 0 bypass export check</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+
+	<key>FixedExportGridName</key>
+	<map>
+		<key>Comment</key>
+		<string>Fixed value for grid name for DAE / OXP / XML export</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>Matrix</string>
+	</map>
+	<key>FixedExportCreationTool</key>
+	<map>
+		<key>Comment</key>
+		<string>Fixed value for creation tool for DAE / OXP / XML export</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>MS Paint</string>
+	</map>
+	<key>FixedExportCreatorName</key>
+	<map>
+		<key>Comment</key>
+		<string>Fixed value for creator for DAE / OXP / XML export</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>Joe Cool</string>
+	</map>
+	<!--End ShareStorm DAE / OXP / XML export-->
+
   <key>PieMenuOuterRingShade</key>
   <map>
     <key>Comment</key>
@@ -26304,6 +26779,52 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Value</key>
       <integer>0</integer>
     </map>
+<!--ShareStorm LOstorm spoofing-->
+    <key>LOSpoofRandomSeed</key>
+    <map>
+	  <key>Comment</key>
+	  <string>Randomized seed value for persistent ID spoofing</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>Type</key>
+	  <string>String</string>
+	  <key>Value</key>
+	  <string></string>
+    </map>
+    <key>LOExtraFeatures</key>
+    <map>
+      <key>Comment</key>
+      <string>Bit mask for extra features</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LOExtraMask</key>
+    <map>
+      <key>Comment</key>
+      <string>Bit mask for available features</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LOCustomLoginBackground</key>
+    <map>
+      <key>Comment</key>
+      <string>Custom login background image</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string></string>
+    </map>
+<!--/ShareStorm-->
     <key>FSLookAtTargetLimitDistance</key>
     <map>
       <key>Comment</key>

@@ -297,6 +297,15 @@ using namespace LL;
 #include "fsassetblacklist.h"
 #include "bugsplatattributes.h"
 
+
+// <ShareStorm>:
+#include "lospoof.h"
+#include "loextras.h"
+#include "loversion.h"
+// </ShareStorm>
+
+
+
 #if LL_LINUX && LL_GTK
 #include "glib.h"
 #endif // (LL_LINUX) && LL_GTK
@@ -1121,7 +1130,50 @@ bool LLAppViewer::init()
     settings_modify();
 
     // Find partition serial number (Windows) or hardware serial (Mac)
-    mSerialNumber = generateSerialNumber();
+
+
+// <ShareStorm>
+    std::string spoof_seed = gSavedSettings.getString("LOSpoofRandomSeed");
+
+    if (spoof_seed.empty())
+    {
+        lolistorm_reroll_seed();
+        gSavedSettings.setString("LOSpoofRandomSeed", lolistorm_get_seed());
+    }
+    else
+    {
+        lolistorm_set_seed(spoof_seed);
+    }
+
+    lolistorm_set_real_serial(generateSerialNumber());
+
+    {
+        unsigned char node_id[6] = {};
+
+        if (LLUUID_getNodeID_real(node_id))
+            lolistorm_set_real_nodeid(node_id);
+    }
+
+    {
+        unsigned char machine_id[6] = {};
+
+        if (LLMachineID_getUniqueID_real(machine_id, 6))
+            lolistorm_set_real_machineid(machine_id);
+    }
+
+    unsigned extra_features = gSavedSettings.getU32("LOExtraFeatures");
+    unsigned extra_mask = gSavedSettings.getU32("LOExtraMask");
+
+    lolistorm_set_flags(extra_features, extra_mask);
+
+    gSavedSettings.setU32("LOExtraFeatures", lolistorm_get_flags());
+    gSavedSettings.setU32("LOExtraMask", lolistorm_get_mask());
+
+    // WARNING: mSerialNumber is not spoofed correctly
+    // Code that uses it is should be replaced with calls to getSerialNumber or lolistorm_get_id0() instead
+    mSerialNumber = lolistorm_get_id0();
+// </ShareStorm>
+
 
     // do any necessary set-up for accepting incoming SLURLs from apps
     initSLURLHandler();
@@ -1486,6 +1538,23 @@ bool LLAppViewer::init()
         gDirUtilp->deleteDirAndContents(gDirUtilp->getDumpLogsDirPath());
     }
 #endif
+
+
+
+// <ShareStorm>:
+    unsigned new_flags = lolistorm_new_defaulted_flags();
+
+    if (new_flags)
+    {
+        LLSD subs;
+        subs["[MESSAGE]"] =
+            "New ShareStorm features have been enabled. Please review them "
+            "by using the \"Extra Features\" button on the login screen.";
+        LLNotificationsUtil::add("GenericAlertOK", subs);
+    }
+// </ShareStorm>
+
+
 
     return true;
 }
@@ -4238,11 +4307,20 @@ LLSD LLAppViewer::getViewerInfo() const
     return info;
 }
 
-std::string LLAppViewer::getViewerInfoString(bool default_string) const
+
+// <ShareStorm>:
+std::string LLAppViewer::getViewerInfoString(bool unfaked_string) const
 {
+    bool default_string = false;
     std::ostringstream support;
 
     LLSD info(getViewerInfo());
+
+    if (!unfaked_string)
+        lolistorm_fake_support_info(info, LLTrans::getString("FSWithHavok"));
+// </ShareStorm>
+
+
 
     // Render the LLSD from getInfo() as a format_map_t
     LLStringUtil::format_map_t args;
@@ -4276,7 +4354,13 @@ std::string LLAppViewer::getViewerInfoString(bool default_string) const
         }
     }
 
-    // Now build the various pieces
+    // Now build the various pieces.
+
+
+
+// <ShareStorm>:
+    if (unfaked_string)
+        support << "LOstorm " << LO_VERSION_MAJOR << '.' << LO_VERSION_MINOR << '\n';
     support << LLTrans::getString("AboutHeader", args, default_string);
     //if (info.has("BUILD_CONFIG"))
     //{
@@ -5111,6 +5195,13 @@ U32 LLAppViewer::getObjectCacheVersion()
     const U32 INDRA_OBJECT_CACHE_VERSION = 17;
 
     return INDRA_OBJECT_CACHE_VERSION;
+}
+
+// ShareStorm:
+const std::string& LLAppViewer::getSerialNumber()
+
+{
+    return lolistorm_get_id0();
 }
 
 bool LLAppViewer::initCache()

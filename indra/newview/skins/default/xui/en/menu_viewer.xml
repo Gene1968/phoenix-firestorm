@@ -695,7 +695,332 @@
         </menu_item_call>
 
     </menu>
-    
+
+	<!-- Custom ShareStorm Menu: -->
+	<menu create_jump_keys="true" label="ShareStorm!" mouse_opaque="false" name="File" opaque="true" tear_off="true">
+		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~" />
+		<menu create_jump_keys="true" label="! Save/Export object" mouse_opaque="false" name="Import/Export" opaque="true" tear_off="true">
+			<menu_item_call label="Mesh Export as Collada DAE" name="Collada">
+				<menu_item_call.on_click function="Object.ExportCollada" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
+			</menu_item_call>
+			<menu_item_call label="Backup object as OXP" name="Backup">
+				<menu_item_call.on_click function="Object.Export" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
+			</menu_item_call>
+			<menu_item_separator name="exportseparator" label="-----------" />
+			<menu_item_call label="--Export as OBJ" name="Export OBJ">
+				<on_click function="File.ExportOBJ" />
+				<on_enable function="File.EnableBackupObject" />
+			</menu_item_call>
+			<menu_item_call label="--Export as XML" name="Export...">
+				<menu_item_call.on_click function="Object.SaveAs" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
+			</menu_item_call>
+			<menu_item_call label="--Save texture as..." name="Save Texture As...">
+				<on_click function="File.SaveTexture" />
+				<on_enable function="File.EnableSaveAs" />
+			</menu_item_call>
+			<menu_item_call label="Take Snapshot" name="Take Snapshot" shortcut="control|shift|S">
+				<menu_item_call.on_click function="Floater.Show" parameter="snapshot" />
+			</menu_item_call>
+			<menu_item_call name="Snapshot to Disk" label="Snapshot to disk" shortcut="control|`" useMacCtrl="true">
+				<on_click function="File.TakeSnapshotToDisk" />
+			</menu_item_call>
+		</menu>
+		<menu label="! Import/Upload item(s)" name="upload" create_jump_keys="true" mouse_opaque="false" opaque="true" tear_off="true">
+			<menu_item_call label="Mesh Model DAE (variable cost)..." name="Upload Model">
+				<on_click function="File.UploadModel" />
+				<on_enable function="File.EnableUploadModel" />
+				<menu_item_call.on_visible function="File.VisibleUploadModel" />
+			</menu_item_call>
+			<menu_item_call label="OXP Linkset..." visibility_control="FSEnableObjectExports" name="import linkset">
+				<menu_item_call.on_click function="File.ImportLinkset" parameter="" />
+			</menu_item_call>
+			<menu_item_call label="?-Import XML" name="Import...">
+				<menu_item_call.on_click function="Object.Import" />
+				<menu_item_call.on_enable function="Object.EnableImport" />
+			</menu_item_call>
+			<menu_item_call label="?-Import XML2" name="Import..." enabled="true">
+				<menu_item_call.on_click function="File.ImportXML" parameter="" />
+				<menu_item_call.on_visible function="File.EnableImportXML" parameter="" />
+			</menu_item_call>
+			<menu_item_call label="-XML + .asset files (variable cost)...dae" name="Upload Assets">
+				<on_click function="File.UploadXMLModel" />
+				<on_enable function="File.EnableUploadXMLModel" />
+			</menu_item_call>
+			<menu_item_call label="-XML + .asset files (variable cost)...2" name="Upload Assets">
+				<menu_item_call.on_click function="File.ImportXML" parameter="" />
+				<menu_item_call.on_enable function="File.EnableImportXML" />
+				<menu_item_call.on_visible function="File.EnableImportXML" parameter="" />
+			</menu_item_call>
+			<menu_item_call label="--Import OBJ Object" enabled="false" name="Import">
+				<on_click function="File.ImportObject" />
+				<on_enable function="File.EnableImportObject" />
+			</menu_item_call>
+			<menu_item_call label="Image (L$[COST])..." name="Upload Image" shortcut="control|U">
+				<on_click function="File.UploadImage" />
+				<on_enable function="File.EnableUploadImage" />
+				<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Upload Image" />
+			</menu_item_call>
+			<menu_item_call label="Sound (L$[COST])..." name="Upload Sound">
+				<on_click function="File.UploadSound" />
+				<on_enable function="File.EnableUploadSound" />
+				<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Upload Sound" />
+			</menu_item_call>
+			<menu_item_call label="Animation (L$[COST])..." name="Upload Animation">
+				<on_click function="File.UploadAnim" />
+				<on_enable function="File.EnableUploadAnim" />
+				<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Upload Animation" />
+			</menu_item_call>
+			<menu_item_call label="Material GLTF GLB (L$[COST]) per texture..." name="Upload Material">
+				<on_click function="File.UploadMaterial" />
+				<on_enable function="File.EnableUploadMaterial" />
+			</menu_item_call>
+			<menu_item_call label="--Wearable (variable cost)..." name="Upload Wearable">
+				<on_click function="File.UploadWearable" />
+				<on_enable function="File.EnableUploadWearable" />
+			</menu_item_call>
+			<menu_item_call label="Bulk (L$[COST] max per file)..." name="Bulk Upload">
+				<on_click function="File.UploadBulk" />
+				<on_enable function="File.EnableUpload" />
+				<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Bulk Upload" />
+			</menu_item_call>
+			<menu_item_call label="Import Wearables..." name="Import Wearables">
+				<menu_item_call.on_click function="File.UploadBulk" />
+			</menu_item_call>
+			<menu_item_call label="-Upload textures + Import" name="UploadImport" enabled="true">
+				<on_click function="File.UploadImportObject" />
+				<on_enable function="File.EnableImportObject" />
+			</menu_item_call>
+		</menu>
+		<menu create_jump_keys="true" label="Import environment" mouse_opaque="false" name="Import environment" opaque="true" tear_off="true">
+			<menu_item_call name="Import water" label="Import water settings" enabled="false">
+				<on_click function="File.ImportSettings" userdata="water" />
+				<on_enable function="File.EnableImportSettings" />
+			</menu_item_call>
+			<menu_item_call name="Import sky" label="Import sky settings" enabled="false">
+				<on_click function="File.ImportSettings" userdata="sky" />
+				<on_enable function="File.EnableImportSettings" />
+			</menu_item_call>
+			<menu_item_call name="Import day" label="Import day cycle settings" enabled="false">
+				<on_click function="File.ImportSettings" userdata="day" />
+				<on_enable function="File.EnableImportSettings" />
+			</menu_item_call>
+		</menu>
+		<menu_item_call label="Set Default Permissions..." name="Set default permissions">
+			<menu_item_call.on_click function="Floater.ToggleOrBringToFront" parameter="perms_default" />
+		</menu_item_call>
+		<menu_item_separator />
+		<menu create_jump_keys="true" label="Selected Objects" name="Object" tear_off="true">
+			<menu_item_call label="Buy" name="Menu Object Buy">
+				<menu_item_call.on_click function="Tools.BuyOrTake" />
+				<menu_item_call.on_visible function="Tools.VisibleBuyObject" />
+				<menu_item_call.on_enable function="Tools.EnableBuyOrTake" />
+			</menu_item_call>
+			<menu_item_call label="Take" name="Menu Object Take">
+				<menu_item_call.on_click function="Tools.BuyOrTake" />
+				<menu_item_call.on_visible function="Tools.VisibleTakeObject" />
+				<menu_item_call.on_enable function="Tools.EnableBuyOrTake" />
+			</menu_item_call>
+			<menu_item_call label="Take Copy" name="Take Copy">
+				<menu_item_call.on_click function="Tools.TakeCopy" />
+				<menu_item_call.on_enable function="Tools.EnableTakeCopy" />
+			</menu_item_call>
+			<menu_item_call enabled="false" label="Delete" name="Delete">
+				<menu_item_call.on_click function="Object.Delete" />
+				<menu_item_call.on_enable function="Object.EnableDelete" />
+			</menu_item_call>
+			<menu_item_call enabled="false" label="Send OffWorld (destroy)" name="Destroy">
+				<menu_item_call.on_click function="Object.Blink" />
+				<menu_item_call.on_enable function="Object.EnableExplode" />
+			</menu_item_call>
+			<menu_item_call enabled="false" label="Explode" name="Explode">
+				<menu_item_call.on_click function="Object.Explode" />
+				<menu_item_call.on_enable function="Object.EnableExplode" />
+			</menu_item_call>
+			<menu_item_call label="Duplicate" name="Duplicate" shortcut="control|D">
+				<menu_item_call.on_click function="Object.Duplicate" />
+				<menu_item_call.on_enable function="Object.EnableDuplicate" />
+			</menu_item_call>
+			<menu_item_call label="Add Particles" name="Menu Object Edit Particles">
+				<menu_item_call.on_click function="Object.EditParticles" />
+				<menu_item_call.on_enable function="Object.EnableEditParticles" />
+			</menu_item_call>
+			<menu_item_call label="--Rip Particles" name="Menu Object Rip Particles">
+				<menu_item_call.on_click function="Object.RipParticles" />
+				<menu_item_call.on_enable function="Object.EnableRipParticles" />
+			</menu_item_call>
+			<menu_item_call label="--Rip Animated Textures" name="Menu Object Animated Textures">
+				<menu_item_call.on_click function="Object.RipAnimatedTextures" />
+				<menu_item_call.on_enable function="Object.EnableRipAnimatedTextures" />
+			</menu_item_call>
+			<menu_item_call label="Save Back to Object Contents" name="Save Object Back to Object Contents">
+				<menu_item_call.on_click function="Tools.SaveToObjectInventory" />
+				<menu_item_call.on_enable function="Tools.EnableSaveToObjectInventory" />
+			</menu_item_call>
+			<menu_item_call label="Save Back to Inventory" name="Save Object Back to My Inventory">
+				<menu_item_call.on_click function="Tools.SaveToInventory" />
+				<menu_item_call.on_enable function="Tools.EnableSaveToInventory" />
+			</menu_item_call>
+			<menu_item_call label="Return Object" name="Return Object back to Owner">
+				<menu_item_call.on_click function="Object.Return" />
+				<menu_item_call.on_enable function="Object.EnableReturn" />
+			</menu_item_call>
+		</menu>
+		<menu_item_separator name="separator2" label="-----------" />
+		<menu create_jump_keys="true" label="Movement" name="Settings Menu" tear_off="true">
+			<menu_item_check label="Movelock (Phantom mode)" shortcut="control|alt|P" name="Move Lock">
+				<menu_item_check.on_check function="Self.GetMoveLock" />
+				<menu_item_check.on_click function="Self.ToggleMoveLock" />
+				<menu_item_check.on_enable function="Self.EnableMoveLock" />
+			</menu_item_check>
+			<menu_item_check label="Force Ground Sit" name="Force Toggle Sitting">
+				<menu_item_check.on_check function="Self.getForceSit" />
+				<menu_item_check.on_click function="Self.ForceSit" />
+				<menu_item_check.on_enable function="Self.EnableForceSit" />
+			</menu_item_check>
+			<menu_item_check label="Phantom" name="Avatar Phantom">
+				<menu_item_check.on_check function="Self.getPhantom" />
+				<menu_item_check.on_click function="Self.togglePhantom" />
+			</menu_item_check>
+			<menu_item_call label="Teleport To Safety (Up)" shortcut="control|pgup" name="Teleport To Safety">
+				<menu_item_call.on_click function="Avatar.TpSafety" />
+			</menu_item_call>
+			<menu_item_call label="--Teleport To Ground Level" shortcut="control|pgdn" name="Teleport To Ground">
+				<menu_item_call.on_click function="Avatar.TpGround" />
+			</menu_item_call>
+			<menu_item_check label="DoubleClick to Teleport" name="DoubleClick Teleport" shortcut="control|shift|D">
+				<menu_item_check.on_check function="CheckControl" parameter="DoubleClickTeleport" />
+				<menu_item_check.on_click function="Advanced.ToggleDoubleClickTeleport" />
+			</menu_item_check>
+			<menu_item_check label="Fly Override" name="Fly Override" shortcut="control|alt|V">
+				<menu_item_check.on_check function="CheckControl" parameter="FSAlwaysFly" />
+				<menu_item_check.on_click function="ToggleControl" parameter="FSAlwaysFly" />
+			</menu_item_check>
+		</menu>
+		<menu_item_separator name="separator3" label="-----------" />
+<!-- ShareStorm Start -->
+		<menu_item_call label="--New Local Asset" name="New Pretend Item">
+			<menu_item_call.on_click function="Floater.Show" parameter="new_local_inventory" />
+		</menu_item_call>
+		<menu_item_check label="Disable Camera Constraints" name="Disable Camera Distance">
+			<menu_item_check.on_check function="CheckControl" parameter="DisableCameraConstraints" />
+			<menu_item_check.on_click function="ToggleControl" parameter="DisableCameraConstraints" />
+		</menu_item_check>
+		<menu_item_check label="Disable Agent Updates" name="Disable Agent Updates" shortcut="control|D">
+			<menu_item_check.on_check control="DisableAgentUpdates" />
+			<menu_item_check.on_click function="ToggleControl" parameter="DisableAgentUpdates" />
+		</menu_item_check>
+		<menu_item_call label="Message Log" name="message_log">
+			<menu_item_call.on_click function="Floater.Show" parameter="message_log" />
+		</menu_item_call>
+		<menu_item_call label="Message Builder" name="message_builder">
+			<menu_item_call.on_click function="Floater.Show" parameter="message_builder" />
+		</menu_item_call>
+		<menu_item_call label="Force Undeform Avatar" shortcut="control|U" name="Avatar UndeformAll">
+			<menu_item_call.on_click function="Avatar.UndeformAll" />
+		</menu_item_call>
+		<menu_item_call label="Force Undeform Avatar Fix Eyes" shortcut="control|alt|U" name="UndeformAllNotEyes">
+			<menu_item_call.on_click function="Avatar.UndeformAllNotEyes" />
+		</menu_item_call>
+		<menu_item_call label="Select All Region Owned Objects" name="Select All your objects" shortcut="control|Del">
+			<menu_item_call.on_click function="World.SelectAllYours" />
+		</menu_item_call>
+		<menu_item_call label="Mass Delete Region Owned Objects" name="Mass delete your objects" shortcut="control|shift|Del">
+			<menu_item_call.on_click function="World.MassGodDelete" />
+		</menu_item_call>
+		<menu_item_separator />
+		<menu_item_call label="Bumps, Pushes &amp; Hits" name="Bumps, Pushes &amp;amp; Hits">
+			<menu_item_call.on_click function="Floater.Show" parameter="bumps" />
+		</menu_item_call>
+		<menu_item_separator />
+		<menu_item_check label="Hide Particles" name="Hide Particles" shortcut="control|alt|shift|=">
+			<menu_item_check.on_check function="View.CheckRenderType" parameter="hideparticles" />
+			<menu_item_check.on_click function="View.ToggleRenderType" parameter="hideparticles" />
+		</menu_item_check>
+		<menu_item_call label="--Particle Explorer..." name="particle_detection">
+			<menu_item_call.on_click function="Floater.Show" parameter="particle_detection" />
+		</menu_item_call>
+		<menu_item_call label="--Edit Particles" name="Menu Object Edit Particles">
+			<menu_item_call.on_click function="Object.EditParticles" />
+			<menu_item_call.on_enable function="Object.EnableEditParticles" />
+		</menu_item_call>
+		<menu_item_call label="--Rip Selected Objects Particles" shortcut="alt|shift|P" name="Menu Object Edit Particles">
+			<menu_item_call.on_click function="Object.RipParticles" />
+			<menu_item_call.on_enable function="Object.EnableRipParticles" />
+		</menu_item_call>
+		<menu_item_call label="--Rip All Objects Particles In View" name="Particle All">
+			<menu_item_call.on_click function="Object.RipAllParticles" />
+		</menu_item_call>
+		<menu_item_separator />
+		<menu_item_call label="Sound Explorer" name="Sound Explorer">
+			<menu_item_call.on_click function="Floater.Toggle" parameter="sound_explorer" />
+		</menu_item_call>
+		<menu_item_call label="Animation Explorer" name="Animation Explorer">
+			<menu_item_call.on_click function="Floater.Toggle" parameter="animation_explorer" />
+		</menu_item_call>
+		<menu_item_check label="Gestures" name="Gestures" shortcut="control|G">
+			<menu_item_check.on_check function="Floater.Visible" parameter="gestures" />
+			<menu_item_check.on_click function="Floater.Toggle" parameter="gestures" />
+		</menu_item_check>
+		<menu_item_call label="--Region Texture Explorer" name="Region Texture Explorer">
+			<menu_item_call.on_click function="World.TexInspect" />
+		</menu_item_call>
+		<menu_item_separator name="separator4" label="-----------" />
+		<menu_item_call name="Close Window" label="Close window" shortcut="control|W">
+			<on_click function="File.CloseWindow" />
+			<on_enable function="File.EnableCloseWindow" />
+		</menu_item_call>
+		<menu_item_call name="Close All Windows" label="Close all windows" shortcut="control|shift|W">
+			<on_click function="File.CloseAllWindows" />
+			<on_enable function="File.EnableCloseAllWindows" />
+		</menu_item_call>
+		<menu_item_separator />
+		<menu_item_check label="Toggle Hacked Godmode" name="ToggleHackedGodmode">
+			<menu_item_check.on_enable function="Advanced.EnableToggleHackedGodmode" />
+			<menu_item_check.on_check function="IsGodCustomerService" />
+			<menu_item_check.on_click function="Advanced.HandleToggleHackedGodmode" />
+		</menu_item_check>
+		<menu_item_check label="Hacked Godmode" name="HackedGodmode">
+			<menu_item_check.on_check function="Advanced.CheckToggleHackedGodmode" />
+			<menu_item_check.on_click function="Advanced.HandleToggleHackedGodmode" />
+		</menu_item_check>
+		<menu_item_call label="ShareStorm Extra Settings" name="ShareStorm Extras">
+			<menu_item_call.on_click function="Floater.Toggle" parameter="lo_extras" />
+		</menu_item_call>
+<!-- ShareStorm End -->
+	</menu>
+	<!-- Custom Uploads Menu: -->
+<!-- <menu create_jump_keys="true" label="Upload" layout="topleft" name="Upload" tear_off="true" visible="true">
+	<menu_item_call label="Mesh Model..." layout="topleft" name="Upload Model" shortcut="control|alt|M">
+		<menu_item_call.on_click function="File.UploadModel" parameter=""/>
+		<menu_item_call.on_enable function="File.EnableUploadModel"/>
+		<menu_item_call.on_visible function="File.VisibleUploadModel"/>
+	</menu_item_call>
+	<menu_item_call label="Animation (L$[COST])..." layout="topleft" name="Upload Animation">
+		<menu_item_call.on_click function="File.UploadAnim" parameter=""/>
+		<menu_item_call.on_enable function="File.EnableUpload"/>
+		<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Upload Animation"/>
+	</menu_item_call>
+	<menu_item_call label="Image (L$[COST])..." layout="topleft" name="Upload Image" shortcut="control|U">
+		<menu_item_call.on_click function="File.UploadImage" parameter=""/>
+		<menu_item_call.on_enable function="File.EnableUpload"/>
+		<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Upload Image"/>
+	</menu_item_call>
+	<menu_item_call label="Sound (L$[COST])..." layout="topleft" name="Upload Sound">
+		<menu_item_call.on_click function="File.UploadSound" parameter=""/>
+		<menu_item_call.on_enable function="File.EnableUpload"/>
+		<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Upload Sound"/>
+	</menu_item_call>
+	<menu_item_call label="Bulk (L$[COST] per file)..." layout="topleft" name="Bulk Upload">
+		<menu_item_call.on_click function="File.UploadBulk" parameter=""/>
+		<menu_item_call.on_visible function="Upload.CalculateCosts" parameter="Bulk Upload"/>
+	</menu_item_call>
+</menu> -->
+
+
+
     <!-- Comm Menu -->
     
     <menu
@@ -1922,7 +2247,7 @@
             name="Export Menu"
             tear_off="true">
             <menu_item_call
-              label="Backup"
+              label="Backup OXP"
               name="Backup">
               <menu_item_call.on_click
               function="Object.Export" />
@@ -1930,7 +2255,7 @@
               function="Object.EnableExport" />
             </menu_item_call>
             <menu_item_call
-              label="Collada"
+              label="Collada DAE"
               name="Collada">
               <menu_item_call.on_click
               function="Object.ExportCollada" />
@@ -2429,7 +2754,7 @@
                  parameter="Bulk Upload" />
             </menu_item_call>
 	    <menu_item_call
-             label="Import Linkset..."
+             label="Import Linkset OXP..."
              visibility_control="FSEnableObjectExports"
              name="import linkset">
                 <menu_item_call.on_click

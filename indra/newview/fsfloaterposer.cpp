@@ -1467,7 +1467,7 @@ bool FSFloaterPoser::havePermissionToAnimateOtherAvatar(LLVOAvatar* avatar) cons
     if (!avatar || avatar->isDead())
         return false;
 
-    return false;
+	return true;// <ShareStorm> per Lo16.2
 }
 
 void FSFloaterPoser::poseControlsEnable(bool enable)

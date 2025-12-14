@@ -48,6 +48,55 @@
         <pie_slice.on_enable
             function="Object.EnableStandUp" />
     </pie_slice>
+
+<!--ShareStorm edit-->
+<pie_menu label="ShareStorm >" name="Object Pie More 3">
+	<pie_slice enabled="false"	label="Import.Xml" name="Import...">
+		<pie_slice.on_click function="Object.Import" />
+		<pie_slice.on_enable function="Object.EnableImport" />
+	</pie_slice>
+	<pie_slice label="--Export Xml" name="Export...">
+		<pie_slice.on_click	function="Object.SaveAs" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<pie_slice label="Textures!" enabled="false" name="Textures">
+		<pie_slice.on_click	function="Avatar.TexInspect" />
+		<pie_slice.on_click function="Floater.Show" parameter="inspect_texture" />
+	</pie_slice>
+	<pie_slice label="Particle RIP" name="Particles">
+		<pie_slice.on_click	function="Object.RipParticles" />
+	</pie_slice>
+	<pie_slice label="Collada" name="Collada">
+		<pie_slice.on_click	function="Object.ExportCollada" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<pie_slice enabled="false" label="OXP Backup" name="Backup">
+		<pie_slice.on_click	function="Object.Export" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
+	<pie_menu label="ShareStorm More >" name="Object Pie More 4">
+		<pie_slice label="Destroy" name="Destroy">
+			<pie_slice.on_click	function="Object.Blink" />
+		</pie_slice>
+		<pie_slice label="Mass Delete" name="Mass Delete">
+			<pie_slice.on_click function="World.MassGodDelete" />
+		</pie_slice>
+		<pie_slice enabled="false"	label="Edit Particles" name="Edit Particles">
+			<pie_slice.on_click function="Object.EditParticles" />
+			<pie_slice.on_enable function="Object.EnableEditParticles" />
+		</pie_slice>
+		<pie_slice label="OXP Import" name="linkset">
+			<pie_slice.on_click function="File.ImportLinkset" />
+		</pie_slice>
+	</pie_menu>
+	<pie_slice label="Duplicate" name="Duplicate">
+		<pie_slice.on_click	function="Object.Duplicate" />
+		<pie_slice.on_enable function="Object.EnableDuplicate" />
+	</pie_slice>
+</pie_menu>
+<pie_menu label="Object >" name="Object Pie Menu Object">
+<!--end ShareStorm edit-->
+
     <pie_slice
         start_autohide="true"
         enabled="false"
@@ -397,9 +446,25 @@
             <pie_slice.on_enable
                 function="Object.EnableReportAbuse" />
         </pie_slice>
-        <pie_menu
-            name="ExportMenu"
-            label="Save as &gt;">
+
+	<!-- ShareStorm edit -->
+	<pie_menu label="Export/Import" name="Export Menu">
+		<pie_slice enabled="true" label="XML..." mouse_opaque="true" name="Save As...">
+			<on_click function="ShowFloater" userdata="export list" />
+		</pie_slice>
+		<pie_slice label="OBJ..." mouse_opaque="true" name="Save OBJ...">
+			<on_click function="Object.SaveAsOBJ" />
+		</pie_slice>
+		<pie_slice label="DAE..." mouse_opaque="true" name="Save DAE...">
+			<on_click function="Object.SaveAsDAE" />
+		</pie_slice>
+		<pie_slice enabled="false" hidden="false" label="Import..." mouse_opaque="true" name="Import...">
+			<on_click function="Object.Import" />
+			<on_enable function="Object.EnableImport" />
+		</pie_slice>
+	</pie_menu>
+	<!-- end ShareStorm edit -->
+
             <pie_slice
                 enabled="false"
                 label="Backup"
@@ -426,6 +491,18 @@
                     <pie_slice.on_visible
                      function="Advanced.EnableAppearanceToXML"/>
             </pie_slice>
+
+	<!-- ShareStorm edit -->
+		<pie_slice enabled="false" label="Import.Xml" name="Import...">
+			<pie_slice.on_click function="Object.Import" />
+			<pie_slice.on_enable function="Object.EnableImport" />
+		</pie_slice>
+		<pie_slice enabled="false" label="Export Xml" name="Export...">
+			<pie_slice.on_click function="Object.SaveAs" />
+			<pie_slice.on_enable function="Object.EnableExport" />
+		</pie_slice>
+	<!-- end ShareStorm edit -->
+
         </pie_menu>
 
 <!-- Phoenix has "Disable" here, which we haven't implemented yet.
@@ -569,6 +646,12 @@
                 function="Floater.Show"
                 parameter="inspect" />
         </pie_slice>
+
+	<!-- ShareStorm ? -->
+	<pie_slice label="-Textures!" enabled="false" name="Textures">
+		<pie_slice.on_click	function="Avatar.TexInspect" />
+		<pie_slice.on_click function="Floater.Show" parameter="inspect_texture" />
+	</pie_slice>
 
     </pie_menu>
 

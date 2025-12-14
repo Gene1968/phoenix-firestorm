@@ -33,6 +33,8 @@
 #include "llvovolume.h"
 #include "llworld.h"
 
+#include "loextras.h"// <ShareStorm>
+
 #define FOLLOW_PERMS 1
 
 bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
@@ -42,13 +44,16 @@ bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
         LL_WARNS("export") << "No node, bailing!" << LL_ENDL;
         return false;
     }
+	// <ShareStorm>:
     bool exportable = false;
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
 
     LLViewerObject* object = node->getObject();
     if (LLGridManager::getInstance()->isInSecondLife())
     {
         LLUUID creator(node->mPermissions->getCreator());
-        exportable = (object->permYouOwner() && gAgentID == creator);
+		// ShareStorm: exportable = (object->permYouOwner() && gAgentID == creator);
         if (!exportable)
         {
             // Megaprim check
@@ -105,13 +110,16 @@ bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
                 {
                     if (dae)
                     {
-                        exportable = gMeshRepo.getCreatorFromHeader(sculpt_params->getSculptTexture()) == gAgentID;
+						// <ShareStorm>: exportable = gMeshRepo.getCreatorFromHeader(sculpt_params->getSculptTexture()) == gAgentID;
                     }
                     else
                     {
                         // can not export mesh to oxp
                         LL_INFOS("export") << "Mesh can not be exported to oxp." << LL_ENDL;
-                        return false;
+
+						// <ShareStorm>:
+                        if (!enhanced_export)
+                            return false;
                     }
                 }
                 else if (sculpt_params)
@@ -196,7 +204,8 @@ bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
         }
     }
 
-    return exportable;
+	// ShareStorm: return bypass_perms || exportable;
+    return true;
 }
 
 #if !FOLLOW_PERMS
@@ -205,7 +214,10 @@ bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
 
 bool FSExportPermsCheck::canExportAsset(LLUUID asset_id, std::string* name, std::string* description)
 {
-    bool exportable = false;
+	// <ShareStorm> from original Singularity copybot Grimore: bool exportable = false;
+	bool exportable = true;
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
     LLViewerInventoryCategory::cat_array_t cats;
     LLViewerInventoryItem::item_array_t items;
     LLAssetIDMatches asset_id_matches(asset_id);
@@ -214,6 +226,9 @@ bool FSExportPermsCheck::canExportAsset(LLUUID asset_id, std::string* name, std:
                                     items,
                                     LLInventoryModel::INCLUDE_TRASH,
                                     asset_id_matches);
+
+    if (bypass_perms)
+        (*description) = "";// <ShareStorm>
 
     if (items.size())
     {
@@ -251,5 +266,8 @@ bool FSExportPermsCheck::canExportAsset(LLUUID asset_id, std::string* name, std:
         }
     }
 
-    return exportable;
+    // <ShareStorm>: return exportable;
+	if (bypass_perms && name->empty())
+		(*name) = asset_id.asString();
+	return true;
 }

@@ -158,4 +158,21 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/function/function1.hpp>
 
+
+// <ShareStorm>: ?
+#include <vector>
+#include <queue>
+#include <stack>
+#include <boost/call_traits.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/range.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility/value_init.hpp>
+#include <boost/variant.hpp>
+#include <openssl/x509.h>
+
+#include "llglheaders.h"
+
 #endif

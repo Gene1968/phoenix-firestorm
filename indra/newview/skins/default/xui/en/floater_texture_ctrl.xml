@@ -133,7 +133,7 @@ Pick: Texture
      name="Default"
      width="73"
 	 left="94"
-     top="215"/>
+     top="206"/>
     <button
      follows="left|top"
      height="18"
@@ -166,6 +166,19 @@ Pick: Texture
      name="None"
      top_pad="0"
      width="73" />
+<!-- <ShareStorm> -->
+	<button
+		follows="left|top"
+		height="18"
+		label="CpToInv"
+		label_selected="CpToInv"
+		layout="topleft"
+		left_delta="0"
+		left_pad="4"
+		name="CpToInv"
+		top_pad="0"
+		width="73" />
+<!-- </ShareStorm> -->
     <button
      follows="left|top"
      height="28"
