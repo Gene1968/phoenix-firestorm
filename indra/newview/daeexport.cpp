@@ -63,7 +63,6 @@
 
 #include "loextras.h"// <ShareStorm>
 
-static const F32 TEXTURE_DOWNLOAD_TIMEOUT = 60.f;
 static constexpr F32 TEXTURE_DOWNLOAD_TIMEOUT = 60.f;
 
 // *FIXME: Don't hard code these and allow the floater to resize. Right now, I'm too lazy. <FS:CR>
