@@ -636,6 +636,14 @@
              function="Floater.Toggle"
              parameter="preferences" />
         </menu_item_call>
+
+        <menu_item_call
+         label="ShareStorm/LO Extras"
+         name="LOStorm Extras">
+            <menu_item_call.on_click
+             function="Floater.Toggle"
+             parameter="lo_extras" />
+        </menu_item_call>
         
         <menu_item_call
          label="Toolbar Buttons"
@@ -729,7 +737,7 @@
 			</menu_item_call>
 		</menu>
 		<menu label="! Import/Upload item(s)" name="upload" create_jump_keys="true" mouse_opaque="false" opaque="true" tear_off="true">
-			<menu_item_call label="Mesh Model DAE (variable cost)..." name="Upload Model">
+			<menu_item_call label="Mesh Model (variable cost)..." name="Upload Model">
 				<on_click function="File.UploadModel" />
 				<on_enable function="File.EnableUploadModel" />
 				<menu_item_call.on_visible function="File.VisibleUploadModel" />
@@ -2253,6 +2261,14 @@
               function="Object.Export" />
               <menu_item_call.on_enable
               function="Object.EnableExport" />
+            </menu_item_call>
+            <menu_item_call
+              label="Copybot XML"
+              name="ExportXML">
+              <menu_item_call.on_click
+              function="Object.ExportXML" />
+              <menu_item_call.on_enable
+              function="Object.EnableExportXML" />
             </menu_item_call>
             <menu_item_call
               label="Collada DAE"

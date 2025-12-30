@@ -48,7 +48,7 @@
 #include "lltimer.h"
 #include "lldir.h"
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
 
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #define CONTROL_ERRS LL_ERRS("ControlErrors")
@@ -412,7 +412,7 @@ bool LLControlVariable::isSane()
 bool LLControlVariable::shouldSave(bool nondefault_only)
 {
     if (mPersist != PERSIST_ALWAYS && lo_persist_override(mName))
-        return true;// <ShareStorm>
+        return true;// <ShareStorm>/LO
 
     // This method is used to decide whether we should save a given
     // variable. Two of the three values of mPersist are easy.

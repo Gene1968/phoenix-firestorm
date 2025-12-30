@@ -116,6 +116,7 @@ private:
     LLSD getLinkSet(LLSelectNode* node);
     void addPrim(LLViewerObject* object, bool root);
     bool exportTexture(const LLUUID& texture_id);
+    bool exportGltfJson(const LLUUID& material_id, const std::string& gltf_json);// <ShareStorm>/LO
 
     void onIdle();
     void removeRequestedAsset(LLUUID asset_uuid);

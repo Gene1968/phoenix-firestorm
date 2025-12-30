@@ -158,6 +158,10 @@
 #include "NACLantispam.h"
 #include "chatbar_as_cmdline.h"
 
+// <ShareStorm>/LO:
+#include "loextras.h"
+#include "lofloaterexport.h"
+
 extern void on_new_message(const LLSD& msg);
 
 extern bool gCubeSnapshot;
@@ -4741,6 +4745,16 @@ void process_object_properties(LLMessageSystem *msg, void**user_data)
     if (explorer)
     {
         explorer->requestNameCallback(msg);
+    }
+
+    // <ShareStorm>/LOstorm: Copybot XML Export
+    if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+    {
+        LOFloaterExport* exporter = LLFloaterReg::findTypedInstance<LOFloaterExport>("lo_export");
+        if (exporter)
+        {
+            exporter->processObjectProperties(msg);
+        }
     }
 
     PermissionsTracker::instance().objectPropertiesCallback(msg);

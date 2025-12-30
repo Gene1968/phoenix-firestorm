@@ -1,5 +1,5 @@
 /**
- * ShareStorm ID Spoof floater
+ * ShareStorm/LO ID Spoof floater
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -9,7 +9,7 @@
 
 #include "lofloaterspoof.h"
 
-#include "lospoof.h"// <ShareStorm>
+#include "lospoof.h"
 
 extern LLControlGroup gSavedSettings;
 

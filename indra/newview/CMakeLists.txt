@@ -873,6 +873,7 @@ set(viewer_SOURCE_FILES
     llxmlrpclistener.cpp
     llxmlrpctransaction.cpp
     lofloaterspoof.cpp
+    lofloaterexport.cpp # <ShareStorm>/LO18
     lofloaterextras.cpp
     noise.cpp
     particleeditor.cpp
@@ -1723,6 +1724,7 @@ set(viewer_HEADER_FILES
     llxmlrpclistener.h
     llxmlrpctransaction.h
     lofloaterspoof.h
+    lofloaterexport.h # <ShareStorm>/LO18
     lofloaterextras.h
     noise.h
     particleeditor.h

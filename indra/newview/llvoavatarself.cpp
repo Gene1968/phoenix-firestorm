@@ -79,7 +79,7 @@
 #include "llviewernetwork.h"
 // </FS:Ansariel> [Legacy Bake]
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
 #include <boost/lexical_cast.hpp>
 
 LLPointer<LLVOAvatarSelf> gAgentAvatarp = NULL;
@@ -2377,7 +2377,7 @@ void LLVOAvatarSelf::dumpLocalTextures() const
 {
 
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
     bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
 
 #if !LL_RELEASE_FOR_DOWNLOAD
@@ -2997,7 +2997,7 @@ bool LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
         return false;
     }
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
     bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     if (bypass_perms || gAgent.isGodlikeWithoutAdminMenuFakery())
         return true;

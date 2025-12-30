@@ -48,7 +48,7 @@
 #include "llcorehttputil.h"
 #include "llfloaterreg.h"
 
-#include "loextras.h"// <ShareStorm>:
+#include "loextras.h"// <ShareStorm>/LO
 
 LLFloaterTOS::LLFloaterTOS(const LLSD& data)
 :   LLModalDialog( data["message"].asString() ),
@@ -80,7 +80,7 @@ bool LLFloaterTOS::postBuild()
     // disable Agree to TOS radio button until the page has fully loaded
 
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
     if (!lolistorm_check_flag(LO_CONVENIENCE))
         updateAgreeEnabled(false);
 

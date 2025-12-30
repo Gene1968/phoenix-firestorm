@@ -63,7 +63,7 @@
 #include "fscommon.h"
 #include "llviewermenu.h"
 
-#include "loextras.h"// ShareStorm
+#include "loextras.h"// <ShareStorm>/LO
 
 #include <boost/lexical_cast.hpp>
 
@@ -109,7 +109,7 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
       mDisplayNameCallback(false),
       mAvatarNameCallbackConnection()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// ShareStorm
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     updateImageID();
     if (key.has("save_as"))
     {
@@ -122,11 +122,11 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
         mCopyToInv = false;
         mIsCopyable = false;
         if (!bypass_perms)
-            mPreviewToSave = false;// ShareStorm
+            mPreviewToSave = false;// <ShareStorm>/LO
         mIsFullPerm = false;
     }
     if (bypass_perms)
-        mIsFullPerm = true;// ShareStorm
+        mIsFullPerm = true;// <ShareStorm>/LO
 }
 
 LLPreviewTexture::~LLPreviewTexture()
@@ -1203,7 +1203,7 @@ void LLPreviewTexture::adjustAspectRatio()
 
 void LLPreviewTexture::updateImageID()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// ShareStorm
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     const LLViewerInventoryItem *item = static_cast<const LLViewerInventoryItem*>(getItem());
     if(item)
     {
@@ -1217,7 +1217,7 @@ void LLPreviewTexture::updateImageID()
         mCopyToInv = false;
         LLPermissions perm(item->getPermissions());
         mIsCopyable = perm.allowCopyBy(gAgent.getID(), gAgent.getGroupID()) && perm.allowTransferTo(gAgent.getID());
-        mIsFullPerm = bypass_perms || item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);// ShareStorm
+        mIsFullPerm = bypass_perms || item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);// <ShareStorm>/LO
     }
     else // not an item, assume it's an asset id
     {

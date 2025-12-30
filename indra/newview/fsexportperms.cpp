@@ -33,7 +33,7 @@
 #include "llvovolume.h"
 #include "llworld.h"
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
 
 #define FOLLOW_PERMS 1
 

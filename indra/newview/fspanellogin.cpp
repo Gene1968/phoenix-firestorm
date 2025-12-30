@@ -1775,7 +1775,7 @@ bool FSPanelLogin::getShowFavorites()
 
 void FSPanelLogin::onUsernameTextChanged()
 {
-// <ShareStorm>:
+// <ShareStorm>/LO lo 'username' var edits seem unnecessary:
     g_lo_locked_custom_ids = false;
      mUsernameLength = getChild<LLUICtrl>("username_combo")->getValue().asString().length();
 

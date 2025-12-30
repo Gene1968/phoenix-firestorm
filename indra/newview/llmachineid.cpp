@@ -28,7 +28,7 @@
 #include "lluuid.h"
 #include "llmachineid.h"
 
-#include "lospoof.h"// <ShareStorm>
+#include "lospoof.h"// <ShareStorm>/LO
 
 #if LL_WINDOWS
 #define _WIN32_DCOM

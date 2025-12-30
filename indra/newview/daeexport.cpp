@@ -61,7 +61,7 @@
 #include "llviewertexturelist.h"
 #include "fsexportperms.h"
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
 
 static constexpr F32 TEXTURE_DOWNLOAD_TIMEOUT = 60.f;
 
@@ -716,7 +716,7 @@ void DAESaver::transformTexCoord(S32 num_vert, LLVector2* coord, LLVector3* posi
 
 bool DAESaver::saveDAE(std::string filename)
 {
-    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>
+    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>/LO
 
     // Collada expects file and folder names to be escaped
     // Note: cdom::nativePathToUri()
@@ -1049,7 +1049,7 @@ void DAESaver::generateEffects(daeElement *effects)
         t->setAttribute("sid", "common");
         domElement* phong = t->add("phong");
 
-        // <ShareStorm> Excluding this causes Blender to have glitched rendering
+        // <ShareStorm>/LO Excluding this causes Blender to have glitched rendering
         if (lolistorm_check_flag(LO_ENHANCED_EXPORT))
             phong->add("shininess float")->setCharData("50");
 

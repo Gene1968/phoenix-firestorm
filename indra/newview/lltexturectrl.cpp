@@ -208,7 +208,7 @@ LLFloaterTexturePicker::~LLFloaterTexturePicker()
 
 void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selection /*=true*/)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
 
     if( ((mImageAssetID != image_id) || getTentative()) && mActive)
     {
@@ -486,7 +486,7 @@ bool LLFloaterTexturePicker::handleDragAndDrop(
         EAcceptance *accept,
         std::string& tooltip_msg)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     bool handled = false;
 
     bool is_mesh = cargo_type == DAD_MESH;
@@ -1011,7 +1011,7 @@ const LLUUID& LLFloaterTexturePicker::findItemID(const LLUUID& asset_id, bool co
 
 void LLFloaterTexturePicker::commitIfImmediateSet()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     // <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
     //if (!mNoCopyTextureSelected && mCanApply)
 // <ShareStorm>:
@@ -1288,7 +1288,7 @@ void LLFloaterTexturePicker::onBtnUUID( void* userdata )
 
 void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, bool user_action)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     if (items.size())
     {
         LLFolderViewItem* first_item = items.front();
@@ -2734,7 +2734,7 @@ void LLTextureCtrl::draw()
 
 bool LLTextureCtrl::allowDrop(LLInventoryItem* item, EDragAndDropType cargo_type, std::string& tooltip_msg)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
 
     bool copy = item->getPermissions().allowCopyBy(gAgent.getID());
     bool mod = item->getPermissions().allowModifyBy(gAgent.getID());

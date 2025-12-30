@@ -63,6 +63,7 @@
 #include "lltexturecache.h"
 #include "llviewerwindow.h"
 #include "llwindow.h"
+#include "llpreviewtexture.h"// <ShareStorm>/LO
 ///////////////////////////////////////////////////////////////////////////////
 
 // statics
@@ -2410,7 +2411,11 @@ void LLViewerFetchedTexture::setLoadedCallback( loaded_callback_func loaded_call
     LLLoadedCallbackEntry* entryp = new LLLoadedCallbackEntry(loaded_callback, discard_level, keep_imageraw, userdata, src_callback_list, this, pause);
     mLoadedCallbackList.push_back(entryp);
 
-    mNeedsAux |= needs_aux;
+    // <ShareStorm>/LOstorm -- Fix exporting of baked textures
+    if (loaded_callback == LLPreviewTexture::onTextureLoaded || loaded_callback == LLPreviewTexture::onFileLoadedForSavePNG || loaded_callback == LLPreviewTexture::onFileLoadedForSaveTGA)
+        mNeedsAux = needs_aux;
+    else
+        mNeedsAux |= needs_aux;
     if(keep_imageraw)
     {
         mSaveRawImage = true;

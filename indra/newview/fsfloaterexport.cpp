@@ -67,7 +67,8 @@
 #include "fscommon.h"
 
 #include "llimportobject.h"// <ShareStorm>
-#include "loextras.h"// <ShareStorm>
+#include "llgltfmaterial.h"// <ShareStorm>/LO
+#include "loextras.h"// <ShareStorm>/LO
 
 #include <boost/algorithm/string_regex.hpp>
 
@@ -165,9 +166,18 @@ void FSFloaterObjectExport::onIdle()
 
             llofstream file;
             file.open(mFilename.c_str(), std::ios_base::out | std::ios_base::binary);
-            std::string zip_data = zip_llsd(mManifest);
-            file.write(zip_data.data(), zip_data.size());
-            file.close();
+// <ShareStorm>/LO:
+            if (mFilename.size() >= 4 && mFilename.substr(mFilename.size() - 4) == ".xml")
+            {
+                // For debugging -- not compatible with other XML exporters
+                LLSDSerialize::toPrettyXML(mManifest, file);
+            }
+            else
+            {
+                std::string zip_data = zip_llsd(mManifest);
+                file.write(zip_data.data(), zip_data.size());
+                file.close();
+            }
             LL_DEBUGS("export") << "Export finished and written to " << mFilename << LL_ENDL;
 
             LLSD args;
@@ -291,7 +301,7 @@ void FSFloaterObjectExport::updateSelection()
 
 bool FSFloaterObjectExport::exportSelection()
 {
-    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>
+    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>/LO
     if (!mObjectSelection)
     {
         LL_WARNS("export") << "Nothing selected; Bailing!" << LL_ENDL;
@@ -329,7 +339,7 @@ bool FSFloaterObjectExport::exportSelection()
     mManifest["author"] = author;
     mManifest["grid"] = LLGridManager::getInstance()->getGridLabel();
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
     if (anonymize)
     {
         mManifest.erase("author");
@@ -382,7 +392,7 @@ LLSD FSFloaterObjectExport::getLinkSet(LLSelectNode* node)
 
 void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
 {
-// <ShareStorm>:
+// <ShareStorm>/LO:
     bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);
     bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
 
@@ -453,12 +463,11 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 {
                     if(volobjp->isMesh())
                     {
-// <ShareStorm>:
+// <ShareStorm>/LOstorm: Substitute mesh objects with a placeholder prim:
                         if (enhanced_export)
                         {
                             int faces = volobjp->getNumFaces();
 
-                            // Substitute mesh with a default prim
                             LLPathParams path;
                             LLProfileParams params;
 
@@ -529,12 +538,41 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 {
                     prim["light_texture"] = light_image_param_block->asLLSD();
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
                     if (enhanced_export)
                         exportTexture(light_image_param_block->getLightTexture());
                 }
             }
 
+            // LOstorm: Extended mesh (Animesh flag)
+            if (enhanced_export && volobjp->getParameterEntryInUse(LLNetworkData::PARAMS_EXTENDED_MESH))
+            {
+                const LLExtendedMeshParams* extended_mesh_param_block = (const LLExtendedMeshParams*)object->getParameterEntry(LLNetworkData::PARAMS_EXTENDED_MESH);
+                if (extended_mesh_param_block)
+                {
+                    prim["extended_mesh"] = extended_mesh_param_block->asLLSD();
+                }
+            }
+
+            // LOstorm: PBR material IDs
+            if (enhanced_export && volobjp->hasRenderMaterialParams())
+            {
+                const LLRenderMaterialParams* render_material_param_block = (const LLRenderMaterialParams*)object->getParameterEntry(LLNetworkData::PARAMS_RENDER_MATERIAL);
+                if (render_material_param_block)
+                {
+                    prim["render_material"] = render_material_param_block->asLLSD();
+                }
+            }
+
+            // LOstorm: Reflection Probe
+            if (enhanced_export && volobjp->getParameterEntryInUse(LLNetworkData::PARAMS_REFLECTION_PROBE))
+            {
+                const LLReflectionProbeParams* reflection_probe_param_block = (const LLReflectionProbeParams*)object->getParameterEntry(LLNetworkData::PARAMS_REFLECTION_PROBE);
+                if (reflection_probe_param_block)
+                {
+                    prim["reflection_probe"] = reflection_probe_param_block->asLLSD();
+                }
+            }
         }
 
         if(object->isParticleSource())
@@ -546,6 +584,10 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 prim["particle"]["PartImageID"] = LLUUID::null.asString();
             }
         }
+
+// <ShareStorm>/LO:
+        LLSD materials;
+        bool has_materials;
 
         U8 texture_count = object->getNumTEs();
         for(U8 i = 0; i < texture_count; ++i)
@@ -570,21 +612,89 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                 prim["texture"].append(checkTE->asLLSD());
             }
 
+            // LOstorm: Add a texgen field. For the sake of consistency between XML and OXP, this is just 0 for default and 1 for planar
+            if (enhanced_export)
+            {
+                prim["texture"][prim["texture"].size() - 1]["texgen"] = checkTE->getTexGen() == LLTextureEntry::TEX_GEN_PLANAR ? 1 : 0;
+            }
+
             // [FS:CR] Materials support
             if (checkTE->getMaterialParams().notNull())
             {
                 LL_DEBUGS("export") << "found materials. Checking permissions..." << LL_ENDL;
                 LLSD params = checkTE->getMaterialParams().get()->asLLSD();
+
+// <ShareStorm>/LO:
+                LLUUID norm_map = params["NormMap"].asUUID();
+                LLUUID spec_map = params["SpecMap"].asUUID();
+
                 /// *TODO: Feeling lazy so I made it check both. This is incorrect and needs to be expanded
                 /// to retain exportable textures not just failing both when one is non-exportable (or unset).
-                if (exportTexture(params["NormMap"].asUUID()) &&
-                    exportTexture(params["SpecMap"].asUUID()))
+// <ShareStorm>/LO:
+                if (exportTexture(norm_map) && exportTexture(spec_map))
                 {
                     LL_DEBUGS("export") << "...passed check." << LL_ENDL;
-                    prim["materials"].append(params);
+                    materials.append(params);
+                    has_materials = true;
+                }
+                else if (enhanced_export)
+                {
+                    if (!exportTexture(norm_map))
+                        params["NormMap"] = LLUUID();
+
+                    if (!exportTexture(spec_map))
+                        params["SpecMap"] = LLUUID();
+
+                    materials.append(params);
+                    has_materials = true;
+                }
+            }
+            else if (enhanced_export)
+            {
+                // LOstorm: Ensure material data remains indexed to the correct TextureEntry by padding the materials
+                // Otherwise, we're just skipping null materials and assigning things to the wrong faces...
+                // The importer expects real data here, so a default-initalized value (LLMaterial::null) is used
+                // This shouldn't affect importing too badly, I hope...
+                materials.append(LLMaterial::null.asLLSD());
+            }
+
+            // LOstorm: Export the PBR texture assets
+            // (Minor bug here: I am not removing references to textures without export permissions)
+            if (enhanced_export)
+            {
+                LLGLTFMaterial* mat = checkTE->getGLTFMaterial();
+                LLGLTFMaterial* override_mat = checkTE->getGLTFMaterialOverride();
+
+                if (mat)
+                {
+                    for (const LLUUID& tex : mat->mTextureId)
+                    {
+                        if (!tex.isNull())
+                            exportTexture(tex);
+                    }
+
+                    // Figure out the material ID
+                    LLUUID mat_uuid = ((LLRenderMaterialParams*)object->getParameterEntry(LLNetworkData::PARAMS_RENDER_MATERIAL))->getMaterial(i);
+                    if (!mat_uuid.isNull())
+                        exportGltfJson(mat_uuid, mat->asJSON());
+                    else
+                        LL_WARNS("export") << "Failed to find material ID" << LL_ENDL;
+                }
+
+                if (override_mat)
+                {
+                    for (const LLUUID& tex : override_mat->mTextureId)
+                    {
+                        if (!tex.isNull())
+                            exportTexture(tex);
+                    }
                 }
             }
         }
+
+        // Avoid emitting a ton of dummy data
+        if (has_materials)
+            prim["materials"] = materials;
 
         if (!object->getPhysicsShapeUnknown())
         {
@@ -638,7 +748,7 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
         }
 
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
         if (anonymize)
         {
             prim.erase("creator_id");
@@ -700,7 +810,7 @@ bool FSFloaterObjectExport::exportTexture(const LLUUID& texture_id)
     //TODO: check for local file static texture. The above will only get the static texture in the static db, not individual textures.
 
     LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTexture(texture_id);
-    bool texture_export = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool texture_export = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     std::string name;
     std::string description;
 
@@ -740,6 +850,44 @@ bool FSFloaterObjectExport::exportTexture(const LLUUID& texture_id)
     image->setBoostLevel(LLViewerTexture::BOOST_MAX_LEVEL);
     image->forceToSaveRawImage(0);
     image->setLoadedCallback(FSFloaterObjectExport::onImageLoaded, 0, true, false, this, &mCallbackTextureList);
+
+    return true;
+}
+
+// LOstorm
+bool FSFloaterObjectExport::exportGltfJson(const LLUUID& material_id, const std::string& gltf_json)
+{
+    if(material_id.isNull())
+    {
+        LL_WARNS("export") << "Attempted to export NULL material." << LL_ENDL;
+        return false;
+    }
+
+    std::string name;
+    std::string description;
+
+    if (!FSExportPermsCheck::canExportAsset(material_id, &name, &description))
+    {
+        LL_DEBUGS("export") << "Material " << material_id << " failed export check." << LL_ENDL;
+        return false;
+    }
+
+    // Generate the asset data as LLMaterialEditor::getEncodedAsset() does
+    LLSD asset;
+    asset["version"] = LLGLTFMaterial::ASSET_VERSION;
+    asset["type"] = LLGLTFMaterial::ASSET_TYPE;
+    asset["data"] = gltf_json;
+
+    std::ostringstream asset_stream;
+    LLSDSerialize::serialize(asset, asset_stream, LLSDSerialize::LLSD_BINARY);
+
+    std::string asset_str = asset_stream.str();
+
+    // We generated the asset from what is in memory, so we don't need to fetch from cache or anything
+    mManifest["asset"][material_id.asString()]["name"] = name;
+    mManifest["asset"][material_id.asString()]["description"] = description;
+    mManifest["asset"][material_id.asString()]["type"] = LLAssetType::lookup(LLAssetType::AT_MATERIAL);
+    mManifest["asset"][material_id.asString()]["data"] = LLSD::Binary(asset_str.begin(), asset_str.end());
 
     return true;
 }
@@ -786,7 +934,7 @@ void FSFloaterObjectExport::saveFormattedImage(LLPointer<LLImageFormatted> mForm
     std::string str = texture_str.str();
 
     if (lolistorm_check_flag(LO_ANONYMIZE_EXPORTS))
-        lolistorm_strip_jpeg2000_comment(str);// <ShareStorm>
+        lolistorm_strip_jpeg2000_comment(str);// <ShareStorm>/LO
 
     mManifest["asset"][id.asString()]["name"] = mRequestedTexture[id].name;
     mManifest["asset"][id.asString()]["description"] = mRequestedTexture[id].description;
@@ -1075,7 +1223,7 @@ void FSFloaterObjectExport::updateTextureInfo()
 {
 
 
-// <ShareStorm>:
+// <ShareStorm>/LO:
     bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
 
@@ -1097,6 +1245,7 @@ void FSFloaterObjectExport::updateTextureInfo()
 // <ShareStorm>:
             texture_ids.push_back(id);
 
+            // LOstorm: Grab the (non-PBR) material textures
             if (enhanced_export)
             {
                 if (te->getMaterialParams().notNull())
@@ -1109,9 +1258,17 @@ void FSFloaterObjectExport::updateTextureInfo()
                     texture_ids.push_back(norm_map_id);
                     texture_ids.push_back(spec_map_id);
                 }
+
+                LLGLTFMaterial* mat = te->getGLTFRenderMaterial();
+                if (mat)
+                {
+                    for (const LLUUID& tex : mat->mTextureId)
+                        texture_ids.push_back(tex);
+                }
             }
         }
 
+        // LOstorm: Grab the light texture and particle textures:
         if (enhanced_export)
         {
             LLVOVolume *volobjp = NULL;
@@ -1403,7 +1560,7 @@ S32 FSFloaterObjectExport::getNumExportableTextures()
 
 void FSFloaterObjectExport::addTexturePreview()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     S32 num_text = mNumExportableTextures;
     if (num_text == 0) return;
     S32 img_width = 100;

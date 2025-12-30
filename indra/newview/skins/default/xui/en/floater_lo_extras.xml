@@ -53,6 +53,7 @@ Enter an image URL above to change the login background image.
   <text_editor height="52" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
 - Allows viewing and copying of texture UUIDs, applying textures by UUID
 - Allows exporting of textures, linksets, meshes and group member lists without permissions.
+- Enables "Copybot XML" export format
   </text_editor>
   <check_box
     height="20"

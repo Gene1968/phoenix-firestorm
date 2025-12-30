@@ -80,7 +80,7 @@
 #include "llviewerparcelmgr.h"
 #include "fscommon.h"
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
 
 // syntactic sugar
 #define callMemberFunction(object,ptrToMember)  ((object).*(ptrToMember))
@@ -957,7 +957,7 @@ bool LLToolDragAndDrop::handleDropMaterialProtections(LLViewerObject* hit_obj,
     if (!item) return false;
 
     if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
-        return true;// <ShareStorm>
+        return true;// <ShareStorm>/LO
 
     // Always succeed if....
     // material is from the library
@@ -2420,7 +2420,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
     if(mSource != SOURCE_AGENT && mSource != SOURCE_LIBRARY)
     {
         if (!lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
-            return ACCEPT_NO;// <ShareStorm>
+            return ACCEPT_NO;// <ShareStorm>/LO
     }
 
     LLViewerInventoryItem* item;

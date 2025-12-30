@@ -61,7 +61,7 @@
 #include "llfilepicker.h"
 #include "llviewermenufile.h"
 
-#include "loextras.h"// ShareStorm
+#include "loextras.h"// <ShareStorm>/LO
 
 static LLPanelInjector<LLPanelGroupRoles> t_panel_group_roles("panel_group_roles");
 
@@ -408,7 +408,7 @@ bool LLPanelGroupRoles::hasModal()
 
 void LLPanelGroupRoles::setGroupID(const LLUUID& id)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// ShareStorm
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     LLPanelGroupTab::setGroupID(id);
 
     LLPanelGroupMembersSubTab* group_members_tab = findChild<LLPanelGroupMembersSubTab>("members_sub_tab");
@@ -427,7 +427,7 @@ void LLPanelGroupRoles::setGroupID(const LLUUID& id)
     // [FS:CR] FIRE-12276
     button = getChild<LLButton>("export_list");
     if (button)
-        button->setEnabled(bypass_perms || gAgent.hasPowerInGroup(mGroupID, GP_MEMBER_VISIBLE_IN_DIR));// ShareStorm
+        button->setEnabled(bypass_perms || gAgent.hasPowerInGroup(mGroupID, GP_MEMBER_VISIBLE_IN_DIR));// <ShareStorm>/LO
     // [/FS:CR]
     if(mSubTabContainer)
         mSubTabContainer->selectTab(1);

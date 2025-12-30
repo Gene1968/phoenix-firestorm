@@ -117,7 +117,7 @@
 #include "llinventoryobserver.h"
 #include "fscommon.h"
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
 
 LLViewerObject* getSelectedParentObject(LLViewerObject *object) ;
 //
@@ -1977,7 +1977,7 @@ struct TextureApplyFunctor : public LLSelectedTEFunctor
 // *TODO: re-arch texture applying out of lltooldraganddrop
 bool LLSelectMgr::selectionSetImage(const LLUUID& imageid, bool isPBR)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     // First for (no copy) textures and multiple object selection
     LLViewerInventoryItem* item = gInventory.getItem(imageid);
 

@@ -183,7 +183,8 @@
 #include "particleeditor.h"
 #include "permissionstracker.h"
 
-#include "loextras.h"// <ShareStorm>
+#include "loextras.h"// <ShareStorm>/LO
+#include "lofloaterexport.h"// <ShareStorm>/LO
 #include "llpreviewtexture.h"
 
 using namespace LLAvatarAppearanceDefines;
@@ -2054,7 +2055,7 @@ class LLAdvancedEnableAppearanceToXML : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>
+        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
         LLViewerObject *obj = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
         if (obj && obj->isAnimatedObject() && obj->getControlAvatar())
         {
@@ -4056,7 +4057,7 @@ class LLLandEnableBuyPass : public view_listener_t
 bool enable_object_edit()
 {
     if (lolistorm_check_flag(LO_CONVENIENCE))
-        return true;// <ShareStorm>
+        return true;// <ShareStorm>/LO
 
     if (!isAgentAvatarValid()) return false;
 
@@ -11231,6 +11232,13 @@ void handle_grab_baked_texture(EBakedTextureIndex baked_tex_index)
         return;
 
     const LLUUID& asset_id = gAgentAvatarp->grabBakedTexture(baked_tex_index);
+
+
+
+    // Sim will immediately destroy this inventory item, so just preview instead.  <ShareStorm>/LO
+#if 0
+
+
     LL_INFOS("texture") << "Adding baked texture " << asset_id << " to inventory." << LL_ENDL;
     LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
     LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
@@ -11289,6 +11297,14 @@ void handle_grab_baked_texture(EBakedTextureIndex baked_tex_index)
     {
         LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
     }
+
+
+#endif
+
+    LLFloaterReg::showTypedInstance<LLPreviewTexture>("preview_texture", LLSD(asset_id), TAKE_FOCUS_YES);
+	// end </ShareStorm>/LO
+
+
 }
 
 bool enable_grab_baked_texture(EBakedTextureIndex baked_tex_index)
@@ -12557,6 +12573,32 @@ class FSObjectExport : public view_listener_t
 };
 // </FS:Techwolf Lupindo>
 
+// <ShareStorm>/LOstorm18
+static bool enable_export_xml()
+{
+    if (!lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+        return false;
+    return enable_export_object();
+}
+
+static bool enable_export_avatar_xml()
+{
+    return lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+}
+
+class LOExportXML : public view_listener_t
+{
+    bool handleEvent( const LLSD& userdata)
+    {
+        LOFloaterExport* floater = dynamic_cast<LOFloaterExport*>(LLFloaterReg::getInstance("lo_export"));
+        if (floater && !floater->isDead() && floater->getVisible())
+            floater->repopulate();
+        else
+            LLFloaterReg::showInstance("lo_export");
+        return true;
+    }
+};
+
 // <FS:CR>
 class FSObjectExportCollada : public view_listener_t
 {
@@ -13093,6 +13135,10 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAdvancedEnableAppearanceToXML(), "Advanced.EnableAppearanceToXML");
     view_listener_t::addMenu(new LLAdvancedToggleCharacterGeometry(), "Advanced.ToggleCharacterGeometry");
 
+    // <ShareStorm>/LOstorm18
+    view_listener_t::addMenu(new LOExportXML(), "Avatar.ExportXML");
+    enable.add("Avatar.EnableExportXML", boost::bind(&enable_export_avatar_xml));
+
     view_listener_t::addMenu(new LLAdvancedTestMale(), "Advanced.TestMale");
     view_listener_t::addMenu(new LLAdvancedTestFemale(), "Advanced.TestFemale");
 
@@ -13351,8 +13397,6 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAttachmentPointFilled(), "Attachment.PointFilled");
     view_listener_t::addMenu(new LLAttachmentEnableDrop(), "Attachment.EnableDrop");
     view_listener_t::addMenu(new LLAttachmentEnableDetach(), "Attachment.EnableDetach");
-	// <ShareStorm> from original Singularity copybot Grimore:
-    // view_listener_t::addMenu(new LLObjectEnableExport(), "Attachment.EnableExport");
 
     // Land pie menu
     view_listener_t::addMenu(new LLLandBuild(), "Land.Build");
@@ -13451,6 +13495,12 @@ void initialize_menus()
     view_listener_t::addMenu(new FSObjectExportCollada(), "Object.ExportCollada");
     enable.add("Object.EnableExport", boost::bind(&enable_export_object));
     // </FS:Techwolf Lupindo>
+
+	// <ShareStorm> from original Singularity copybot Grimore:
+    // view_listener_t::addMenu(new LLObjectEnableExport(), "Attachment.EnableExport");
+    // <ShareStorm>/LOstorm18
+    view_listener_t::addMenu(new LOExportXML(), "Object.ExportXML");
+    enable.add("Object.EnableExportXML", boost::bind(&enable_export_xml));
 
     // <FS:Ansariel> Add avater complexity sttings to menu
     view_listener_t::addMenu(new FSRenderAvatarComplexityMode(), "World.RenderAvatarComplexityMode");
