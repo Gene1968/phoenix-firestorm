@@ -3304,10 +3304,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
                         ((LLVOAvatar*)chatter)->stopTyping();
                     }
 
-                    if (
-                        chat.mSourceType == CHAT_SOURCE_AGENT   // no text replacement for agent chat to prevent forgery attempts
-                        || needle->mChatReplace.empty()         // no replacement defined, just suppress the message
-                    )
+                    if (needle->mChatReplace.empty())       // no replacement defined, just suppress the message
                     {
                         return;
                     }
@@ -7293,7 +7290,7 @@ bool script_question_cb(const LLSD& notification, const LLSD& response)
 // [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
     if ( (allowed) && (notification["payload"].has("rlv_blocked")) )
     {
-        RlvUtil::notifyBlocked(notification["payload"]["rlv_blocked"], LLSD().with("OBJECT", notification["payload"]["object_name"]));
+        RlvUtil::notifyBlocked(notification["payload"]["rlv_blocked"].asString(), LLSD().with("OBJECT", notification["payload"]["object_name"]));
     }
 // [/RLVa:KB]
 

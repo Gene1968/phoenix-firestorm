@@ -169,7 +169,7 @@ const OmnifilterEngine::Needle* OmnifilterEngine::match(const Haystack& haystack
             continue;
         }
 
-        if (matchStrings(needle.mContent, haystack.mContent, needle.mContentMatchType, needle.mContentCaseInsensitive))
+        if (needle.mContent.empty() || matchStrings(needle.mContent, haystack.mContent, needle.mContentMatchType, needle.mContentCaseInsensitive))
         {
             return logMatch(needle_name, needle);
         }
@@ -318,6 +318,12 @@ void OmnifilterEngine::loadNeedles()
         new_needle.mEnabled = needle_data["enabled"].asBoolean();
         new_needle.mSenderNameCaseInsensitive = needle_data["sender_name_case_insensitive"].asBoolean();
         new_needle.mContentCaseInsensitive = needle_data["content_case_insensitive"].asBoolean();
+
+        const std::string owner_id_str = needle_data["owner_id"].asString();
+        if (!owner_id_str.empty())
+        {
+            new_needle.mOwnerID.set(owner_id_str);
+        }
 
         mNeedles[new_needle_name] = new_needle;
     }
