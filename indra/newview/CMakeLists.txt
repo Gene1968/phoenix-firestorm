@@ -154,6 +154,7 @@ set(viewer_SOURCE_FILES
     fslslpreproc.cpp
     fslslpreprocviewer.cpp
     fsmaniprotatejoint.cpp
+    fsmaniptranslatejoint.cpp
     fsmoneytracker.cpp
     fsnamelistavatarmenu.cpp
     fsnearbychatbarlistener.cpp
@@ -1011,6 +1012,7 @@ set(viewer_HEADER_FILES
     fslslpreprocviewer.h
     fsmoneytracker.h
     fsmaniprotatejoint.h
+    fsmaniptranslatejoint.h
     fsnamelistavatarmenu.h
     fsnearbychatbarlistener.h
     fsnearbychatcontrol.h
@@ -2794,7 +2796,7 @@ if (DARWIN)
   set(MACOSX_BUNDLE_BUNDLE_NAME "Firestorm")
   set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${VIEWER_SHORT_VERSION}.${VIEWER_VERSION_REVISION}")
   set(MACOSX_BUNDLE_BUNDLE_VERSION "${VIEWER_SHORT_VERSION}${VIEWER_MACOSX_PHASE}${VIEWER_REVISION}")
-  set(MACOSX_BUNDLE_COPYRIGHT "Copyright 2010-2025 The Phoenix Firestorm Project, Inc.")
+  set(MACOSX_BUNDLE_COPYRIGHT "Copyright 2010-2026 The Phoenix Firestorm Project, Inc.")
   set(MACOSX_BUNDLE_NSMAIN_NIB_FILE "Firestorm.nib")
   set(MACOSX_BUNDLE_NSPRINCIPAL_CLASS "LLApplication")
 
