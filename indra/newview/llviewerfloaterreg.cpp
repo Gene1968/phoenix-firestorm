@@ -246,6 +246,7 @@
 // <ShareStorm>
 #include "llfloaterinspecttexture.h"
 #include "lofloaterspoof.h"
+#include "lofloaterexport.h"
 #include "lofloaterextras.h"
 // </ShareStorm>
 
@@ -698,6 +699,7 @@ void LLViewerFloaterReg::registerFloaters()
 // <ShareStorm>
 	LLFloaterReg::add("inspect_texture",  "floater_inspect_texture.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterInspectTexture>);
 	LLFloaterReg::add("lo_spoof", "floater_lo_spoof.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterSpoof>));
+    LLFloaterReg::add("lo_export", "floater_lo_export.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterExport>));
 	LLFloaterReg::add("lo_extras", "floater_lo_extras.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterExtras>));
 // </ShareStorm>
 

@@ -360,12 +360,21 @@
        function="Avatar.TexRefresh" />
     </menu_item_call>
     <menu_item_call
-         label="Dump XML"
+         label="Dump Appearance XML"
          name="Dump XML">
             <menu_item_call.on_click
              function="Advanced.AppearanceToXML" />
             <menu_item_call.on_visible
              function="Advanced.EnableAppearanceToXML"/>
+    </menu_item_call>
+<!--ShareStorm edit/LO-->
+    <menu_item_call
+         label="Export Copybot XML"
+         name="ExportXML">
+            <menu_item_call.on_click
+             function="Avatar.ExportXML" />
+            <menu_item_call.on_visible
+             function="Avatar.EnableExportXML"/>
     </menu_item_call>
   <menu_item_separator
        layout="topleft" />

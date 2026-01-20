@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true"
+     can_resize="true" height="358" width="320" min_width="320" min_height="358"
+     name="floater_export" title="XML Export Options" positioning="centered">
+  <scroll_list column_padding="0" draw_heading="false"
+       follows="left|top|bottom|right" left="10" right="-10"
+       name="export_list" search_column="2" top_pad="5" height="265">
+    <column name="checked" width="20" />
+    <column name="type" width="20" />
+    <column dynamicwidth="true" label="Name" name="name" />
+    <column name="avatarid" width="0" />
+  </scroll_list>
+
+<!--ShareStorm edit/LO-->
+
+  <text top_pad="8" left="10" width="100" height="20">Select/Deselect:</text>
+   <button top_delta="-5" follows="bottom|right" label="All"
+     left_pad="0" name="select_all_btn" width="30" height="25" />
+   <button top_delta="0" follows="bottom|right" label="Objects"
+     left_pad="2" name="select_objects_btn" width="52" height="25" />
+   <button top_delta="0" follows="bottom|right" label="Meshes"
+     left_pad="2"  name="select_meshes_btn" width="48" height="25" />
+   <button top_delta="0" follows="bottom|right" label="Wearables"
+     left_pad="2"  name="select_wearables_btn" width="64" height="25" />
+
+  <text top_pad="4" left="10" height="16" name="names_progress_text" text_color="EmphasisColorLight"></text>
+
+  <!--
+  <text top_pad="4" left="10" width="100" height="20">Export options:</text>
+  
+  <check_box
+    top_delta="0"
+    left_pad="0"
+    follows="left|bottom"
+    height="16"
+    label="Download textures" />
+  -->
+
+  <button top_pad="5" left="10" height="25" label="Save as..." width="142" name="save_as_btn" />
+</floater>
+

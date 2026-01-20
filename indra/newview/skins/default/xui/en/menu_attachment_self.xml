@@ -92,12 +92,21 @@
         label="Save as"
         name="Export Menu">
         <menu_item_call
-            label="Backup"
+            label="Backup (OXP)"
             name="Backup">
             <menu_item_call.on_click
             function="Object.Export" />
             <menu_item_call.on_enable
             function="Object.EnableExport" />
+        </menu_item_call>
+<!--ShareStorm edit/LO-->
+        <menu_item_call
+            label="Copybot XML"
+            name="ExportXML">
+            <menu_item_call.on_click
+            function="Object.ExportXML" />
+            <menu_item_call.on_enable
+            function="Object.EnableExportXML" />
         </menu_item_call>
         <menu_item_call
             label="Collada"
@@ -435,12 +444,21 @@ name="Stand Up">
       </menu_item_call>
   </context_menu>
     <menu_item_call
-         label="Dump XML"
+         label="Dump Appearance XML"
          name="Dump XML">
             <menu_item_call.on_click
              function="Advanced.AppearanceToXML" />
             <menu_item_call.on_visible
              function="Advanced.EnableAppearanceToXML"/>
+    </menu_item_call>
+<!--ShareStorm edit/LO-->
+    <menu_item_call
+         label="Export Copybot XML"
+         name="ExportXML">
+            <menu_item_call.on_click
+             function="Avatar.ExportXML" />
+            <menu_item_call.on_visible
+             function="Avatar.EnableExportXML"/>
     </menu_item_call>
    <menu_item_call
        label="Object Profile"

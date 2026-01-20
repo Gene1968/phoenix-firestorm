@@ -474,6 +474,22 @@
                 <pie_slice.on_enable
                     function="Object.EnableExport" />
             </pie_slice>
+
+	<pie_slice
+		enabled="false"
+		label="Copybot XML"
+		name="ExportXML">
+		<pie_slice.on_click function="Object.ExportXML" />
+		<pie_slice.on_enable function="Object.EnableExportXML" />
+	</pie_slice>
+	<pie_slice enabled="false" label="Import.Xml" name="Import...">
+		<pie_slice.on_click function="Object.Import" />
+		<pie_slice.on_enable function="Object.EnableImport" />
+	</pie_slice>
+	<pie_slice enabled="false" label="Export Xml" name="Export...">
+		<pie_slice.on_click function="Object.SaveAs" />
+		<pie_slice.on_enable function="Object.EnableExport" />
+	</pie_slice>
             <pie_slice
                 enabled="false"
                 label="Collada"
@@ -491,23 +507,6 @@
                     <pie_slice.on_visible
                      function="Advanced.EnableAppearanceToXML"/>
             </pie_slice>
-
-	<!-- ShareStorm edit -->
-	<pie_slice
-		enabled="false"
-		label="Copybot XML"
-		name="ExportXML">
-		<pie_slice.on_click function="Object.ExportXML" />
-		<pie_slice.on_enable function="Object.EnableExportXML" />
-	</pie_slice>
-	<pie_slice enabled="false" label="Import.Xml" name="Import...">
-		<pie_slice.on_click function="Object.Import" />
-		<pie_slice.on_enable function="Object.EnableImport" />
-	</pie_slice>
-	<pie_slice enabled="false" label="Export Xml" name="Export...">
-		<pie_slice.on_click function="Object.SaveAs" />
-		<pie_slice.on_enable function="Object.EnableExport" />
-	</pie_slice>
             <pie_slice
                  label="Export Copybot XML"
                  name="ExportXML">

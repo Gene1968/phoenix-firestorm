@@ -452,6 +452,7 @@
 			<pie_slice.on_visible
 				function="Advanced.EnableAppearanceToXML"/>
 		</pie_slice>
+<!--ShareStorm edit/LO-->
 		<pie_slice
 			label="Export Copybot XML"
 			name="ExportXML">
