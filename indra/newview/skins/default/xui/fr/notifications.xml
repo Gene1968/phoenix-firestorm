@@ -979,6 +979,9 @@ Le client a épuisé sa mémoire lors de l'ouverture du fichier. Le fichier est 
 		Vous avez déjà un repère pour cet emplacement.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
+	<notification name="LandmarkLocationUnknown">
+		Le client n'a pas pu obtenir l'emplacement de la région. La région est peut-être temporairement indisponible ou a été supprimée.
+	</notification>
 	<notification name="CannotCreateLandmarkNotOwner">
 		Vous ne pouvez pas créer de repère ici car le propriétaire du terrain ne l&apos;autorise pas.
 	</notification>
@@ -2723,12 +2726,6 @@ Voulez-vous les jouer ?
 Liez-la à partir d&apos;une page web pour permettre aux autres résidents d&apos;accéder facilement à cet endroit ou bien collez-la dans la barre d&apos;adresse de votre client.
 		<form name="form">
 			<ignore name="ignore" text="La SLurl est copiée dans mon presse-papiers"/>
-		</form>
-	</notification>
-	<notification name="CopySLURLEmpty">
-		Un problème est survenu lors de la copie de cette SLurl. La région de destination n'existe peut-être plus.
-		<form name="form">
-			<ignore name="ignore" text="Échec de la copie de la SLurl"/>
 		</form>
 	</notification>
 	<notification name="WLSavePresetAlert">
