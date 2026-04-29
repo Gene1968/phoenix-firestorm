@@ -86,6 +86,7 @@ private:
     void addSelectedObjects();
     void populateObjectList();
     void onClickExport();
+    void onClickMakeCopy();// <ShareStorm>
     void onExportFileSelected(const std::vector<std::string>& filenames);
     void addTexturePreview();
     S32 getNumExportableTextures() const;
@@ -93,6 +94,7 @@ private:
     void updateTextureInfo();
     void updateUI();
     void updateTitleProgress(FSExportState state);
+    LLSD getLLSD();  // Added getLLSD method declaration
 
     FSExportState mExportState;
     typedef std::vector<std::pair<LLViewerObject*,std::string> > obj_info_t;
@@ -114,6 +116,7 @@ private:
     LLSD getLinkSet(LLSelectNode* node);
     void addPrim(LLViewerObject* object, bool root);
     bool exportTexture(const LLUUID& texture_id);
+    bool exportGltfJson(const LLUUID& material_id, const std::string& gltf_json);// <ShareStorm>/LO
 
     void onIdle();
     void removeRequestedAsset(LLUUID asset_uuid);

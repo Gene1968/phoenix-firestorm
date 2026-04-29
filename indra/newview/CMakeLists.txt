@@ -87,6 +87,10 @@ endif ()
 
 set(viewer_SOURCE_FILES
 # <Add FS includes below this line>
+# <ShareStorm>
+	llfloaterinspecttexture.cpp
+	# llimportobject.cpp # not working
+# </ShareStorm>
     alfloaterregiontracker.cpp
     animationexplorer.cpp
     ao.cpp
@@ -885,8 +889,14 @@ set(viewer_SOURCE_FILES
     llworldmapview.cpp
     llxmlrpclistener.cpp
     llxmlrpctransaction.cpp
+    lofloaterspoof.cpp
+    lofloaterexport.cpp # <ShareStorm>/LO18
+    lofloaterextras.cpp
     noise.cpp
     particleeditor.cpp
+
+#    prefshuggystorm.cpp
+
     permissionstracker.cpp
     pieautohide.cpp
     piemenu.cpp
@@ -946,6 +956,10 @@ set(viewer_HEADER_FILES
     ViewerInstall.cmake
 
 # <Add FS includes below this line>
+# <ShareStorm>
+	llfloaterinspecttexture.h
+	# llimportobject.h # not working
+# </ShareStorm>
     alfloaterregiontracker.h
     animationexplorer.h
     ao.h
@@ -1742,6 +1756,9 @@ set(viewer_HEADER_FILES
     llworldmapview.h
     llxmlrpclistener.h
     llxmlrpctransaction.h
+    lofloaterspoof.h
+    lofloaterexport.h # <ShareStorm>/LO18
+    lofloaterextras.h
     noise.h
     particleeditor.h
     permissionstracker.h
@@ -1769,6 +1786,9 @@ set(viewer_HEADER_FILES
     sanitycheck.h
     streamtitledisplay.h
     utilitybar.h
+
+#    prefshuggystorm.h
+
     VertexCache.h
     VorbisFramework.h
     NACLantispam.h

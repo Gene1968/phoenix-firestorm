@@ -21,6 +21,13 @@
              parameter="preferences" />
         </menu_item_call>
         <menu_item_call
+         label="ShareStorm Extra Settings"
+         name="ShareStorm Extras">
+            <menu_item_call.on_click
+             function="Floater.Toggle"
+             parameter="lo_extras" />
+        </menu_item_call>
+        <menu_item_call
          label="Close Window"
          name="Close Window"
          visible="false" 

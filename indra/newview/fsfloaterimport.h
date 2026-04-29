@@ -122,6 +122,8 @@ private:
     U32 mSoundsTotal;
     uuid_vec_t mAnimQueue;
     U32 mAnimsTotal;
+    uuid_vec_t mMaterialQueue;// <ShareStorm>/LO18
+    U32 mMaterialsTotal;// <ShareStorm>/LO18
     uuid_vec_t mAssetQueue;
     U32 mAssetsTotal;
     std::map<LLUUID,LLUUID> mAssetMap;

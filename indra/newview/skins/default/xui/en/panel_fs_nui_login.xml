@@ -19,6 +19,7 @@
   <web_browser
     tab_stop="false"
     trusted_content="true"
+    disable_web_security="true"
     bg_opaque_color="Black"
     border_visible="false"
     follows="all"
@@ -50,13 +51,17 @@
       min_width="970"
       height="152">
   <icon
-    height="125"
-    width="125"
+    height="100"
+    width="100"
     image_name="login_fs_logo"
     left="0"
     top="10"
     name="sl_logo_small" />
-
+  <button
+    label="Check IDs"
+    label_color="Yellow"
+    name="spoof_btn"
+    width="100" />
     <layout_stack
       animate="false"
       clip="false"
@@ -273,7 +278,7 @@
       follows="left|top|right"
       name="grid_panel"
       layout="topleft"
-      width="342"
+      width="320"
       height="66"
       visible="true">
     <text
@@ -319,6 +324,25 @@
       visible="false">
     + Click to add more grids
     </text>
+    </layout_panel>
+    <layout_panel
+      auto_resize="false"
+      follows="left|top|right"
+      name="extras_panel"
+      layout="topleft"
+      width="160"
+      height="66"
+      visible="true">
+    <button
+      label="Login Features!"
+      label_color="White"
+      image_unselected="PushButton_Extras"
+      image_pressed="PushButton_Extras_Pressed"
+      image_hover_unselected="PushButton_Extras_Over"
+      name="extras_btn"
+      width="160"
+      height="32"
+      font="SansSerifLarge" />
     </layout_panel>
     <layout_panel
       follows="left|top|right"
@@ -384,11 +408,12 @@
     label="Log In"
     label_color="White"
     font="SansSerifLarge"
-    name="connect_btn"
+    name="safe_connect_btn"
     width="140"
     height="54"
     left_pad="10"
-    top="25"/>
+    top="25"
+    enabled="false" />
     <text
       follows="left|top|right"
       font="SansSerifMedium"
@@ -411,6 +436,22 @@
       width="140">
         Forgot password?
     </text>
+	<!-- ShareStorm Login Spoof -->
+	<!-- <button follows="right|bottom"
+		font="SansSerifMedium"
+		text_color="EmphasisColor"
+		top_pad="0"
+		height="23"
+		image_unselected="PushButton_Login"
+		image_pressed="PushButton_Login_Pressed"
+		image_hover_unselected="PushButton_Login_Over"
+		label="-Login Spoof"
+		label_color="White"
+		layout="topleft"
+		name="privacy_btn"
+		width="140"
+	/> -->
+	<!-- End -->
   </layout_panel>
   <layout_panel
       height="152"
