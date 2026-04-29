@@ -545,9 +545,9 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
             }
 
             // LOstorm: Extended mesh (Animesh flag)
-            if (enhanced_export && volobjp->getParameterEntryInUse(LLNetworkData::PARAMS_EXTENDED_MESH))
+            if (enhanced_export && object->getExtendedMeshParams())
             {
-                const LLExtendedMeshParams* extended_mesh_param_block = (const LLExtendedMeshParams*)object->getParameterEntry(LLNetworkData::PARAMS_EXTENDED_MESH);
+                const LLExtendedMeshParams* extended_mesh_param_block = object->getExtendedMeshParams();
                 if (extended_mesh_param_block)
                 {
                     prim["extended_mesh"] = extended_mesh_param_block->asLLSD();
@@ -557,7 +557,7 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
             // LOstorm: PBR material IDs
             if (enhanced_export && volobjp->hasRenderMaterialParams())
             {
-                const LLRenderMaterialParams* render_material_param_block = (const LLRenderMaterialParams*)object->getParameterEntry(LLNetworkData::PARAMS_RENDER_MATERIAL);
+                const LLRenderMaterialParams* render_material_param_block = object->getRenderMaterialParams();
                 if (render_material_param_block)
                 {
                     prim["render_material"] = render_material_param_block->asLLSD();
@@ -565,9 +565,9 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
             }
 
             // LOstorm: Reflection Probe
-            if (enhanced_export && volobjp->getParameterEntryInUse(LLNetworkData::PARAMS_REFLECTION_PROBE))
+            if (enhanced_export && object->getReflectionProbeParams())
             {
-                const LLReflectionProbeParams* reflection_probe_param_block = (const LLReflectionProbeParams*)object->getParameterEntry(LLNetworkData::PARAMS_REFLECTION_PROBE);
+                const LLReflectionProbeParams* reflection_probe_param_block = object->getReflectionProbeParams();
                 if (reflection_probe_param_block)
                 {
                     prim["reflection_probe"] = reflection_probe_param_block->asLLSD();
@@ -674,7 +674,12 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
                     }
 
                     // Figure out the material ID
-                    LLUUID mat_uuid = ((LLRenderMaterialParams*)object->getParameterEntry(LLNetworkData::PARAMS_RENDER_MATERIAL))->getMaterial(i);
+                    LLUUID mat_uuid = LLUUID::null;
+                    const LLRenderMaterialParams* render_mat_params = object->getRenderMaterialParams();
+                    if (render_mat_params)
+                    {
+                        mat_uuid = render_mat_params->getMaterial(i);
+                    }
                     if (!mat_uuid.isNull())
                         exportGltfJson(mat_uuid, mat->asJSON());
                     else
@@ -1281,7 +1286,7 @@ void FSFloaterObjectExport::updateTextureInfo()
             {
                 if (volobjp->hasLightTexture())
                 {
-                    const LLLightImageParams* light_image_param_block = (const LLLightImageParams*)obj->getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+                    const LLLightImageParams* light_image_param_block = obj->getLightImageParams();
                     if (light_image_param_block)
                     {
                         texture_ids.push_back(light_image_param_block->getLightTexture());
@@ -1290,7 +1295,7 @@ void FSFloaterObjectExport::updateTextureInfo()
 
                 if (volobjp->isSculpted() && !volobjp->isMesh())
                 {
-                    const LLSculptParams *sculpt_params = (const LLSculptParams *)obj->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+                    const LLSculptParams* sculpt_params = obj->getSculptParams();
                     if (sculpt_params)
                     {
                         texture_ids.push_back(sculpt_params->getSculptTexture());

@@ -131,22 +131,27 @@ LLSD LLExportable::asLLSD()
             // Flexible
             if (object->isFlexible())
             {
-                LLFlexibleObjectData* flex = (LLFlexibleObjectData*)object->getParameterEntry(LLNetworkData::PARAMS_FLEXIBLE);
-                prim_llsd["flexible"] = flex->asLLSD();
+                LLFlexibleObjectData* flex = object->getFlexibleObjectData();
+                if (flex)
+                {
+                    prim_llsd["flexible"] = flex->asLLSD();
+                }
             }
 
             // Light
-            if (object->getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT))
+            if (LLLightParams* light = object->getLightParams())
             {
-                LLLightParams* light = (LLLightParams*)object->getParameterEntry(LLNetworkData::PARAMS_LIGHT);
                 prim_llsd["light"] = light->asLLSD();
             }
 
             // Sculpt
             if (object->isSculpted())
             {
-                LLSculptParams* sculpt = (LLSculptParams*)object->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
-                prim_llsd["sculpt"] = sculpt->asLLSD();
+                LLSculptParams* sculpt = object->getSculptParams();
+                if (sculpt)
+                {
+                    prim_llsd["sculpt"] = sculpt->asLLSD();
+                }
             }
 
             // Textures

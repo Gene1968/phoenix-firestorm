@@ -244,7 +244,8 @@ void LLFloaterInspectTexture::refresh()
 			if( j== te_count)
 			{
 					if(!obj->getObject()->isSculpted())continue;
-						LLSculptParams *sculpt_params = (LLSculptParams *)(obj->getObject()->getParameterEntry(LLNetworkData::PARAMS_SCULPT));
+						LLSculptParams* sculpt_params = obj->getObject()->getSculptParams();
+						if (!sculpt_params) continue;
 						image_id = sculpt_params->getSculptTexture();
 						height_str = "";
 						width_str = "";
