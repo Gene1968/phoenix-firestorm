@@ -205,6 +205,7 @@
 #include "fsfloatercontactsetconfiguration.h"
 #include "fsfloaterdiscord.h"
 #include "fsfloaterexport.h"
+#include "fsglbexport.h"
 #include "fsfloaterblocklist.h"
 #include "fsfloatergroup.h"
 #include "fsfloatergrouptitles.h"
@@ -651,6 +652,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("animation_overrider", "floater_ao.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FloaterAO>);
     LLFloaterReg::add("area_search", "floater_fs_area_search.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSAreaSearch>);
     LLFloaterReg::add("export_collada", "floater_export_collada.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<ColladaExportFloater>);
+    LLFloaterReg::add("export_glb", "floater_export_glb.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterExportGLB>);
     LLFloaterReg::add("delete_queue", "floater_script_queue.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterDeleteQueue>);
     LLFloaterReg::add("flickr", "floater_flickr.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterFlickr>);
     LLFloaterReg::add("primfeed", "floater_primfeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterPrimfeed>);

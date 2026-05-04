@@ -715,10 +715,16 @@
 	<menu create_jump_keys="true" label="ShareStorm!" mouse_opaque="false" name="File" opaque="true" tear_off="true">
 		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~" />
 		<menu create_jump_keys="true" label="! Save/Export object" mouse_opaque="false" name="Import/Export" opaque="true" tear_off="true">
+			<!-- ShareStorm: mesh export (Collada + GLB) -->
 			<menu_item_call label="Mesh Export as Collada DAE" name="Collada">
 				<menu_item_call.on_click function="Object.ExportCollada" />
 				<menu_item_call.on_enable function="Object.EnableExport" />
 			</menu_item_call>
+			<menu_item_call label="Mesh Export as GLB (glTF binary)..." name="Export GLB">
+				<menu_item_call.on_click function="File.ExportGLB" />
+				<menu_item_call.on_enable function="Object.EnableExport" />
+			</menu_item_call>
+			<!-- /ShareStorm mesh export -->
 			<menu_item_call label="Backup object as OXP" name="Backup">
 				<menu_item_call.on_click function="Object.Export" />
 				<menu_item_call.on_enable function="Object.EnableExport" />

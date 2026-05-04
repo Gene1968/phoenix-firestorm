@@ -9,10 +9,16 @@
 		<menu_item_call label="Inspect Textures!" name="TexInspect">
 			<menu_item_call.on_click function="Floater.Show" parameter="inspect_texture" />
 		</menu_item_call>
+		<!-- ShareStorm: mesh export (Collada + GLB) -->
 		<menu_item_call label="Mesh Export as Collada DAE" name="Collada" enabled="false">
 			<menu_item_call.on_click function="Object.ExportCollada" />
 			<menu_item_call.on_enable function="Object.EnableExport" />
 		</menu_item_call>
+		<menu_item_call label="Mesh Export as GLB (glTF binary)..." name="Export GLB" enabled="false">
+			<menu_item_call.on_click function="File.ExportGLB" />
+			<menu_item_call.on_enable function="Object.EnableExport" />
+		</menu_item_call>
+		<!-- /ShareStorm mesh export -->
 		<menu_item_call label="Backup object as OXP" name="Backup" enabled="false">
 			<menu_item_call.on_click function="Object.Export" />
 			<on_visible function="Object.VisibleExport" />

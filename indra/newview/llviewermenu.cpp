@@ -12691,6 +12691,19 @@ class FSObjectExportCollada : public view_listener_t
         return true;
     }
 };
+
+class FSFileExportGLB : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        LLViewerObject* objectp = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+        if (objectp)
+        {
+            LLFloaterReg::showInstance("export_glb");
+        }
+        return true;
+    }
+};
 // </FS:CR>
 
 // <FS:Zi> Make sure to call this before any of the UI is set up, so all text editors can
@@ -13599,6 +13612,7 @@ void initialize_menus()
     // <FS:Techwolf Lupindo> export
     view_listener_t::addMenu(new FSObjectExport(), "Object.Export");
     view_listener_t::addMenu(new FSObjectExportCollada(), "Object.ExportCollada");
+    view_listener_t::addMenu(new FSFileExportGLB(), "File.ExportGLB");
     enable.add("Object.EnableExport", boost::bind(&enable_export_object));
     // </FS:Techwolf Lupindo>
 

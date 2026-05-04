@@ -127,6 +127,7 @@ set(viewer_SOURCE_FILES
     fsfloatercontacts.cpp
     fsfloatercontactsetconfiguration.cpp
     fsfloaterexport.cpp
+    fsglbexport.cpp
     fsfloatergroup.cpp
     fsfloatergrouptitles.cpp
     fsgrouptitleregionmgr.cpp
@@ -997,6 +998,7 @@ set(viewer_HEADER_FILES
     fsfloatercontacts.h
     fsfloatercontactsetconfiguration.h
     fsfloaterexport.h
+    fsglbexport.h
     fsfloatergroup.h
     fsfloatergrouptitles.h
     fsgrouptitleregionmgr.h
