@@ -25,6 +25,19 @@
 #include "llnotificationsutil.h"
 #include "llinventorypanel.h"
 #include "llinventorydefines.h"
+#include "llgltfmaterial.h"
+
+namespace
+{
+// PBR uses the same indices as LLGLTFMaterial::mTextureId (OCCLUSION aliases METALLIC_ROUGHNESS).
+static const char* const PBR_TEXTURE_TYPE_LABELS[LLGLTFMaterial::GLTF_TEXTURE_INFO_COUNT] =
+{
+	"PBR BaseColor",
+	"PBR Normal",
+	"PBR ORM",
+	"PBR Emissive",
+};
+}
 
 LLFloaterInspectTexture::LLFloaterInspectTexture(const LLSD& key)
   : LLFloater(key),
@@ -296,6 +309,65 @@ void LLFloaterInspectTexture::refresh()
 			++i;
 
 			mTextureList->addElement(row, ADD_TOP);
+
+			// PBR / glTF material textures for this face (base color, normal, ORM, emissive)
+			if (j < te_count)
+			{
+				LLTextureEntry* tep = obj->getObject()->getTE(j);
+				if (tep)
+				{
+					const LLGLTFMaterial* gltf_mat = tep->getGLTFRenderMaterial();
+					if (gltf_mat)
+					{
+						for (U32 ti = 0; ti < LLGLTFMaterial::GLTF_TEXTURE_INFO_COUNT; ++ti)
+						{
+							const LLUUID pbr_tex_id = gltf_mat->mTextureId[ti];
+							if (pbr_tex_id.isNull() || pbr_tex_id == LLGLTFMaterial::GLTF_OVERRIDE_NULL_UUID)
+							{
+								continue;
+							}
+							if (unique_textures[pbr_tex_id])
+							{
+								continue;
+							}
+							unique_textures[pbr_tex_id] = true;
+							pbr_tex_id.toString(uuid_str);
+							LLViewerFetchedTexture* pbr_img = LLViewerTextureManager::getFetchedTexture(pbr_tex_id);
+							if (pbr_img)
+							{
+								height_str = llformat("%d", pbr_img->getHeight());
+								width_str = llformat("%d", pbr_img->getWidth());
+							}
+							else
+							{
+								height_str.clear();
+								width_str.clear();
+							}
+							type_str.assign(PBR_TEXTURE_TYPE_LABELS[ti]);
+							LLSD pbr_row;
+							pbr_row["id"] = pbr_tex_id;
+							int col = 0;
+							pbr_row["columns"][col]["column"] = "uuid_text";
+							pbr_row["columns"][col]["type"] = "text";
+							pbr_row["columns"][col]["value"] = uuid_str;
+							++col;
+							pbr_row["columns"][col]["column"] = "height";
+							pbr_row["columns"][col]["type"] = "text";
+							pbr_row["columns"][col]["value"] = height_str;
+							++col;
+							pbr_row["columns"][col]["column"] = "width";
+							pbr_row["columns"][col]["type"] = "text";
+							pbr_row["columns"][col]["value"] = width_str;
+							++col;
+							pbr_row["columns"][col]["column"] = "types";
+							pbr_row["columns"][col]["type"] = "text";
+							pbr_row["columns"][col]["value"] = type_str;
+							++col;
+							mTextureList->addElement(pbr_row, ADD_TOP);
+						}
+					}
+				}
+			}
 		}
 	}
 	if(selected_index > -1 && mTextureList->getItemIndex(selected_uuid) == selected_index)

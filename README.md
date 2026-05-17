@@ -45,7 +45,7 @@ Some OS regions (eg: Arcadia Store on OSG) somehow detect that this isn't the of
 
 Implemented and confirmed working:
 - Toggle Hacked Godmode
-- Inspect Textures! / floater / Copy to Inv
+- Inspect Textures! / floater / Copy to Inv (includes PBR / glTF material texture slots per face)
 - Export DAE with all textures! (combine with Inspect Textures -> "Copy All to Inventory." putting [temp.]textures in your inventory. Then when you click back on the object, those will show in the export floater as co-exportable!  (sometimes minus a single one))
 - Export GLB (binary glTF) from ShareStorm → Save/Export object: shares Collada mesh/texture options, plus GLB toggles (+Y-up via +90° X on by default; double-sided on; face Texture transparency % maps to baseColorFactor alpha with BLEND when not 100%; optional BLEND for PNG/TGA file alpha; optional UV V flip default on for Blender-style sampling)
 - Import DAE with textures
@@ -57,7 +57,7 @@ Implemented and confirmed working:
 - Avatar Textures
 - Both OS & SL
 - Login Spoofing - thanks to LOstorm!
-- all other LOstorm 16 features
+- all other LOstorm 16/17/18 features
 
 Testing and working on:
 - Export XML Export
