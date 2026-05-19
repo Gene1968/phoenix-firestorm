@@ -7004,8 +7004,11 @@ bool LLViewerObject::permYouOwner() const
         return true;
 #else
 # ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-        if (LLGridManager::getInstance()->isInSLBeta()
-            && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+		// ShareStorm:
+        // if (LLGridManager::getInstance()->isInSLBeta()
+            // && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+		// ShareStorm from original Singularity copybot Grimore:
+		if (gAgent.isGodlike())
         {
             return true;
         }
@@ -7041,8 +7044,10 @@ bool LLViewerObject::permOwnerModify() const
         return true;
 #else
 # ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-        if (LLGridManager::getInstance()->isInSLBeta()
-            && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+        // if (LLGridManager::getInstance()->isInSLBeta()
+            // && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+	// ShareStorm from original Singularity copybot Grimore:
+	if (gAgent.isGodlike())
     {
             return true;
     }
@@ -7065,8 +7070,10 @@ bool LLViewerObject::permModify() const
         return true;
 #else
 # ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-        if (LLGridManager::getInstance()->isInSLBeta()
-            && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+        // if (LLGridManager::getInstance()->isInSLBeta()
+            // && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+	// ShareStorm from original Singularity copybot Grimore:
+	if (gAgent.isGodlike())
     {
             return true;
     }
@@ -7089,8 +7096,10 @@ bool LLViewerObject::permCopy() const
         return true;
 #else
 # ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-        if (LLGridManager::getInstance()->isInSLBeta()
-            && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+        // if (LLGridManager::getInstance()->isInSLBeta()
+            // && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+		// ShareStorm from original Singularity copybot Grimore:
+		if (gAgent.isGodlike())
         {
             return true;
         }
@@ -7113,8 +7122,10 @@ bool LLViewerObject::permMove() const
         return true;
 #else
 # ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-        if (LLGridManager::getInstance()->isInSLBeta()
-            && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+        // if (LLGridManager::getInstance()->isInSLBeta()
+            // && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+		// ShareStorm from original Singularity copybot Grimore:
+		if (gAgent.isGodlike())
         {
             return true;
         }
@@ -7137,8 +7148,10 @@ bool LLViewerObject::permTransfer() const
         return true;
 #else
 # ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-        if (LLGridManager::getInstance()->isInSLBeta()
-            && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+        // if (LLGridManager::getInstance()->isInSLBeta()
+            // && (gAgent.getGodLevel() >= GOD_MAINTENANCE))
+		// ShareStorm from original Singularity copybot Grimore:
+		if (gAgent.isGodlike())
         {
             return true;
         }

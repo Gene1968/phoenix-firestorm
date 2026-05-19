@@ -238,6 +238,9 @@
 
 #include "lltracerecording.h"
 
+// <ShareStorm>
+#include "llfloaterinspecttexture.h"
+// </ShareStorm>
 //
 // Globals
 //

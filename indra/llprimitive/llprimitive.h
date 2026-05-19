@@ -399,6 +399,10 @@ public:
     const LLUUID& getMaterial(U8 te_idx) const;
 
     bool isEmpty() { return mEntries.empty(); }
+
+    // <ShareStorm>/LOstorm: for export/import
+    LLSD asLLSD() const;
+    bool fromLLSD(LLSD& sd);
 };
 
 

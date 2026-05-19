@@ -205,6 +205,7 @@
 #include "fsfloatercontactsetconfiguration.h"
 #include "fsfloaterdiscord.h"
 #include "fsfloaterexport.h"
+#include "fsglbexport.h"
 #include "fsfloaterblocklist.h"
 #include "fsfloatergroup.h"
 #include "fsfloatergrouptitles.h"
@@ -243,6 +244,16 @@
 #include "fsfloaterwhitelisthelper.h" // fs whitelist helper
 #include "omnifilter.h"               // Omnifilter support
 #include "fsfloateravataralign.h" // <FS:Chanayane> Compass floater
+
+
+// <ShareStorm>
+#include "llfloaterinspecttexture.h"
+#include "lofloaterspoof.h"
+#include "lofloaterexport.h"
+#include "lofloaterextras.h"
+// </ShareStorm>
+
+
 
 // handle secondlife:///app/openfloater/{NAME} URLs
 const std::string FLOATER_PROFILE("profile");
@@ -641,6 +652,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("animation_overrider", "floater_ao.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FloaterAO>);
     LLFloaterReg::add("area_search", "floater_fs_area_search.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSAreaSearch>);
     LLFloaterReg::add("export_collada", "floater_export_collada.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<ColladaExportFloater>);
+    LLFloaterReg::add("export_glb", "floater_export_glb.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterExportGLB>);
     LLFloaterReg::add("delete_queue", "floater_script_queue.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterDeleteQueue>);
     LLFloaterReg::add("flickr", "floater_flickr.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterFlickr>);
     LLFloaterReg::add("primfeed", "floater_primfeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterPrimfeed>);
@@ -692,6 +704,17 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("avatar_align",      "floater_avatar_align.xml",      (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAvatarAlign>);
     LLFloaterReg::add("avatar_align_mini", "floater_avatar_align_mini.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAvatarAlignMini>);
     // </FS:Chanayane>
+
+
+
+// <ShareStorm>
+	LLFloaterReg::add("inspect_texture",  "floater_inspect_texture.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterInspectTexture>);
+	LLFloaterReg::add("lo_spoof", "floater_lo_spoof.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterSpoof>));
+    LLFloaterReg::add("lo_export", "floater_lo_export.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterExport>));
+	LLFloaterReg::add("lo_extras", "floater_lo_extras.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterExtras>));
+// </ShareStorm>
+
+
 
     LLFloaterReg::registerControlVariables(); // Make sure visibility and rect controls get preserved when saving
 }
