@@ -157,6 +157,7 @@ private:
     bool mExported;
     bool mAborted;
     bool mDirty;
+    bool mCopyAfterExport;// <ShareStorm>
 
     typedef std::vector<LLUUID> id_list_t;
     typedef std::vector<std::string> string_list_t;

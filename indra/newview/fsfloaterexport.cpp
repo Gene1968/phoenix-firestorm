@@ -224,10 +224,21 @@ void FSFloaterObjectExport::onIdle()
             }
             LL_DEBUGS("export") << "Export finished and written to " << mFilename << LL_ENDL;
 
-            LLSD args;
-            args["FILENAME"] = mFilename;
-            LLNotificationsUtil::add("ExportFinished", args);
-            closeFloater();
+            // <ShareStorm>
+            if (mCopyAfterExport)
+            {
+                mCopyAfterExport = false;
+                LLFloaterReg::showInstance("fs_import", LLSD(mFilename));
+                closeFloater();
+            }
+            else
+            // </ShareStorm>
+            {
+                LLSD args;
+                args["FILENAME"] = mFilename;
+                LLNotificationsUtil::add("ExportFinished", args);
+                closeFloater();
+            }
         }
         else if (mLastRequest != mRequestedTexture.size())
         {
@@ -258,7 +269,8 @@ void FSFloaterObjectExport::onIdle()
 FSFloaterObjectExport::FSFloaterObjectExport(const LLSD& key)
 : LLFloater(key),
   mCurrentObjectID(NULL),
-  mDirty(true)
+  mDirty(true),
+  mCopyAfterExport(false)// <ShareStorm>
 {
 }
 
@@ -1689,31 +1701,28 @@ void FSFloaterObjectExport::onClickExport()
 }
 
 
-// <ShareStorm> attempt at restoring the Copy button:
+// <ShareStorm> Duplicate linkset: export to cache, then open OXP import floater.
 void FSFloaterObjectExport::onClickMakeCopy()
 {
-	LL_DEBUGS("export") << "Copying object " << mObjectName << LL_ENDL;
+    if (!mIncluded)
+    {
+        LLNotificationsUtil::add("ExportFailed");
+        return;
+    }
 
-	static LLCachedControl<bool> sExportContents(gSavedSettings, "XmlExportInventory");
-	if (sExportContents)
-	{
-		gSavedSettings.setBOOL("XmlExportInventory", FALSE);
-	}
-	LLSD sd = getLLSD();
+    mCopyAfterExport = true;
+    mFilename = gDirUtilp->getExpandedFilename(LL_PATH_CACHE, "",
+        LLDir::getScrubbedFileName(mObjectName + "_copy.oxp"));
 
-	if(sd.size())
-	{
-		// not working: LLXmlImport::import(new LLXmlImportOptions(sd));
-	}
-	else
-	{
-		std::string msg = "No copyable items selected";
-		LLChat chat(msg);
-		// LLFloaterChat::addChat(chat);
-		return;
-	}
-	
-	closeFloater();
+    LLUIString title = getString("title_working");
+    title.setArg("[OBJECT]", mObjectName);
+    setTitle(title);
+
+    if (!exportSelection())
+    {
+        mCopyAfterExport = false;
+        LLNotificationsUtil::add("ExportFailed");
+    }
 }
 // </ShareStorm>
 
