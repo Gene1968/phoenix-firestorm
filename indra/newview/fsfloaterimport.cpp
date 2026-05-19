@@ -1009,7 +1009,7 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
     {
         LL_DEBUGS("import") << "Found reflection probe for " << prim_uuid.asString() << LL_ENDL;
         LLReflectionProbeParams new_reflection_probe_param_block;
-        new_reflection_probe_param_block.fromLLSD(prim["extended_mesh"]);
+        new_reflection_probe_param_block.fromLLSD(prim["reflection_probe"]);// <ShareStorm>
         object->setParameterEntry(LLNetworkData::PARAMS_REFLECTION_PROBE, new_reflection_probe_param_block, true);
     }
 

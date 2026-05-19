@@ -85,6 +85,10 @@ void FSFloaterObjectExport::onIdle(void* user_data)
 
 void FSFloaterObjectExport::onIdle()
 {
+    // <ShareStorm>
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    // </ShareStorm>
+
     switch(mExportState)
     {
     case IDLE:
@@ -128,9 +132,19 @@ void FSFloaterObjectExport::onIdle()
 
         if (mAssetRequests.empty())
         {
-            mLastRequest = mRequestedTexture.size();
+            // <ShareStorm>
+            if (enhanced_export)
+            {
+                mLastRequest = mRequestedMesh.size();
+                mExportState = MESH_DOWNLOAD;
+            }
+            else
+            {
+                mLastRequest = mRequestedTexture.size();
+                mExportState = TEXTURE_DOWNLOAD;
+            }
+            // </ShareStorm>
             mWaitTimer.start();
-            mExportState = TEXTURE_DOWNLOAD;
         }
         else if (mLastRequest != mAssetRequests.size())
         {
@@ -149,6 +163,36 @@ void FSFloaterObjectExport::onIdle()
             mAssetRequests.clear();
         }
         break;
+    // <ShareStorm>
+    case MESH_DOWNLOAD:
+        if (gDisconnected)
+        {
+            return;
+        }
+
+        if (mRequestedMesh.empty())
+        {
+            mLastRequest = mRequestedTexture.size();
+            mWaitTimer.start();
+            mExportState = TEXTURE_DOWNLOAD;
+        }
+        else if (mLastRequest != mRequestedMesh.size())
+        {
+            mWaitTimer.start();
+            mLastRequest = mRequestedMesh.size();
+            updateTitleProgress(MESH_DOWNLOAD);
+        }
+        else if (mWaitTimer.getElapsedTimeF32() > MAX_ASSET_WAIT_TIME)
+        {
+            LL_DEBUGS("export") << "Mesh download timeout with " << (S32)mRequestedMesh.size() << " requests left." << LL_ENDL;
+            for (auto iter = mRequestedMesh.begin(); iter != mRequestedMesh.end(); ++iter)
+            {
+                LL_DEBUGS("export") << "Mesh: " << (iter->first).asString() << LL_ENDL;
+            }
+            mRequestedMesh.clear();
+        }
+        break;
+    // </ShareStorm>
     case TEXTURE_DOWNLOAD:
         if (gDisconnected)
         {
@@ -302,6 +346,7 @@ void FSFloaterObjectExport::updateSelection()
 bool FSFloaterObjectExport::exportSelection()
 {
     bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>/LO
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);// <ShareStorm>
     if (!mObjectSelection)
     {
         LL_WARNS("export") << "Nothing selected; Bailing!" << LL_ENDL;
@@ -318,6 +363,10 @@ bool FSFloaterObjectExport::exportSelection()
 
     mManifest.clear();
     mRequestedTexture.clear();
+    // <ShareStorm>
+    mRequestedMesh.clear();
+    mMeshChecked.clear();
+    // </ShareStorm>
 
     mExported = false;
     mAborted = false;
@@ -334,6 +383,25 @@ bool FSFloaterObjectExport::exportSelection()
     struct tm* utc_time = gmtime(&rawtime);
     std::string date = llformat("%04d-%02d-%02d", utc_time->tm_year + 1900, utc_time->tm_mon + 1, utc_time->tm_mday);
     mManifest["format_version"] = OXP_FORMAT_VERSION;
+
+    // <ShareStorm>
+    if (enhanced_export)
+    {
+        mManifest["lo_feature_version"] = 1;
+
+        static LLCachedControl<bool> sExportContents(gSavedSettings, "FSExportContents");
+        static LLCachedControl<bool> sExportTextures(gSavedSettings, "LOExportTextures");
+        static LLCachedControl<bool> sExportMaterials(gSavedSettings, "LOExportMaterials");
+        static LLCachedControl<bool> sExportMeshes(gSavedSettings, "LOExportMeshes");
+        S32 asset_mask = 0x00;
+        if (sExportContents) asset_mask |= 0x01;
+        if (sExportTextures) asset_mask |= 0x02;
+        if (sExportMaterials) asset_mask |= 0x04;
+        if (sExportMeshes) asset_mask |= 0x08;
+        mManifest["lo_asset_mask"] = asset_mask;
+    }
+    // </ShareStorm>
+
     mManifest["client"] = LLVersionInfo::getInstance()->getChannelAndVersion();
     mManifest["creation_date"] = date;
     mManifest["author"] = author;
@@ -487,6 +555,16 @@ void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
 
                             prim["volume"]["path"] = path.asLLSD();
                             prim["volume"]["profile"] = params.asLLSD();
+
+                            if (exportMesh(sculpt_params->getSculptTexture()))
+                            {
+                                prim["mesh"] = sculpt_params->asLLSD();
+                            }
+                            else
+                            {
+                                LLSculptParams default_sculpt;
+                                prim["mesh"] = default_sculpt.asLLSD();
+                            }
                         }
                         else
                         {
@@ -842,6 +920,13 @@ bool FSFloaterObjectExport::exportTexture(const LLUUID& texture_id)
 
     mTextureChecked[texture_id] = texture_export;
 
+    // <ShareStorm>
+    static LLCachedControl<bool> sExportTextures(gSavedSettings, "LOExportTextures");
+
+    if (!sExportTextures)
+        return true;
+    // </ShareStorm>
+
     if (!texture_export)
     {
         LL_DEBUGS("export") << "Texture " << texture_id << " failed export check." << LL_ENDL;
@@ -877,6 +962,13 @@ bool FSFloaterObjectExport::exportGltfJson(const LLUUID& material_id, const std:
         return false;
     }
 
+    // <ShareStorm>
+    static LLCachedControl<bool> sExportMaterials(gSavedSettings, "LOExportMaterials");
+
+    if (!sExportMaterials)
+        return true;
+    // </ShareStorm>
+
     // Generate the asset data as LLMaterialEditor::getEncodedAsset() does
     LLSD asset;
     asset["version"] = LLGLTFMaterial::ASSET_VERSION;
@@ -897,19 +989,79 @@ bool FSFloaterObjectExport::exportGltfJson(const LLUUID& material_id, const std:
     return true;
 }
 
+// <ShareStorm>
+bool FSFloaterObjectExport::exportMesh(const LLUUID& mesh_id)
+{
+    if(mesh_id.isNull())
+    {
+        LL_WARNS("export") << "Attempted to export NULL mesh." << LL_ENDL;
+        return false;
+    }
+
+    if (mMeshChecked.count(mesh_id) != 0)
+    {
+        return mMeshChecked[mesh_id];
+    }
+
+    std::string name;
+    std::string description;
+
+    bool mesh_export = FSExportPermsCheck::canExportAsset(mesh_id, &name, &description);
+
+    if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+        mesh_export = true;
+
+    mMeshChecked[mesh_id] = mesh_export;
+
+    static LLCachedControl<bool> sExportMeshes(gSavedSettings, "LOExportMeshes");
+
+    if (!sExportMeshes)
+        return mesh_export;
+
+    if (!mesh_export)
+    {
+        LL_DEBUGS("export") << "Mesh " << mesh_id << " failed export check." << LL_ENDL;
+        return false;
+    }
+
+    LL_DEBUGS("export") << "Loading mesh " << mesh_id << LL_ENDL;
+    mRequestedMesh[mesh_id].name = name;
+    mRequestedMesh[mesh_id].description = description;
+    gAssetStorage->getAssetData(mesh_id, LLAssetType::AT_MESH, FSFloaterObjectExport::onMeshLoaded, (void*)this, true);
+
+    return true;
+}
+// </ShareStorm>
+
 // static
 void FSFloaterObjectExport::onImageLoaded(bool success, LLViewerFetchedTexture* src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, bool final, void* userdata)
 {
+    // <ShareStorm>
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    // </ShareStorm>
     if(final && success)
     {
         // *HACK ALERT: I'm lazy so I moved this to a non-static member function. <FS:CR>
         FSFloaterObjectExport* parent = (FSFloaterObjectExport *)userdata;
         parent->fetchTextureFromCache(src_vi);
     }
+
+    // <ShareStorm>
+    if (enhanced_export && final && !success)
+    {
+        const LLUUID& texture_id = src_vi->getID();
+        LL_WARNS("export") << "Failure loading texture " << texture_id << LL_ENDL;
+        FSFloaterObjectExport* parent = (FSFloaterObjectExport *)userdata;
+        parent->removeRequestedTexture(texture_id);
+    }
+    // </ShareStorm>
 }
 
 void FSFloaterObjectExport::fetchTextureFromCache(LLViewerFetchedTexture* src_vi)
 {
+    // <ShareStorm>
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    // </ShareStorm>
     const LLUUID& texture_id = src_vi->getID();
     LLImageJ2C* mFormattedImage = new LLImageJ2C;
     FSFloaterObjectExport::FSExportCacheReadResponder* responder = new FSFloaterObjectExport::FSExportCacheReadResponder(texture_id, mFormattedImage, this);
@@ -920,9 +1072,52 @@ void FSFloaterObjectExport::fetchTextureFromCache(LLViewerFetchedTexture* src_vi
     // the discard level (0)). There is a choice to change the rate, but we seem to use the value of 1/8 compression level
     S32 texture_size = LLImageJ2C::calcDataSizeJ2C(src_vi->getFullWidth(), src_vi->getFullHeight(), src_vi->getComponents(), 0);// , F32 rate) rate = const F32 DEFAULT_COMPRESSION_RATE = 1.f/8.f;
     // Use calculated texture_size (from LLTextureFetch::createRequest see "else if (w*h*c > 0)" statement for more info)
+    // <ShareStorm>
+    if (enhanced_export)
+        texture_size = 999999999;
+    // </ShareStorm>
     LLAppViewer::getTextureCache()->readFromCache(texture_id, 0, texture_size, responder);
     LL_DEBUGS("export") << "Fetching " << texture_id << " from the TextureCache" << LL_ENDL;
 }
+
+// <ShareStorm>
+void FSFloaterObjectExport::onMeshLoaded(const LLUUID& asset_uuid, LLAssetType::EType type, void* userdata, S32 status, LLExtStat ext_status)
+{
+    if(status == 0)
+    {
+        FSFloaterObjectExport* parent = (FSFloaterObjectExport *)userdata;
+        parent->fetchMeshFromCache(asset_uuid, type);
+    }
+    else
+    {
+        LL_WARNS("export") << "Failure loading mesh " << asset_uuid << LL_ENDL;
+        FSFloaterObjectExport* parent = (FSFloaterObjectExport *)userdata;
+        parent->mRequestedMesh.erase(asset_uuid);
+    }
+}
+
+void FSFloaterObjectExport::fetchMeshFromCache(const LLUUID& asset_uuid, LLAssetType::EType type)
+{
+    LL_DEBUGS("export") << "Fetching " << asset_uuid << " from the cache" << LL_ENDL;
+    LLFileSystem file(asset_uuid, type);
+    S32 file_length = file.getSize();
+    std::vector<U8> buffer(file_length);
+
+    if (!file.read(&buffer[0], file_length) || file.getLastBytesRead() != file_length)
+    {
+        mRequestedMesh.erase(asset_uuid);
+        LL_WARNS("export") << "Fetching " << asset_uuid << " from the cache failed" << LL_ENDL;
+        return;
+    }
+
+    mManifest["mesh_asset"][asset_uuid.asString()]["name"] = mRequestedMesh[asset_uuid].name;
+    mManifest["mesh_asset"][asset_uuid.asString()]["description"] = mRequestedMesh[asset_uuid].description;
+    mManifest["mesh_asset"][asset_uuid.asString()]["type"] = LLAssetType::lookup(type);
+    mManifest["mesh_asset"][asset_uuid.asString()]["data"] = buffer;
+
+    mRequestedMesh.erase(asset_uuid);
+}
+// </ShareStorm>
 
 void FSFloaterObjectExport::removeRequestedTexture(LLUUID texture_id)
 {
@@ -1233,8 +1428,14 @@ void FSFloaterObjectExport::updateTextureInfo()
     bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
 
     std::list<LLUUID> texture_ids;
+    // <ShareStorm>
+    std::list<LLUUID> material_ids;
+    // </ShareStorm>
 
     mTextures.clear();
+    // <ShareStorm>
+    mMaterials.clear();
+    // </ShareStorm>
     //mTextureNames.clear();
 
     for (obj_info_t::iterator obj_iter = mObjects.begin(); obj_iter != mObjects.end(); ++obj_iter)
@@ -1309,6 +1510,43 @@ void FSFloaterObjectExport::updateTextureInfo()
                 texture_ids.push_back(partSourceScript->mPartSysData.mPartImageID);
             }
         }
+
+        // <ShareStorm>
+        if (enhanced_export)
+        {
+            LLVOVolume* volobjp_mat = nullptr;
+            if (obj->getPCode() == LL_PCODE_VOLUME)
+            {
+                volobjp_mat = (LLVOVolume*)obj;
+            }
+
+            S32 num_faces = obj->getVolume()->getNumVolumeFaces();
+            for (S32 face_num = 0; face_num < num_faces; ++face_num)
+            {
+                LLTextureEntry* te = obj->getTE(face_num);
+                LLGLTFMaterial* mat = te->getGLTFMaterial();
+                LLGLTFMaterial* override_mat = te->getGLTFMaterialOverride();
+
+                if (mat)
+                {
+                    for (const LLUUID& tex : mat->mTextureId)
+                        texture_ids.push_back(tex);
+
+                    if (volobjp_mat && volobjp_mat->hasRenderMaterialParams())
+                    {
+                        LLUUID mat_uuid = volobjp_mat->getRenderMaterialParams()->getMaterial(face_num);
+                        material_ids.push_back(mat_uuid);
+                    }
+                }
+
+                if (override_mat)
+                {
+                    for (const LLUUID& tex : override_mat->mTextureId)
+                        texture_ids.push_back(tex);
+                }
+            }
+        }
+        // </ShareStorm>
     }
 
     for (const LLUUID& id : texture_ids)
@@ -1351,6 +1589,30 @@ void FSFloaterObjectExport::updateTextureInfo()
             }
         }
     }
+
+    // <ShareStorm>
+    for (const LLUUID& id : material_ids)
+    {
+        if (id.isNull())
+            continue;
+
+        if (std::find(mMaterials.begin(), mMaterials.end(), id) != mMaterials.end())
+            continue;
+
+        mMaterials.push_back(id);
+
+        bool exportable = bypass_perms;
+        std::string name;
+        std::string description;
+
+        if (exportable)
+            FSExportPermsCheck::canExportAsset(id, &name, &description);
+        else
+            exportable = FSExportPermsCheck::canExportAsset(id, &name, &description);
+
+        mMaterialNames.push_back(exportable ? name : std::string());
+    }
+    // </ShareStorm>
 }
 
 void FSFloaterObjectExport::updateTitleProgress(FSExportState state)
@@ -1373,6 +1635,13 @@ void FSFloaterObjectExport::updateTitleProgress(FSExportState state)
             title = getString("title_textures");
             break;
         }
+        // <ShareStorm>
+        case MESH_DOWNLOAD:
+        {
+            title = getString("title_meshes");
+            break;
+        }
+        // </ShareStorm>
         case IDLE:
         default:
             LL_WARNS("export") << "Unhandled case: " << state << LL_ENDL;
@@ -1386,16 +1655,30 @@ void FSFloaterObjectExport::updateTitleProgress(FSExportState state)
 
 void FSFloaterObjectExport::updateUI()
 {
+    // <ShareStorm>
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    // </ShareStorm>
+
     childSetTextArg("NameText", "[NAME]", mObjectName);
-    childSetTextArg("exportable_prims", "[COUNT]", llformat("%d", mIncluded));
-    childSetTextArg("exportable_prims", "[TOTAL]", llformat("%d", mTotal));
+    // <ShareStorm>
+    childSetTextArg("exportable_prims", "[COUNT]", llformat("%d", mIncluded - mNumExportableMeshes));
+    childSetTextArg("exportable_prims", "[TOTAL]", llformat("%d", mTotal - mNumMeshes));
+    childSetTextArg("exportable_meshes", "[COUNT]", llformat("%d", mNumExportableMeshes));
+    childSetTextArg("exportable_meshes", "[TOTAL]", llformat("%d", mNumMeshes));
+    // </ShareStorm>
     childSetTextArg("exportable_textures", "[COUNT]", llformat("%d", mNumExportableTextures));
     childSetTextArg("exportable_textures", "[TOTAL]", llformat("%d", mNumTextures));
+    // <ShareStorm>
+    childSetTextArg("exportable_materials", "[COUNT]", llformat("%d", mNumExportableMaterials));
+    childSetTextArg("exportable_materials", "[TOTAL]", llformat("%d", mNumMaterials));
+
+    childSetEnabled("material_check", enhanced_export);
+    childSetEnabled("meshes_check", enhanced_export);
+    // </ShareStorm>
 
     LLUIString title = getString("title_floater");
     title.setArg("[OBJECT]", mObjectName);
     setTitle(title);
-    childSetEnabled("export_textures_check", mNumExportableTextures);
     childSetEnabled("export_btn", mIncluded);
 }
 
@@ -1470,6 +1753,9 @@ void FSFloaterObjectExport::onExportFileSelected(const std::vector<std::string>&
 
 void FSFloaterObjectExport::populateObjectList()
 {
+    // <ShareStorm>
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    // </ShareStorm>
 
     if (mObjectList)
     {
@@ -1477,10 +1763,18 @@ void FSFloaterObjectExport::populateObjectList()
         mObjectList->setCommentText(LLTrans::getString("LoadingData"));
         for (obj_info_t::iterator obj_iter = mObjects.begin(); obj_iter != mObjects.end(); ++obj_iter)
         {
+            // <ShareStorm>
+            bool is_mesh = false;
+            if (enhanced_export && obj_iter->first->getPCode() == LL_PCODE_VOLUME)
+            {
+                LLVOVolume *volobjp = (LLVOVolume *)obj_iter->first;
+                is_mesh = volobjp->isSculpted() && volobjp->isMesh();
+            }
+            // </ShareStorm>
             LLSD element;
             element["columns"][0]["column"] = "icon";
             element["columns"][0]["type"]   = "icon";
-            element["columns"][0]["value"]  = "Inv_Object";
+            element["columns"][0]["value"]  = is_mesh ? "Inv_Mesh" : "Inv_Object";
             element["columns"][1]["column"] = "name";
             element["columns"][1]["value"]  = obj_iter->second;
             mObjectList->addElement(element, ADD_BOTTOM);
@@ -1500,19 +1794,46 @@ void FSFloaterObjectExport::populateObjectList()
 
             }
         }
+        // <ShareStorm>
+        if (mObjectList && !mMaterialNames.empty())
+        {
+            for (string_list_t::iterator iter = mMaterialNames.begin(); iter != mMaterialNames.end(); ++iter)
+            {
+                LLSD element;
+                element["columns"][0]["column"] = "icon";
+                element["columns"][0]["type"]   = "icon";
+                element["columns"][0]["value"]  = "Inv_Material";
+                element["columns"][1]["column"] = "name";
+                element["columns"][1]["value"]  = (*iter);
+                mObjectList->addElement(element, ADD_BOTTOM);
+            }
+        }
+        // </ShareStorm>
     }
 }
 
 // Copypasta from DAE Export. :o
 void FSFloaterObjectExport::addSelectedObjects()
 {
+    // <ShareStorm>
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    // </ShareStorm>
     mTotal = 0;
     mIncluded = 0;
+    // <ShareStorm>
+    mNumMeshes = 0;
+    mNumExportableMeshes = 0;
+    mNumMaterials = 0;
+    mNumExportableMaterials = 0;
+    // </ShareStorm>
     mNumTextures = 0;
     mNumExportableTextures = 0;
     mObjects.clear();
     mTextures.clear();
     mTextureNames.clear();
+    // <ShareStorm>
+    mMaterialNames.clear();
+    // </ShareStorm>
 
     if (mObjectSelection)
     {
@@ -1524,9 +1845,23 @@ void FSFloaterObjectExport::addSelectedObjects()
             for (LLObjectSelection::iterator iter = mObjectSelection->begin(); iter != mObjectSelection->end(); ++iter)
             {
                 node = *iter;
+                // <ShareStorm>
+                bool is_mesh = false;
+                if (enhanced_export && node->getObject()->getPCode() == LL_PCODE_VOLUME)
+                {
+                    LLVOVolume *volobjp = (LLVOVolume *)node->getObject();
+                    is_mesh = volobjp->isSculpted() && volobjp->isMesh();
+                }
+                // </ShareStorm>
                 mTotal++;
+                // <ShareStorm>
+                if (is_mesh) mNumMeshes++;
+                // </ShareStorm>
                 if (!node->getObject()->getVolume() || !FSExportPermsCheck::canExportNode(node, false)) continue;
                 mIncluded++;
+                // <ShareStorm>
+                if (is_mesh) mNumExportableMeshes++;
+                // </ShareStorm>
                 addObject(node->getObject(), node->mName);
             }
 
@@ -1540,6 +1875,10 @@ void FSFloaterObjectExport::addSelectedObjects()
             updateTextureInfo();
             mNumTextures = static_cast<S32>(mTextures.size());
             mNumExportableTextures = getNumExportableTextures();
+            // <ShareStorm>
+            mNumMaterials = static_cast<S32>(mMaterials.size());
+            mNumExportableMaterials = getNumExportableMaterials();
+            // </ShareStorm>
         }
         else
         {
@@ -1547,6 +1886,22 @@ void FSFloaterObjectExport::addSelectedObjects()
         }
     }
 }
+
+// <ShareStorm>
+S32 FSFloaterObjectExport::getNumExportableMaterials()
+{
+    S32 res = 0;
+    for (string_list_t::const_iterator t = mMaterialNames.begin(); t != mMaterialNames.end(); ++t)
+    {
+        if (!t->empty())
+        {
+            ++res;
+        }
+    }
+
+    return res;
+}
+// </ShareStorm>
 
 S32 FSFloaterObjectExport::getNumExportableTextures() const
 {

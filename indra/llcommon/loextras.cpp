@@ -63,16 +63,15 @@ bool lolistorm_check_flag(unsigned flag)
     return ((lo_flags & flag) == flag);
 }
 
-void lolistorm_strip_jpeg2000_comment(std::string& str)
+// <ShareStorm>
+static std::pair<int, int> lolistorm_find_jpeg2000_comment(const unsigned char* buf, std::size_t len)
 {
-    const unsigned char* buf = (const unsigned char*)str.data();
-    int len = (int)str.size();
     bool in_header = false;
 
     if (len < 6)
-        return;
+        return {0, 0};
 
-    for (int i = 0; i < len - 3; ++i)
+    for (int i = 0; i < (int)len - 3; ++i)
     {
         if (buf[i] == 0xff)
         {
@@ -82,23 +81,43 @@ void lolistorm_strip_jpeg2000_comment(std::string& str)
             }
             else if (buf[i+1] == 0x90 || buf[i+1] == 0xd9)
             {
-                return;
+                return {0, 0};
             }
             else if (in_header && buf[i+1] == 0x64)
             {
                 int comment_len = (buf[i + 2] << 8) | buf[i + 3];
 
-                if (comment_len > len - i)
-                    comment_len = len - i;
+                if (comment_len > (int)len - i)
+                    comment_len = (int)len - i;
 
-                auto it = str.begin() + i;
-                str.erase(it, it + 2 + comment_len);
-
-                return;
+                return {i, comment_len + 2};
             }
         }
     }
+
+    return {0, 0};
 }
+
+void lolistorm_strip_jpeg2000_comment(std::string& str)
+{
+    auto range = lolistorm_find_jpeg2000_comment((const unsigned char*)str.data(), str.size());
+    if (range.first > 0 || range.second > 0)
+    {
+        auto it = str.begin() + range.first;
+        str.erase(it, it + range.second);
+    }
+}
+
+void lolistorm_strip_jpeg2000_comment(std::vector<unsigned char>& str)
+{
+    auto range = lolistorm_find_jpeg2000_comment(str.data(), str.size());
+    if (range.first > 0 || range.second > 0)
+    {
+        auto it = str.begin() + range.first;
+        str.erase(it, it + range.second);
+    }
+}
+// </ShareStorm>
 
 void lolistorm_set_custom_ids(const std::string& username, const std::string& id0, const std::string& macid)
 {

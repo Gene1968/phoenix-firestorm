@@ -57,7 +57,7 @@
 LLFilePicker LLFilePicker::sInstance;
 
 #if LL_WINDOWS
-#define SOUND_FILTER L"Sounds (*.wav)\0*.wav\0"
+#define SOUND_FILTER L"Sounds (*.wav; *.ogg)\0*.wav;*.ogg\0"// <ShareStorm>
 #define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png\0"
 // <ShareStorm> from original Singularity copybot Grimore:
 #define INVGZ_FILTER L"Inv cache (*.inv; *.inv.gz)\0*.inv;*.inv.gz\0"

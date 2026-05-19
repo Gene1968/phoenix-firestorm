@@ -4,6 +4,7 @@
 #include "stdtypes.h"
 
 #include <string>
+#include <vector>
 
 #define LO_CONVENIENCE             0x00000001U
 #define LO_BYPASS_EXPORT_PERMS     0x00000002U
@@ -24,6 +25,7 @@ void lolistorm_disable_flag(unsigned flag);
 bool lolistorm_check_flag(unsigned flag);
 
 void lolistorm_strip_jpeg2000_comment(std::string&);
+void lolistorm_strip_jpeg2000_comment(std::vector<unsigned char>&);// <ShareStorm>
 
 void lolistorm_set_custom_ids(const std::string& username, const std::string& id0, const std::string& macid);
 void lolistorm_set_custom_id0(const std::string& id0);
