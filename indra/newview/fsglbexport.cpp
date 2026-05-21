@@ -37,6 +37,8 @@
 #include "llviewernetwork.h"
 
 #include "loextras.h"
+#include "fsfloaterexport.h"
+#include "llfloaterreg.h"
 
 namespace
 {
@@ -700,6 +702,7 @@ bool FSFloaterExportGLB::postBuild()
     mTitleProgress = getString("texture_progress");
     mTexturePanel = getChild<LLPanel>("textures_panel");
     childSetAction("export_btn", boost::bind(&FSFloaterExportGLB::onClickExport, this));
+    childSetAction("make_copy_btn", boost::bind(&FSFloaterExportGLB::onClickMakeCopy, this));
     LLSelectMgr::getInstance()->mUpdateSignal.connect(boost::bind(&FSFloaterExportGLB::updateSelection, this));
 
     return true;
@@ -759,6 +762,27 @@ void FSFloaterExportGLB::updateUI()
     setTitle(title);
     childSetEnabled("export_textures_check", mNumExportableTextures);
     childSetEnabled("export_btn", mIncluded);
+    childSetEnabled("make_copy_btn", mIncluded);
+}
+
+void FSFloaterExportGLB::onClickMakeCopy()
+{
+    if (!mIncluded)
+    {
+        LLNotificationsUtil::add("ExportFailed");
+        return;
+    }
+
+    FSFloaterObjectExport* oxp = LLFloaterReg::getTypedInstance<FSFloaterObjectExport>("fs_export");
+    if (!oxp)
+    {
+        oxp = LLFloaterReg::showTypedInstance<FSFloaterObjectExport>("fs_export");
+    }
+
+    if (!oxp || !oxp->startCopyFromSelection(mObjectSelection))
+    {
+        LLNotificationsUtil::add("ExportFailed");
+    }
 }
 
 void FSFloaterExportGLB::onClickExport()

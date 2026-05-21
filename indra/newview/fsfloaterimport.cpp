@@ -237,10 +237,12 @@ void FSFloaterImport::loadFile()
     mTextureQueue.clear();
     mAnimQueue.clear();
     mSoundQueue.clear();
+    mMeshQueue.clear();// <ShareStorm>
     mLinksetSize = 0;
     mTexturesTotal = 0;
     mAnimsTotal = 0;
     mMaterialsTotal = 0;// <ShareStorm>/LO18
+    mMeshesTotal = 0;// <ShareStorm>
     mSoundsTotal = 0;
     mAssetsTotal = 0;// <ShareStorm>/LO18
 
@@ -402,6 +404,13 @@ void FSFloaterImport::processPrim(LLSD& prim)
 // <ShareStorm>:
     }
 
+    if (enhanced_export && prim.has("mesh"))
+    {
+        LLSculptParams mesh_params;
+        mesh_params.fromLLSD(prim["mesh"]);
+        addMeshAsset(mesh_params.getSculptTexture());
+    }
+
     if (enhanced_export && prim.has("light_texture"))
     {
         addAsset(prim["light_texture"]["texture"].asUUID(), LLAssetType::AT_TEXTURE);
@@ -559,6 +568,21 @@ void FSFloaterImport::processPrim(LLSD& prim)
     }
 }
 
+void FSFloaterImport::addMeshAsset(LLUUID mesh_id)
+{
+    if (!mManifest.has("mesh_asset") || !mManifest["mesh_asset"].has(mesh_id.asString()))
+    {
+        LL_DEBUGS("import") << "Missing mesh_asset data for " << mesh_id.asString() << LL_ENDL;
+        return;
+    }
+
+    if (std::find(mMeshQueue.begin(), mMeshQueue.end(), mesh_id) == mMeshQueue.end())
+    {
+        mMeshQueue.push_back(mesh_id);
+        mMeshesTotal++;
+    }
+}
+
 void FSFloaterImport::addAsset(LLUUID asset_id, LLAssetType::EType asset_type)
 {
     if (!mManifest["asset"].has(asset_id.asString()))
@@ -606,6 +630,11 @@ void FSFloaterImport::addAsset(LLUUID asset_id, LLAssetType::EType asset_type)
         }
     }
         break;
+    case LLAssetType::AT_MESH:
+    {
+        addMeshAsset(asset_id);
+    }
+        break;
     default:
     {
         if (std::find(mAssetQueue.begin(), mAssetQueue.end(), asset_id) == mAssetQueue.end())
@@ -641,7 +670,7 @@ void FSFloaterImport::onClickBtnImport()
     getChild<LLCheckBoxCtrl>("upload_asset")->setEnabled(false);
     getChild<LLCheckBoxCtrl>("temp_asset")->setEnabled(false);
 
-    if (((mTexturesTotal + mSoundsTotal + mAnimsTotal + mMaterialsTotal + mAssetsTotal) != 0) && getChild<LLCheckBoxCtrl>("upload_asset")->get())// <ShareStorm>/LO18
+    if (((mTexturesTotal + mSoundsTotal + mAnimsTotal + mMaterialsTotal + mMeshesTotal + mAssetsTotal) != 0) && getChild<LLCheckBoxCtrl>("upload_asset")->get())// <ShareStorm>/LO18
     {
         // do not pop up preview floaters when creating new inventory items.
         gSavedSettings.setBOOL("ShowNewInventory", false);
@@ -698,6 +727,15 @@ void FSFloaterImport::onClickBtnImport()
             status.setArg("[MATERIALTOTAL]", llformat("%u", mMaterialsTotal));
             getChild<LLTextBox>("file_status_text")->setText(status.getString());
             uploadAsset(mMaterialQueue.front());
+            return;
+        }
+        if (!mMeshQueue.empty())
+        {// <ShareStorm>
+            LLUIString status = LLUIString("Uploading mesh [MESH] of [MESHTOTAL].");
+            status.setArg("[MESH]", llformat("%u", mMeshesTotal - (U32)mMeshQueue.size() + 1));
+            status.setArg("[MESHTOTAL]", llformat("%u", mMeshesTotal));
+            getChild<LLTextBox>("file_status_text")->setText(status.getString());
+            uploadAsset(mMeshQueue.front());
             return;
         }
         if (!mAssetQueue.empty())
@@ -1059,6 +1097,22 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         }
 
         object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt_params, true); // sets locally and fires off an update to the region.
+    }
+
+    if (enhanced_export && prim.has("mesh"))
+    {
+        LL_DEBUGS("import") << "Found mesh for " << prim_uuid.asString() << LL_ENDL;
+        LLSculptParams sculpt_params;
+        sculpt_params.fromLLSD(prim["mesh"]);
+        LL_DEBUGS("import") << "Setting mesh to " << prim["mesh"]["texture"].asUUID().asString() << LL_ENDL;
+
+        if (mAssetMap[sculpt_params.getSculptTexture()].notNull())
+        {
+            sculpt_params.setSculptTexture(mAssetMap[sculpt_params.getSculptTexture()], sculpt_params.getSculptType());
+            LL_DEBUGS("import") << "Replaced mesh " << prim["mesh"]["texture"].asUUID().asString() << " with " << sculpt_params.getSculptTexture().asString() << LL_ENDL;
+        }
+
+        object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt_params, true);
     }
 
     if (prim.has("flexible"))
@@ -1444,10 +1498,22 @@ void FSFloaterImport::setPrimPosition(U8 type, LLViewerObject* object, LLVector3
 void FSFloaterImport::uploadAsset(LLUUID asset_id, LLUUID inventory_item)
 {
     bool temporary = false;
-    std::vector<U8> asset_data = mManifest["asset"][asset_id.asString()]["data"].asBinary();
-    std::string name = mManifest["asset"][asset_id.asString()]["name"].asString();
-    std::string description = mManifest["asset"][asset_id.asString()]["description"].asString();
-    LLAssetType::EType asset_type = LLAssetType::lookup(mManifest["asset"][asset_id.asString()]["type"].asString().c_str());
+    const bool from_mesh_manifest = mManifest.has("mesh_asset")
+        && mManifest["mesh_asset"].has(asset_id.asString());
+    if (!from_mesh_manifest && !mManifest["asset"].has(asset_id.asString()))
+    {
+        LL_WARNS("import") << "Missing asset data for " << asset_id.asString() << LL_ENDL;
+        pushNextAsset(LLUUID::null, asset_id, LLAssetType::AT_MESH);
+        return;
+    }
+
+    const LLSD& asset_record = from_mesh_manifest
+        ? mManifest["mesh_asset"][asset_id.asString()]
+        : mManifest["asset"][asset_id.asString()];
+    std::vector<U8> asset_data = asset_record["data"].asBinary();
+    std::string name = asset_record["name"].asString();
+    std::string description = asset_record["description"].asString();
+    LLAssetType::EType asset_type = LLAssetType::lookup(asset_record["type"].asString().c_str());
     std::string url;
     LLSD body = LLSD::emptyMap();
     LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(asset_type);
@@ -2092,6 +2158,24 @@ void FSFloaterImport::popNextAsset()
         }
     }
         break;
+    case LLAssetType::AT_MESH:
+    {// <ShareStorm>
+        uuid_vec_t::iterator iter = std::find(mMeshQueue.begin(), mMeshQueue.end(), asset_id);
+        if (iter != mMeshQueue.end())
+        {
+            if (new_uuid.notNull())
+            {
+                mAssetMap[asset_id] = new_uuid;
+            }
+            mMeshQueue.erase(iter);
+        }
+        else
+        {
+            LL_WARNS("import") << "Error with mesh upload, got callback without mesh in mMeshQueue." << LL_ENDL;
+            return;
+        }
+    }
+        break;
     default:
     {
         uuid_vec_t::iterator iter = std::find(mAssetQueue.begin(), mAssetQueue.end(), asset_id);
@@ -2146,6 +2230,15 @@ void FSFloaterImport::popNextAsset()
         status.setArg("[MATERIALTOTAL]", llformat("%u", mMaterialsTotal));
         getChild<LLTextBox>("file_status_text")->setText(status.getString());
         uploadAsset(mMaterialQueue.front());
+        return;
+    }
+    if (!mMeshQueue.empty())
+    {// <ShareStorm>
+        LLUIString status = LLUIString("Uploading mesh [MESH] of [MESHTOTAL].");
+        status.setArg("[MESH]", llformat("%u", mMeshesTotal - (U32)mMeshQueue.size() + 1));
+        status.setArg("[MESHTOTAL]", llformat("%u", mMeshesTotal));
+        getChild<LLTextBox>("file_status_text")->setText(status.getString());
+        uploadAsset(mMeshQueue.front());
         return;
     }
     if (!mAssetQueue.empty())

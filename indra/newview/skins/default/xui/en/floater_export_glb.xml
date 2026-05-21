@@ -209,7 +209,17 @@
 	 name="export_btn"
 	 top_delta="0"
 	 left_pad="2"
-	 width="122" />
+	 width="60" />
+	<button
+	 layout="topleft"
+	 follows="left|bottom"
+	 height="23"
+	 label="Copy..."
+	 name="make_copy_btn"
+	 tool_tip="Duplicate linkset in-world (OXP backup + import; uploads meshes/textures)"
+	 top_delta="0"
+	 left_pad="2"
+	 width="60" />
 	</layout_panel>
 	<layout_panel
 	 visibility_control="DAEExportTextures"

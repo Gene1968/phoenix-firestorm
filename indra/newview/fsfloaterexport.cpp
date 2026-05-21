@@ -1702,13 +1702,22 @@ void FSFloaterObjectExport::onClickExport()
 
 
 // <ShareStorm> Duplicate linkset: export to cache, then open OXP import floater.
-void FSFloaterObjectExport::onClickMakeCopy()
+bool FSFloaterObjectExport::startCopyFromSelection(LLObjectSelectionHandle selection)
 {
+    if (!selection || selection->getRootObjectCount() == 0)
+    {
+        return false;
+    }
+
+    mObjectSelection = selection;
+    addSelectedObjects();
+
     if (!mIncluded)
     {
-        LLNotificationsUtil::add("ExportFailed");
-        return;
+        return false;
     }
+
+    gSavedSettings.setBOOL("LOExportMeshes", true);
 
     mCopyAfterExport = true;
     mFilename = gDirUtilp->getExpandedFilename(LL_PATH_CACHE, "",
@@ -1721,6 +1730,15 @@ void FSFloaterObjectExport::onClickMakeCopy()
     if (!exportSelection())
     {
         mCopyAfterExport = false;
+        return false;
+    }
+    return true;
+}
+
+void FSFloaterObjectExport::onClickMakeCopy()
+{
+    if (!startCopyFromSelection(mObjectSelection))
+    {
         LLNotificationsUtil::add("ExportFailed");
     }
 }

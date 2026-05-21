@@ -100,6 +100,7 @@ private:
     void refresh() override;
     void dirty();
     void onClickExport();
+    void onClickMakeCopy();
     void onExportFileSelected(const std::vector<std::string>& filenames);
     void onTextureExportCheck();
     void saveTextures();

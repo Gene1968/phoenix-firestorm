@@ -95,6 +95,7 @@ private:
     void onIdle();
     void setPrimPosition(U8 type, LLViewerObject* object, LLVector3 position, LLQuaternion rotation = LLQuaternion(), LLVector3 scale = LLVector3());
     void addAsset(LLUUID texture, LLAssetType::EType asset_type);
+    void addMeshAsset(LLUUID mesh_id);
     void importPrims();
     void searchInventory(LLUUID asset_id, LLViewerObject* object, std::string prim_name);
     void processPrim(LLSD& prim);
@@ -124,6 +125,8 @@ private:
     U32 mAnimsTotal;
     uuid_vec_t mMaterialQueue;// <ShareStorm>/LO18
     U32 mMaterialsTotal;// <ShareStorm>/LO18
+    uuid_vec_t mMeshQueue;// <ShareStorm>
+    U32 mMeshesTotal;// <ShareStorm>
     uuid_vec_t mAssetQueue;
     U32 mAssetsTotal;
     std::map<LLUUID,LLUUID> mAssetMap;

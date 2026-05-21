@@ -56,6 +56,9 @@ public:
     bool postBuild() override;
     void updateSelection();
 
+    /// Export selection to cache OXP and open import floater (mesh linksets need LOExportMeshes).
+    bool startCopyFromSelection(LLObjectSelectionHandle selection);
+
     static void onImageLoaded(bool success,
                               LLViewerFetchedTexture *src_vi,
                               LLImageRaw* src,
