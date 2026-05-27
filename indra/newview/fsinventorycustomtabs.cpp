@@ -196,6 +196,14 @@ bool FSInventoryCustomTabs::handleMouseDown(S32 x, S32 y)
 
 void FSInventoryCustomTabs::onFilterFocusLost()
 {
+    if (mParent)
+    {
+        auto* active = dynamic_cast<LLInventoryPanel*>(mParent->getActivePanel());
+        if (active && isCustomTab(active) && !mExplicitlyNamed.count(active))
+        {
+            updateAutoLabel(active);
+        }
+    }
     save();
 }
 
@@ -246,6 +254,10 @@ void FSInventoryCustomTabs::noteActivePanel(LLInventoryPanel* panel)
 {
     if (mLastActivePanel && mLastActivePanel != panel && isCustomTab(mLastActivePanel))
     {
+        if (!mExplicitlyNamed.count(mLastActivePanel))
+        {
+            updateAutoLabel(mLastActivePanel);
+        }
         save();
     }
     if (panel && panel != mAddTabPanel && mTabs && mTabs->getIndexForPanel(panel) >= 0)
@@ -262,15 +274,6 @@ void FSInventoryCustomTabs::onClosePressed(LLInventoryPanel* panel)
     }
     mContextPanel = panel;
     onCloseClicked();
-}
-
-void FSInventoryCustomTabs::onActiveFilterChanged(LLPanel* active_panel)
-{
-    auto* inv_panel = dynamic_cast<LLInventoryPanel*>(active_panel);
-    if (inv_panel && mPanels.count(inv_panel) && !mExplicitlyNamed.count(inv_panel))
-    {
-        updateAutoLabel(inv_panel);
-    }
 }
 
 void FSInventoryCustomTabs::notifyActiveFilterStateChanged()
@@ -333,14 +336,6 @@ void FSInventoryCustomTabs::noteActivePanel(LLPanelMainInventory* parent, LLInve
     if (auto* self = instanceFor(parent))
     {
         self->noteActivePanel(panel);
-    }
-}
-
-void FSInventoryCustomTabs::onActiveFilterChanged(LLPanelMainInventory* parent, LLPanel* active)
-{
-    if (auto* self = instanceFor(parent))
-    {
-        self->onActiveFilterChanged(active);
     }
 }
 
@@ -588,7 +583,7 @@ void FSInventoryCustomTabs::onCloneClicked()
     {
         return;
     }
-    const auto& src_filter = mContextPanel->getFilter();
+    auto& src_filter = mContextPanel->getFilter();
     const std::string explicit_name = mExplicitlyNamed.count(mContextPanel) ? mContextPanel->getLabel() : std::string();
     auto* new_panel = addTab(explicit_name, src_filter.getFilterSubStringOrig(), true);
     if (!new_panel)
@@ -604,6 +599,7 @@ void FSInventoryCustomTabs::onCloneClicked()
         new_filter.setShowFolderState(src_filter.getShowFolderState());
         new_filter.setFilterCreator(src_filter.getFilterCreatorType());
         new_filter.setFilterLinks(src_filter.getFilterLinks());
+        new_filter.setSearchType(src_filter.getSearchType());
     }
     save();
 }
@@ -760,6 +756,10 @@ void FSInventoryCustomTabs::doLoad()
                         new_filter.setFilterLinks(static_cast<U64>(ops["links"].asInteger()));
                     }
                 }
+                if (states.has("search_type"))
+                {
+                    new_filter.setSearchType(static_cast<LLInventoryFilter::ESearchType>(states["search_type"].asInteger()));
+                }
             }
         }
     }
@@ -824,7 +824,7 @@ void FSInventoryCustomTabs::save()
         entry["name"] = mExplicitlyNamed.count(inv_panel) ? inv_panel->getLabel() : std::string();
         entry["filter"] = inv_panel->getFilter().getFilterSubStringOrig();
 
-        const auto& filter = inv_panel->getFilter();
+        auto& filter = inv_panel->getFilter();
         LLInventoryFilter::Params filter_params;
         filter.toParams(filter_params);
         if (filter_params.validateBlock(false))
@@ -838,6 +838,7 @@ void FSInventoryCustomTabs::save()
             states_sd["filter_ops"]["show_folder_state"] = static_cast<S32>(filter.getShowFolderState());
             states_sd["filter_ops"]["creator_type"] = static_cast<S32>(filter.getFilterCreatorType());
             states_sd["filter_ops"]["links"] = static_cast<S32>(filter.getFilterLinks());
+            states_sd["search_type"] = static_cast<S32>(filter.getSearchType());
             entry["states"] = states_sd;
         }
 
