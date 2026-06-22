@@ -63,6 +63,8 @@
 #include "fscommon.h"
 #include "llviewermenu.h"
 
+#include "loextras.h"// <ShareStorm>/LO
+
 #include <boost/lexical_cast.hpp>
 
 const S32 CLIENT_RECT_VPAD = 4;
@@ -107,6 +109,7 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
       mDisplayNameCallback(false),
       mAvatarNameCallbackConnection()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     updateImageID();
     if (key.has("save_as"))
     {
@@ -118,9 +121,12 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
         mShowKeepDiscard = false;
         mCopyToInv = false;
         mIsCopyable = false;
-        mPreviewToSave = false;
+        if (!bypass_perms)
+            mPreviewToSave = false;// <ShareStorm>/LO
         mIsFullPerm = false;
     }
+    if (bypass_perms)
+        mIsFullPerm = true;// <ShareStorm>/LO
 }
 
 LLPreviewTexture::~LLPreviewTexture()
@@ -379,7 +385,12 @@ void LLPreviewTexture::draw()
 // virtual
 bool LLPreviewTexture::canSaveAs() const
 {
-    return mIsFullPerm && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+// ShareStorm from original Singularity copybot Grimore:
+#ifdef TOGGLE_HACKED_GODLIKE_VIEWER
+    return gAgent.isGodlike() && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+#else
+	return mIsFullPerm && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+#endif
 }
 
 
@@ -1192,6 +1203,7 @@ void LLPreviewTexture::adjustAspectRatio()
 
 void LLPreviewTexture::updateImageID()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
     const LLViewerInventoryItem *item = static_cast<const LLViewerInventoryItem*>(getItem());
     if(item)
     {
@@ -1205,7 +1217,7 @@ void LLPreviewTexture::updateImageID()
         mCopyToInv = false;
         LLPermissions perm(item->getPermissions());
         mIsCopyable = perm.allowCopyBy(gAgent.getID(), gAgent.getGroupID()) && perm.allowTransferTo(gAgent.getID());
-        mIsFullPerm = item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);
+        mIsFullPerm = bypass_perms || item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);// <ShareStorm>/LO
     }
     else // not an item, assume it's an asset id
     {

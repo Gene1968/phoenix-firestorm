@@ -99,7 +99,18 @@ public:
         FFLOAD_HDRI = 17,
 
         // Firestorm additions
-        FFLOAD_IMPORT = 50
+        FFLOAD_IMPORT = 50,
+
+		// <ShareStorm>
+		FFLOAD_ANIMATN = 61,
+		FFLOAD_INVGZ = 62,
+		FFLOAD_WEARABLES = 63,
+		FFLOAD_LSL = 64,
+		FFLOAD_NOTECARD = 65,
+		FFLOAD_LANDMARK = 66,
+		FFLOAD_GEOMETRY = 67
+		// </ShareStorm>
+
     };
 
     enum ESaveFilter
@@ -123,7 +134,34 @@ public:
         // Firestorm additions
         FFSAVE_BEAM = 50,
         FFSAVE_EXPORT = 51,
-        FFSAVE_CSV = 52
+        FFSAVE_CSV = 52,
+
+		// <ShareStorm>
+		FFSAVE_ANIMATN = 60,
+		FFSAVE_OGG = 61,
+		FFSAVE_NOTECARD = 62,
+		FFSAVE_GESTURE = 63,
+		FFSAVE_LSL = 64,
+		// good grief
+		FFSAVE_SHAPE = 65,
+		FFSAVE_SKIN = 66,
+		FFSAVE_HAIR = 67,
+		FFSAVE_EYES = 68,
+		FFSAVE_SHIRT = 69,
+		FFSAVE_PANTS = 70,
+		FFSAVE_SHOES = 71,
+		FFSAVE_SOCKS = 72,
+		FFSAVE_JACKET = 73,
+		FFSAVE_GLOVES = 74,
+		FFSAVE_UNDERSHIRT = 75,
+		FFSAVE_UNDERPANTS = 76,
+		FFSAVE_SKIRT = 77,
+		FFSAVE_INVGZ = 78,
+		FFSAVE_LANDMARK = 79,
+		FFSAVE_ANIMS = 80,
+		FFSAVE_NEIL = 81
+		// </ShareStorm>
+
     };
 
     // open the dialog. This is a modal operation

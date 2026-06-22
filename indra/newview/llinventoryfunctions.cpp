@@ -75,6 +75,10 @@
 #include "llpreviewscript.h"
 #include "llpreviewsound.h"
 #include "llpreviewtexture.h"
+// <ShareStorm>
+#include "loassets.h"
+#include "loextras.h"
+// </ShareStorm>
 #include "llresmgr.h"
 #include "llscrollbar.h"
 #include "llscrollcontainer.h"
@@ -3531,6 +3535,10 @@ bool get_selection_object_uuids(LLFolderView *root, uuid_vec_t& ids)
 
 void LLInventoryAction::doToSelected(LLInventoryModel* model, LLFolderView* root, const std::string& action, bool user_confirm)
 {
+    // <ShareStorm>
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    // </ShareStorm>
+
     std::set<LLFolderViewItem*> selected_items = root->getSelectionList();
     if (selected_items.empty()
         && action != "wear"
@@ -4004,6 +4012,12 @@ void LLInventoryAction::doToSelected(LLInventoryModel* model, LLFolderView* root
     {
         LLAppearanceMgr::instance().removeItemsFromAvatar(ids);
     }
+    // <ShareStorm>
+    else if (bypass_perms && "save_selected_as" == action)
+    {
+        lo_inv_save_multiple(ids);
+    }
+    // </ShareStorm>
     else if ("save_selected_as" == action)
     {
         (new LLDirPickerThread(boost::bind(&LLInventoryAction::saveMultipleTextures, _1, selected_items, model), std::string()))->getFile();
@@ -4084,6 +4098,12 @@ void LLInventoryAction::doToSelected(LLInventoryModel* model, LLFolderView* root
             LLFloaterReg::showInstance("change_item_thumbnail", data);
         }
     }
+    // <ShareStorm>
+    else if (bypass_perms && action == "save_as")
+    {
+        lo_inv_save_multiple(ids);
+    }
+    // </ShareStorm>
     // <FS:Ansariel> FIRE-22851: Show texture "Save as" file picker subsequently instead all at once
     else if (action == "save_as") // "save_as" is only available for textures as of 01/08/2018
     {

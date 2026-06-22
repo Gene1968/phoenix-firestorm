@@ -121,7 +121,7 @@ public:
 
     void setServerReleaseNotesURL(const std::string& url) { mServerReleaseNotesURL = url; }
     LLSD getViewerInfo() const;
-    std::string getViewerInfoString(bool default_string = false) const;
+    std::string getViewerInfoString(bool unfaked_string = false) const;// ShareStorm
 
     // Report true if under the control of a debugger. A null-op default.
     virtual bool beingDebugged() { return false; }
@@ -140,7 +140,7 @@ public:
     static U32 getObjectCacheVersion() ;
     static U32 getDiskCacheVersion() ;
 
-    const std::string& getSerialNumber() { return mSerialNumber; }
+    const std::string& getSerialNumber();// ShareStorm
 
     bool getPurgeCache() const { return mPurgeCache; }
 

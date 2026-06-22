@@ -61,6 +61,8 @@
 #include "llviewertexturelist.h"
 #include "fsexportperms.h"
 
+#include "loextras.h"// <ShareStorm>/LO
+
 static constexpr F32 TEXTURE_DOWNLOAD_TIMEOUT = 60.f;
 
 // *FIXME: Don't hard code these and allow the floater to resize. Right now, I'm too lazy. <FS:CR>
@@ -244,7 +246,8 @@ void ColladaExportFloater::addSelectedObjects()
             {
                 mTotal++;
                 LLSelectNode* node = *iter;
-                if (!node->getObject()->getVolume() || !FSExportPermsCheck::canExportNode(node, true)) continue;
+				// <ShareStorm> from original Singularity copybot Grimore:
+                // if (!node->getObject()->getVolume() || !FSExportPermsCheck::canExportNode(node, true)) continue;
                 mIncluded++;
                 mSaver.add(node->getObject(), node->mName);
             }
@@ -527,7 +530,8 @@ void DAESaver::updateTextureInfo()
             if (std::find(mTextures.begin(), mTextures.end(), id) != mTextures.end()) continue;
 
             mTextures.push_back(id);
-            bool exportable = false;
+			// <ShareStorm> from original Singularity copybot Grimore:
+            bool exportable = true;
             LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTexture(id);
             std::string name;
             std::string description;
@@ -715,6 +719,8 @@ void DAESaver::transformTexCoord(S32 num_vert, LLVector2* coord, LLVector3* posi
 
 bool DAESaver::saveDAE(std::string filename)
 {
+    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);// <ShareStorm>/LO
+
     // Collada expects file and folder names to be escaped
     // Note: cdom::nativePathToUri()
     // Same as in LLDAELoader::OpenFile()
@@ -756,6 +762,9 @@ bool DAESaver::saveDAE(std::string filename)
     daeElement* contributor = asset->add("contributor");
     contributor->add("author")->setCharData(author);
     contributor->add("authoring_tool")->setCharData(LLVersionInfo::getInstance()->getChannelAndVersion());
+    if (anonymize)
+        asset->removeChildElement(contributor);// <ShareStorm>
+
 
     daeElement* images = root->add("library_images");
     daeElement* geomLib = root->add("library_geometries");
@@ -1042,6 +1051,11 @@ void DAESaver::generateEffects(daeElement *effects)
         daeElement* t = profile->add("technique");
         t->setAttribute("sid", "common");
         domElement* phong = t->add("phong");
+
+        // <ShareStorm>/LO Excluding this causes Blender to have glitched rendering
+        if (lolistorm_check_flag(LO_ENHANCED_EXPORT))
+            phong->add("shininess float")->setCharData("50");
+
         domElement* diffuse = phong->add("diffuse");
         // Only one <color> or <texture> can appear inside diffuse element
         if (!colladaName.empty())

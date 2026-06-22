@@ -40,6 +40,14 @@
 #include "lllocaltextureobject.h"
 #include "rlvhandler.h"
 
+// <ShareStorm>:
+#include "loextras.h"
+#include "llfocusmgr.h"
+#include "llnotificationsutil.h"
+#include "llinventorypanel.h"
+#include "llinventorydefines.h"
+// </ShareStorm>
+
 using namespace LLAvatarAppearanceDefines;
 
 LLFloaterAvatarTextures::LLFloaterAvatarTextures(const LLSD& id)
@@ -54,12 +62,14 @@ LLFloaterAvatarTextures::~LLFloaterAvatarTextures()
 
 bool LLFloaterAvatarTextures::postBuild()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>:
+
     for (U32 i=0; i < TEX_NUM_INDICES; i++)
     {
         const std::string tex_name = LLAvatarAppearance::getDictionary()->getTexture(ETextureIndex(i))->mName;
         mTextures[i] = getChild<LLTextureCtrl>(tex_name);
         // <FS:Ansariel> Mask avatar textures and disable
-        mTextures[i]->setIsMasked(true);
+        mTextures[i]->setIsMasked(!bypass_perms);// <ShareStorm>:
         mTextures[i]->setEnabled(false);
         // </FS:Ansariel>
     }
@@ -68,7 +78,7 @@ bool LLFloaterAvatarTextures::postBuild()
     childSetAction("Dump", onClickDump, this);
 
     // <FS:Ansariel> Hide dump button if not in god mode
-    childSetVisible("Dump", gAgent.isGodlike());
+    childSetVisible("Dump", gAgent.isGodlike() || bypass_perms);// <ShareStorm>
 
     refresh();
     return true;
@@ -84,6 +94,7 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
                                  LLTextureCtrl* ctrl,
                                  ETextureIndex te)
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>:
     LLUUID id = IMG_DEFAULT_AVATAR;
     const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture(te);
     if (tex_entry && tex_entry->mIsLocalTexture)
@@ -114,10 +125,14 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
     }
     else
     {
-        ctrl->setImageAssetID(id);
+// <ShareStorm>: ctrl->setImageAssetID(id);
+        ctrl->setValue(id);
         // <FS:Ansariel> Hide full texture uuid
-        //ctrl->setToolTip(tex_entry->mName + " : " + id.asString());
-        ctrl->setToolTip(tex_entry->mName + " : " + id.asString().substr(0,7));
+// <ShareStorm>:
+        if (bypass_perms)
+            ctrl->setToolTip(tex_entry->mName + " : " + id.asString());
+        else
+            ctrl->setToolTip(tex_entry->mName + " : " + id.asString().substr(0,7));
         // </FS:Ansariel>
     }
 }
@@ -171,14 +186,89 @@ void LLFloaterAvatarTextures::refresh()
 // static
 void LLFloaterAvatarTextures::onClickDump(void* data)
 {
-    if (gAgent.isGodlike())
-    {
+// <ShareStorm>:
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    // if (gAgent.isGodlike() || bypass_perms)
+    // {
         const LLVOAvatarSelf* avatarp = gAgentAvatarp;
         if (!avatarp) return;
+
+		std::string fullname;
+		gCacheName->getFullName(avatarp->getID(), fullname);
+		std::string msg;
+		msg.assign("Avatar Textures : ");
+		msg.append(fullname);
+		msg.append("\n");
+// </ShareStorm>
+
         for (S32 i = 0; i < avatarp->getNumTEs(); i++)
         {
+// <ShareStorm>
+		std::string submsg;// sumo for each text
             const LLTextureEntry* te = avatarp->getTE(i);
             if (!te) continue;
+
+		LLUUID mUUID = te->getID();
+		submsg.assign(LLAvatarAppearance::getDictionary()->getTexture(ETextureIndex(i))->mName);
+		submsg.append(" : ");
+		if (mUUID == IMG_DEFAULT_AVATAR)
+		{
+			submsg.append("No texture") ;
+		}
+		else
+		{
+			submsg.append(mUUID.asString());
+			msg.append(submsg);
+			msg.append("\n");
+			LLUUID mUUID = te->getID();
+			LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
+			LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
+			const LLUUID folder_id = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(asset_type));
+			if(folder_id.notNull())
+			{
+				std::string name;
+				std::string desc;
+				name.assign("temp.");
+				desc.assign(mUUID.asString());
+				name.append(mUUID.asString());
+				LLUUID item_id;
+				item_id.generate();
+				LLPermissions perm;
+					perm.init(gAgentID,	gAgentID, LLUUID::null, LLUUID::null);
+				U32 next_owner_perm = PERM_MOVE | PERM_TRANSFER;
+					perm.initMasks(PERM_ALL, PERM_ALL, PERM_NONE,PERM_NONE, next_owner_perm);
+				S32 creation_date_now = static_cast<S32>(time_corrected());
+				LLPointer<LLViewerInventoryItem> item
+					= new LLViewerInventoryItem(item_id,
+										folder_id,
+										perm,
+										mUUID,
+										asset_type,
+										inv_type,
+										name,
+										desc,
+										LLSaleInfo::DEFAULT,
+										LLInventoryItemFlags::II_FLAGS_NONE,
+										creation_date_now);
+				item->updateServer(TRUE);
+
+				gInventory.updateItem(item);
+				gInventory.notifyObservers();
+		
+				LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+				if (active_panel)
+				{
+					active_panel->openSelected();
+					LLFocusableElement* focus = gFocusMgr.getKeyboardFocus();
+					gFocusMgr.setKeyboardFocus(focus);
+				}
+			}
+			else
+			{
+				LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
+			}
+		}
+// </ShareStorm>
 
             const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture((ETextureIndex)(i));
             if (!tex_entry)
@@ -214,5 +304,12 @@ void LLFloaterAvatarTextures::onClickDump(void* data)
                 LL_INFOS() << "TE " << i << " name:" << tex_entry->mName << " id:" << te->getID() << LL_ENDL;
             }
         }
-    }
+    //}
+
+// <ShareStorm>
+	LLSD args;
+	args["MESSAGE"] = msg;
+	LLNotificationsUtil::add("SystemMessage", args);
+// </ShareStorm>
+
 }

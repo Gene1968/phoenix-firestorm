@@ -49,6 +49,10 @@
 	<button bottom_delta="25" follows="left|bottom" height="20" label="Play Locally" name="play_locally_btn" left="10" width="95" enabled="false"/>
 	<button bottom_delta="0" follows="left|bottom" height="20" label="Stop Locally" name="stop_locally_btn" left_pad="5" width="95" enabled="false"/>
 	<button bottom_delta="0" follows="left|bottom" height="20" label="Look At" name="look_at_btn" left_pad="5" width="95" enabled="false"/>
+	<!-- <ShareStorm> -->
+	<button bottom_delta="25" follows="left|bottom" height="20" label="Copy UUID" name="copy_uuid_btn" left="10" width="120" enabled="false"/>
+	<button bottom_delta="0" follows="left|bottom" height="20" label="Export .ogg" label_color="Yellow" name="export_btn" left_pad="5" width="120" enabled="false"/>
+	<!-- </ShareStorm> -->
 
 	<button bottom_delta="0" follows="left|bottom" height="20" label="Stop" name="stop_btn" right="-10" width="95" enabled="false"/>
 	<button bottom_delta="0" follows="left|bottom" height="20" label="Blacklist" name="bl_btn" right="-110" width="95" enabled="false"/>
