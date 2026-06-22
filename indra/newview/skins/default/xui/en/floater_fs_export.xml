@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater
- height="222"
+ height="162"
  width="500"
  help_topic="fs_export"
  layout="topleft"
  legacy_header_height="18"
  name="floater_fs_export"
- min_width="500"
- min_height="222"
+ min_width="252"
+ min_height="168"
  save_rect="true"
  can_resize="true"
  title="Backup objects...">
@@ -26,16 +26,26 @@
 	<floater.string name="title_textures">
 		Backup [OBJECT] working - Fetching textures...
 	</floater.string>
+
+
+
+
+
 	<!-- <ShareStorm> -->
 	<floater.string name="title_meshes">
 		Backup [OBJECT] working - Fetching meshes...
 	</floater.string>
 	<!-- </ShareStorm> -->
+
+
+
+
+
 	<layout_stack
 	 follows="all"
 	 layout="topleft"
 	 width="500"
-	 height="208"
+	 height="142"
 	 left="0"
 	 orientation="horizontal"
 	 top="18"
@@ -47,7 +57,7 @@
 		 top="18"
 		 left="0"
 		 width="250"
-		 height="208"
+		 height="142"
 		 name="control_panel">
 			<text
 			 follows="left|top"
@@ -69,6 +79,10 @@
 			 width="235">
 				Exportable prims: [COUNT]/[TOTAL]
 			</text>
+
+
+
+
 			<!-- <ShareStorm> -->
 			<text
 			 follows="left|top"
@@ -80,6 +94,10 @@
 				Exportable meshes: [COUNT]/[TOTAL]
 			</text>
 			<!-- </ShareStorm> -->
+
+
+
+
 			<text
 			 follows="left|top"
 			 height="15"
@@ -89,6 +107,10 @@
 			 width="235">
 				Exportable textures: [COUNT]/[TOTAL]
 			</text>
+
+
+
+
 			<!-- <ShareStorm> -->
 			<text
 			 follows="left|top"
@@ -100,13 +122,17 @@
 				Exportable materials: [COUNT]/[TOTAL]
 			</text>
 			<!-- </ShareStorm> -->
+
+
+
+
 			<text
 			 follows="left|bottom"
 			 height="15"
 			 layout="topleft"
 			 left="4"
 			 name="OptionsText"
-			 top="100"
+			 top="80"
 			 width="235">
 				Options:
 			</text>
@@ -117,8 +143,12 @@
 			 label="Backup object contents to disk"
 			 layout="topleft"
 			 name="contents_check"
-			 top_pad="2"
+			 top_pad="4"
 			 width="235" />
+
+
+
+
 			<!-- <ShareStorm> -->
 			<text
 			 follows="left|bottom"
@@ -159,6 +189,10 @@
 			 left_pad="4"
 			 width="70" />
 			<!-- </ShareStorm> -->
+
+
+
+
 			<button
 			 layout="topleft"
 			 follows="left|bottom"
