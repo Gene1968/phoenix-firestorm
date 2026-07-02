@@ -26,6 +26,21 @@
 	<floater.string name="title_textures">
 		Backup [OBJECT] working - Fetching textures...
 	</floater.string>
+
+
+
+
+
+	<!-- <ShareStorm> -->
+	<floater.string name="title_meshes">
+		Backup [OBJECT] working - Fetching meshes...
+	</floater.string>
+	<!-- </ShareStorm> -->
+
+
+
+
+
 	<layout_stack
 	 follows="all"
 	 layout="topleft"
@@ -64,15 +79,53 @@
 			 width="235">
 				Exportable prims: [COUNT]/[TOTAL]
 			</text>
+
+
+
+
+			<!-- <ShareStorm> -->
+			<text
+			 follows="left|top"
+			 height="15"
+			 layout="topleft"
+			 name="exportable_meshes"
+			 top_pad="0"
+			 width="235">
+				Exportable meshes: [COUNT]/[TOTAL]
+			</text>
+			<!-- </ShareStorm> -->
+
+
+
+
 			<text
 			 follows="left|top"
 			 height="15"
 			 layout="topleft"
 			 name="exportable_textures"
-			 top_pad="2"
+			 top_pad="0"
 			 width="235">
 				Exportable textures: [COUNT]/[TOTAL]
 			</text>
+
+
+
+
+			<!-- <ShareStorm> -->
+			<text
+			 follows="left|top"
+			 height="15"
+			 layout="topleft"
+			 name="exportable_materials"
+			 top_pad="0"
+			 width="235">
+				Exportable materials: [COUNT]/[TOTAL]
+			</text>
+			<!-- </ShareStorm> -->
+
+
+
+
 			<text
 			 follows="left|bottom"
 			 height="15"
@@ -92,15 +145,74 @@
 			 name="contents_check"
 			 top_pad="4"
 			 width="235" />
+
+
+
+
+			<!-- <ShareStorm> -->
+			<text
+			 follows="left|bottom"
+			 height="15"
+			 layout="topleft"
+			 left="4"
+			 name="AssetsText"
+			 top_pad="8"
+			 width="235">
+				Assets:
+			</text>
+			<check_box
+			 control_name="LOExportTextures"
+			 follows="left|bottom"
+			 height="16"
+			 label="Textures"
+			 layout="topleft"
+			 left="4"
+			 name="texture_check"
+			 top_pad="2"
+			 width="70" />
+			<check_box
+			 control_name="LOExportMaterials"
+			 follows="left|bottom"
+			 height="16"
+			 label="Materials"
+			 layout="topleft"
+			 name="material_check"
+			 left_pad="4"
+			 width="70" />
+			<check_box
+			 control_name="LOExportMeshes"
+			 follows="left|bottom"
+			 height="16"
+			 label="Meshes"
+			 layout="topleft"
+			 name="meshes_check"
+			 left_pad="4"
+			 width="70" />
+			<!-- </ShareStorm> -->
+
+
+
+
 			<button
 			 layout="topleft"
 			 follows="left|bottom"
 			 height="23"
 			 label="Save as..."
 			 name="export_btn"
-			 top="117"
+			 top="175"
 			 left="4"
 			 width="122" />
+			<!-- <ShareStorm> edit copybot button -->
+				<button
+				layout="topleft"
+				follows="left|bottom"
+				height="23"
+				label="Copy..."
+				name="make_copy_btn"
+				top="175"
+				left_pad="4"
+				width="122" />
+			<!-- </ShareStorm> end edit -->
 		</layout_panel>
 		<layout_panel
 		 follows="all"
@@ -108,7 +220,7 @@
 		 top="18"
 		 left="250"
 		 width="250"
-		 height="142"
+		 height="208"
 		 name="contents_panel">
 			<tab_container
 			 layout="topleft"

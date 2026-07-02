@@ -185,6 +185,10 @@
 #include "particleeditor.h"
 #include "permissionstracker.h"
 
+#include "loextras.h"// <ShareStorm>/LO
+#include "lofloaterexport.h"// <ShareStorm>/LO
+#include "llpreviewtexture.h"
+
 using namespace LLAvatarAppearanceDefines;
 
 typedef LLPointer<LLViewerObject> LLViewerObjectPtr;
@@ -2107,19 +2111,20 @@ class LLAdvancedEnableAppearanceToXML : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
+        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);// <ShareStorm>/LO
         LLViewerObject *obj = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
         if (obj && obj->isAnimatedObject() && obj->getControlAvatar())
         {
-            return gSavedSettings.getBOOL("DebugAnimatedObjects");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAnimatedObjects");// <ShareStorm>
         }
         else if (obj && obj->isAttachment() && obj->getAvatar())
         {
-            return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");// <ShareStorm>
         }
         else if (obj && obj->isAvatar())
         {
             // This has to be a non-control avatar, because control avs are invisible and unclickable.
-            return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");// <ShareStorm>
         }
         else
         {
@@ -2547,10 +2552,11 @@ class LLAdvancedDebugAvatarTextures : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-        if (gAgent.isGodlike())
-        {
-            handle_debug_avatar_textures();
-        }
+		// <ShareStorm> ?:
+        // if (gAgent.isGodlike())
+        // {
+			handle_debug_avatar_textures();
+        // }
         return true;
     }
 };
@@ -4176,6 +4182,9 @@ class LLLandEnableBuyPass : public view_listener_t
 
 bool enable_object_edit()
 {
+    if (lolistorm_check_flag(LO_CONVENIENCE))
+        return true;// <ShareStorm>/LO
+
     if (!isAgentAvatarValid()) return false;
 
     // *HACK:  The new "prelude" Help Islands have a build sandbox area,
@@ -5274,6 +5283,170 @@ class FSSelfForceSit : public view_listener_t
     }
 };
 
+// <ShareStorm> restored methods:
+// tried LLObjectMeasure from Theos, but it didn't like: LLEvent, LLPointer, LLFloaterChat, addChat. forgot to remove 'LLPointer<LLEvent> event, '
+// LLObjectTexture - tried?
+// LLObjectKey - investigate whether renamed to LLUUID or uuid ?
+// no errors, but no response from Particle Reverse `FCTeam Reverse Particle`:
+class LLObjectParticle : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+		for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+			 iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+		{
+			LLSelectNode* node = *iter;
+			if(node->getObject()->isParticleSource())
+			{
+				LLPartSysData thisPartSysData = node->getObject()->mPartSourcep->mPartSysData;
+
+				std::ostringstream script_stream;
+				std::string flags_st="( 0 ";
+				std::string pattern_st="";
+
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_INTERP_COLOR_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_INTERP_COLOR_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_INTERP_SCALE_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_INTERP_SCALE_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_BOUNCE_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_BOUNCE_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_WIND_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_WIND_MASK\n");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_FOLLOW_SRC_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_FOLLOW_SRC_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_FOLLOW_VELOCITY_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_FOLLOW_VELOCITY_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_TARGET_POS_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_TARGET_POS_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_TARGET_LINEAR_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_TARGET_LINEAR_MASK");
+				if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_EMISSIVE_MASK)
+					flags_st.append("\n\t\t\t\t|PSYS_PART_EMISSIVE_MASK");
+
+				switch (thisPartSysData.mPattern)
+				{
+					case 0x01:	pattern_st=" PSYS_SRC_PATTERN_DROP ";		break;
+					case 0x02:	pattern_st=" PSYS_SRC_PATTERN_EXPLODE ";	break;
+					case 0x04:	pattern_st=" PSYS_SRC_PATTERN_ANGLE ";		break;
+					case 0x08:	pattern_st=" PSYS_SRC_PATTERN_ANGLE_CONE ";	break;
+					case 0x10:	pattern_st=" PSYS_SRC_PATTERN_ANGLE_CONE_EMPTY ";	break;
+					default:	pattern_st="0";								break;
+				}
+
+				script_stream << "// *****  Reverse Particle V 1.00 FCTeam  *****\n";
+				script_stream << "default\n";
+				script_stream << "{\n";
+				script_stream << "\tstate_entry()\n";
+				script_stream << "\t{\n";
+				script_stream << "\t\tllParticleSystem([\n";
+				script_stream << "\t\t\tPSYS_PART_FLAGS," << flags_st << " ), \n";
+				script_stream << "\t\t\tPSYS_SRC_PATTERN," << pattern_st  << ",\n";
+				script_stream << "\t\t\tPSYS_PART_START_ALPHA," << thisPartSysData.mPartData.mStartColor.mV[3] << ",\n";
+				script_stream << "\t\t\tPSYS_PART_END_ALPHA," << thisPartSysData.mPartData.mEndColor.mV[3] << ",\n";
+				script_stream << "\t\t\tPSYS_PART_START_COLOR,<"<<thisPartSysData.mPartData.mStartColor.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mStartColor.mV[1] << ",";
+				script_stream << thisPartSysData.mPartData.mStartColor.mV[2] << "> ,\n";
+				script_stream << "\t\t\tPSYS_PART_END_COLOR,<"<<thisPartSysData.mPartData.mEndColor.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mEndColor.mV[1] << ",";
+				script_stream << thisPartSysData.mPartData.mEndColor.mV[2] << "> ,\n";
+				script_stream << "\t\t\tPSYS_PART_START_SCALE,<" << thisPartSysData.mPartData.mStartScale.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mStartScale.mV[1] << ",0>,\n";
+				script_stream << "\t\t\tPSYS_PART_END_SCALE,<" << thisPartSysData.mPartData.mEndScale.mV[0] << ",";
+				script_stream << thisPartSysData.mPartData.mEndScale.mV[1] << ",0>,\n";
+				script_stream << "\t\t\tPSYS_PART_MAX_AGE," << thisPartSysData.mPartData.mMaxAge << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_MAX_AGE," <<  thisPartSysData.mMaxAge << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_ACCEL,<"<<  thisPartSysData.mPartAccel.mV[0] << ",";
+				script_stream << thisPartSysData.mPartAccel.mV[1] << ",";
+				script_stream << thisPartSysData.mPartAccel.mV[2] << ">,\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_PART_COUNT," << (U32) thisPartSysData.mBurstPartCount << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_RADIUS," << thisPartSysData.mBurstRadius << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_RATE," << thisPartSysData.mBurstRate << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_SPEED_MIN," << thisPartSysData.mBurstSpeedMin << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_BURST_SPEED_MAX," << thisPartSysData.mBurstSpeedMax << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_ANGLE_BEGIN," << thisPartSysData.mInnerAngle << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_ANGLE_END," << thisPartSysData.mOuterAngle << ",\n";
+				script_stream << "\t\t\tPSYS_SRC_OMEGA,<" << thisPartSysData.mAngularVelocity.mV[0]<< ",";
+				script_stream << thisPartSysData.mAngularVelocity.mV[1] << ",";
+				script_stream << thisPartSysData.mAngularVelocity.mV[2] << ">,\n";
+				script_stream << "\t\t\tPSYS_SRC_TEXTURE, (key)\"" << node->getObject()->mPartSourcep->getImage()->getID()<< "\",\n";
+				script_stream << "\t\t\tPSYS_SRC_TARGET_KEY, (key)\"" << thisPartSysData.mTargetUUID << "\"\n";
+				script_stream << " \t\t]);\n";
+				script_stream << "\t}\n";
+				script_stream << "}\n";
+				LLSD args;
+				args["MESSAGE"] = "\nReverse engineering Script has been copied to your clipboard, paste it in a new script\n";
+				LLNotificationsUtil::add("SystemMessage", args);
+
+				gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(script_stream.str()));
+			}
+		}
+		return true;
+	}
+};
+// no errors, but no response from Export as XML:
+class LLObjectSaveAs : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+	{
+//TO FIX		LLFloaterExport* floater = new LLFloaterExport();
+//TO FIX		floater->center();
+		return true;
+	}
+};
+// no errors, then Import.XML opens file picker, but then nothing. Must select object first:
+class LLObjectImport : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		if(object)
+		{
+			if(!object->permCopy())
+				new_value = false;
+			else if(!object->permModify())
+				new_value = false;
+			else if(!object->permMove())
+				new_value = false;
+			else if(object->numChildren() != 0)
+				new_value = false;
+			else if(object->getParent())
+				new_value = false;
+		}
+		if(new_value == false) return true;
+		
+		LLFilePicker& picker = LLFilePicker::instance();
+		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+		{
+			return true;
+		}
+		std::string file_name = picker.getFirstFile();
+//TO FIX		LLXmlImportOptions* options = new LLXmlImportOptions(file_name);
+//TO FIX		options->mSupplier = object;
+//TO FIX		new LLFloaterXmlImportOptions(options);
+		return true;
+	}
+};
+// ! TP to Safety and rez platform if allowed.
+class OSSafety : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLAvatarActions::goToPanic();
+		return TRUE;
+	}
+};
+// ! TP to Ground Level
+class OSGround : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		LLAvatarActions::goToGround();
+		return true;
+	}
+};
+
+
 bool enable_forcesit_self()
 {
     return isAgentAvatarValid() &&
@@ -5646,7 +5819,8 @@ bool check_toggle_hacked_godmode()
 
 bool enable_toggle_hacked_godmode()
 {
-  return LLGridManager::getInstance()->isInSLBeta();
+  // <ShareStorm>: return LLGridManager::getInstance()->isInSLBeta();
+	return true;
 }
 #endif
 
@@ -11244,6 +11418,13 @@ void handle_grab_baked_texture(EBakedTextureIndex baked_tex_index)
         return;
 
     const LLUUID& asset_id = gAgentAvatarp->grabBakedTexture(baked_tex_index);
+
+
+
+    // Sim will immediately destroy this inventory item, so just preview instead.  <ShareStorm>/LO
+#if 0
+
+
     LL_INFOS("texture") << "Adding baked texture " << asset_id << " to inventory." << LL_ENDL;
     LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
     LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
@@ -11302,6 +11483,14 @@ void handle_grab_baked_texture(EBakedTextureIndex baked_tex_index)
     {
         LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
     }
+
+
+#endif
+
+    LLFloaterReg::showTypedInstance<LLPreviewTexture>("preview_texture", LLSD(asset_id), TAKE_FOCUS_YES);
+	// end </ShareStorm>/LO
+
+
 }
 
 bool enable_grab_baked_texture(EBakedTextureIndex baked_tex_index)
@@ -12577,6 +12766,32 @@ class FSObjectExport : public view_listener_t
 };
 // </FS:Techwolf Lupindo>
 
+// <ShareStorm>/LOstorm18
+static bool enable_export_xml()
+{
+    if (!lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+        return false;
+    return enable_export_object();
+}
+
+static bool enable_export_avatar_xml()
+{
+    return lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+}
+
+class LOExportXML : public view_listener_t
+{
+    bool handleEvent( const LLSD& userdata)
+    {
+        LOFloaterExport* floater = dynamic_cast<LOFloaterExport*>(LLFloaterReg::getInstance("lo_export"));
+        if (floater && !floater->isDead() && floater->getVisible())
+            floater->repopulate();
+        else
+            LLFloaterReg::showInstance("lo_export");
+        return true;
+    }
+};
+
 // <FS:CR>
 class FSObjectExportCollada : public view_listener_t
 {
@@ -12586,6 +12801,19 @@ class FSObjectExportCollada : public view_listener_t
         if (objectp)
         {
             LLFloaterReg::showInstance("export_collada");
+        }
+        return true;
+    }
+};
+
+class FSFileExportGLB : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        LLViewerObject* objectp = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+        if (objectp)
+        {
+            LLFloaterReg::showInstance("export_glb");
         }
         return true;
     }
@@ -12827,6 +13055,15 @@ void initialize_menus()
     commit.add("Agent.ToggleMicrophone", boost::bind(&LLAgent::toggleMicrophone, _2));
     enable.add("Agent.IsMicrophoneOn", boost::bind(&LLAgent::isMicrophoneOn, _2));
     enable.add("Agent.IsActionAllowed", boost::bind(&LLAgent::isActionAllowed, _2));
+
+
+	// <ShareStorm>: <os>
+	view_listener_t::addMenu(new OSSafety() , "Avatar.TpSafety");
+	view_listener_t::addMenu(new OSGround() , "Avatar.TpGround");
+	// view_listener_t::addMenu(new CopyObjectUUID() , "Object.CopyObjectUUID");
+	// view_listener_t::addMenu(new OSDeleteAllYours() , "OS.DeleteAllYours");
+	// </os>
+
 
     // File menu
     init_menu_file();
@@ -13106,6 +13343,10 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAdvancedEnableAppearanceToXML(), "Advanced.EnableAppearanceToXML");
     view_listener_t::addMenu(new LLAdvancedToggleCharacterGeometry(), "Advanced.ToggleCharacterGeometry");
 
+    // <ShareStorm>/LOstorm18
+    view_listener_t::addMenu(new LOExportXML(), "Avatar.ExportXML");
+    enable.add("Avatar.EnableExportXML", boost::bind(&enable_export_avatar_xml));
+
     view_listener_t::addMenu(new LLAdvancedTestMale(), "Advanced.TestMale");
     view_listener_t::addMenu(new LLAdvancedTestFemale(), "Advanced.TestFemale");
 
@@ -13328,6 +13569,16 @@ void initialize_menus()
     view_listener_t::addMenu(new LLObjectMute(), "Object.Mute");
     view_listener_t::addMenu(new LLObjectDerender(), "Object.Derender");
     view_listener_t::addMenu(new LLObjectDerenderPermanent(), "Object.DerenderPermanent"); // <FS:Ansariel> Optional derender & blacklist
+
+// <ShareStorm>: <edit>
+	// view_listener_t::addMenu(new LLObjectMeasure(), "Object.Measure");
+	// view_listener_t::addMenu(new LLObjectTexture(), "Object.Texture");
+	// view_listener_t::addMenu(new LLObjectKey(), "Object.Key");
+	view_listener_t::addMenu(new LLObjectParticle(), "Object.Particle");
+	view_listener_t::addMenu(new LLObjectSaveAs(), "Object.SaveAs");
+	view_listener_t::addMenu(new LLObjectImport(), "Object.Import");
+// </edit>
+
     enable.add("Object.EnableDerender", boost::bind(&enable_derender_object));  // <FS:CR> FIRE-10082 - Don't enable derendering own attachments when RLVa is enabled as well
     view_listener_t::addMenu(new LLObjectTexRefresh(), "Object.TexRefresh");    // ## Zi: Texture Refresh
     view_listener_t::addMenu(new LLEditParticleSource(), "Object.EditParticles");
@@ -13478,8 +13729,15 @@ void initialize_menus()
     // <FS:Techwolf Lupindo> export
     view_listener_t::addMenu(new FSObjectExport(), "Object.Export");
     view_listener_t::addMenu(new FSObjectExportCollada(), "Object.ExportCollada");
+    view_listener_t::addMenu(new FSFileExportGLB(), "File.ExportGLB");
     enable.add("Object.EnableExport", boost::bind(&enable_export_object));
     // </FS:Techwolf Lupindo>
+
+	// <ShareStorm> from original Singularity copybot Grimore:
+    // view_listener_t::addMenu(new LLObjectEnableExport(), "Attachment.EnableExport");
+    // <ShareStorm>/LOstorm18
+    view_listener_t::addMenu(new LOExportXML(), "Object.ExportXML");
+    enable.add("Object.EnableExportXML", boost::bind(&enable_export_xml));
 
     // <FS:Ansariel> Add avater complexity sttings to menu
     view_listener_t::addMenu(new FSRenderAvatarComplexityMode(), "World.RenderAvatarComplexityMode");
