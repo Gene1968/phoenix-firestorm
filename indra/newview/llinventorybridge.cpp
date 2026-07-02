@@ -107,6 +107,10 @@
 
 
 #include "loextras.h"// <ShareStorm>
+
+
+
+
 void copy_slurl_to_clipboard_callback_inv(const std::string& slurl);
 
 const F32 SOUND_GAIN = 1.0f;
@@ -3929,20 +3933,6 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
         pasteLinkFromClipboard();
         return;
     }
-<<<<<<< HEAD
-    // <FS:MJR> [FIRE-36793] - Inventory Context Menu - Add "Copy Name"
-    else if ("copy_name" == action)
-    {
-        // Single item only
-        LLFolderViewFolder* f = dynamic_cast<LLFolderViewFolder*>(mInventoryPanel.get()->getItemByID(mUUID));
-        if (f)
-        {
-            gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(f->getName()));
-        }
-        return;
-    }
-    // </FS:MJR> [FIRE-36793]
-=======
 
 
 
@@ -3983,7 +3973,18 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 
 
 
->>>>>>> merge-cb-726a
+    // <FS:MJR> [FIRE-36793] - Inventory Context Menu - Add "Copy Name"
+    else if ("copy_name" == action)
+    {
+        // Single item only
+        LLFolderViewFolder* f = dynamic_cast<LLFolderViewFolder*>(mInventoryPanel.get()->getItemByID(mUUID));
+        if (f)
+        {
+            gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(f->getName()));
+        }
+        return;
+    }
+    // </FS:MJR> [FIRE-36793]
     else if ("properties" == action)
     {
         showProperties();
