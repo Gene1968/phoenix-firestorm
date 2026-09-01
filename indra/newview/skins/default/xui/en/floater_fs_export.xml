@@ -132,7 +132,7 @@
 			 layout="topleft"
 			 left="4"
 			 name="OptionsText"
-			 top="80"
+			 top="60"
 			 width="235">
 				Options:
 			</text>
@@ -220,7 +220,7 @@
 		 top="18"
 		 left="250"
 		 width="250"
-		 height="208"
+		 height="228"
 		 name="contents_panel">
 			<tab_container
 			 layout="topleft"

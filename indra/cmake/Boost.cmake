@@ -16,6 +16,61 @@ use_prebuilt_binary(boost)
 # with the address size.
 set(addrsfx "-x${ADDRESS_SIZE}")
 
+if (WINDOWS)
+
+find_library(BOOST_CONTEXT_LIBRARY
+    NAMES
+    libboost_context
+    libboost_context-mt
+    libboost_context-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+find_library(BOOST_FIBER_LIBRARY
+    NAMES
+    libboost_fiber
+    libboost_fiber-mt
+    libboost_fiber-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+find_library(BOOST_FILESYSTEM_LIBRARY
+    NAMES
+    libboost_filesystem
+    libboost_filesystem-mt
+    libboost_filesystem-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+find_library(BOOST_PROGRAMOPTIONS_LIBRARY
+    NAMES
+    libboost_program_options
+    libboost_program_options-mt
+    libboost_program_options-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+find_library(BOOST_THREAD_LIBRARY
+    NAMES
+    libboost_thread
+    libboost_thread-mt
+    libboost_thread-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+find_library(BOOST_URL_LIBRARY
+    NAMES
+    libboost_url
+    libboost_url-mt
+    libboost_url-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+# <FS:Ansariel> LSL Preprocessor support
+find_library(BOOST_WAVE_LIBRARY
+    NAMES
+    libboost_wave
+    libboost_wave-mt
+    libboost_wave-mt${addrsfx}
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+# </FS:Ansariel>
+
+else (WINDOWS)
+
 find_library(BOOST_CONTEXT_LIBRARY
     NAMES
     boost_context
@@ -66,6 +121,8 @@ find_library(BOOST_WAVE_LIBRARY
     boost_wave-mt${addrsfx}
     PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
 # </FS:Ansariel>
+
+endif (WINDOWS)
 
 target_link_libraries(ll::boost INTERFACE
     ${BOOST_FIBER_LIBRARY}
