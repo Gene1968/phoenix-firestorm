@@ -72,6 +72,19 @@
 #include "llglheaders.h"
 #include "llpanelloginlistener.h"
 
+
+
+// <ShareStorm>:
+#include "lofloaterspoof.h"
+#include "lofloaterextras.h"
+#include "lospoof.h"
+#include "loextras.h"
+#include "loversion.h"
+// </ShareStorm>
+
+
+
+
 #include "fsdata.h"
 
 #if LL_WINDOWS
@@ -92,6 +105,15 @@ std::string FSPanelLogin::sPendingNewGridURI{};
 // Helper for converting a user name into the canonical "Firstname Lastname" form.
 // For new accounts without a last name "Resident" is added as a last name.
 static std::string canonicalize_username(const std::string& name);
+
+
+
+
+// ShareStorm Flag to avoid unintentional clearing of custom ID fields on a failed login
+static bool g_lo_locked_custom_ids = false;
+
+
+
 
 class LLLoginLocationAutoHandler : public LLCommandHandler
 {
@@ -224,7 +246,16 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     // STEAM-14: When user presses Enter with this field in focus, initiate login
     password_edit->setCommitCallback(boost::bind(&FSPanelLogin::onClickConnect, this));
 
-    // change z sort of clickable text to be behind buttons
+
+
+	// ShareStorm:
+	if (lolistorm_check_flag(LO_MD5_LOGINS))
+		password_edit->setMaxTextChars(32);
+
+
+
+
+	// change z sort of clickable text to be behind buttons
     sendChildToBack(getChildView("forgot_password_text"));
 
     LLComboBox* favorites_combo = getChild<LLComboBox>("start_location_combo");
@@ -304,6 +335,20 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     getChild<LLPanel>("login")->setDefaultBtn(findChild<LLButton>("connect_btn"));
     getChild<LLPanel>("start_location_panel")->setDefaultBtn(findChild<LLButton>("connect_btn"));
 
+
+
+
+// <ShareStorm>:
+    childSetAction("safe_connect_btn", onClickConnect, this);
+    getChild<LLPanel>("login")->setDefaultBtn(findChild<LLButton>("safe_connect_btn"));
+    getChild<LLPanel>("start_location_panel")->setDefaultBtn(findChild<LLButton>("safe_connect_btn"));
+// </ShareStorm>
+
+
+
+
+
+
     std::string channel = LLVersionInfo::getInstance()->getChannel();
     std::string version = llformat("%s (%d)",
                                    LLVersionInfo::getInstance()->getShortVersion().c_str(),
@@ -320,11 +365,40 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     username_combo->setFocusLostCallback(boost::bind(&FSPanelLogin::onSelectUser, this));
     mPreviousUsername = username_combo->getValue().asString();
 
+
+
+    lolistorm_set_username(canonicalize_username(mPreviousUsername));// ShareStorm
+
+
+
+
     childSetAction("password_show_btn", onShowHidePasswordClick, this);
     childSetAction("password_hide_btn", onShowHidePasswordClick, this);
     syncShowHidePasswordButton();
 
     mInitialized = true;
+
+
+
+
+
+	// <ShareStorm>:
+    auto&& spoof_btn = getChild<LLButton>("spoof_btn");
+    spoof_btn->setClickedCallback([this](LLUICtrl* ctrl, const LLSD&)
+    {
+        LLFloaterReg::showInstance("lo_spoof");
+    });
+
+    auto&& extras_btn = getChild<LLButton>("extras_btn");
+    extras_btn->setClickedCallback([this](LLUICtrl* ctrl, const LLSD&)
+    {
+        LLFloaterReg::showInstance("lo_extras");
+    });
+
+
+
+
+
 }
 
 void FSPanelLogin::addFavoritesToStartLocation()
@@ -546,6 +620,47 @@ void FSPanelLogin::setFields(LLPointer<LLCredential> credential, bool from_start
         }
     }
 
+
+
+
+
+
+
+
+	// <ShareStorm>:
+    LLSD spoof = credential->getSpoof();
+    std::string custom_id0, custom_mac;
+
+    if (spoof.isMap())
+    {
+        if (spoof.has("id0"))
+            custom_id0 = spoof.get("id0").asString();
+        if (spoof.has("mac"))
+            custom_mac = spoof.get("mac").asString();
+    }
+
+    if (!g_lo_locked_custom_ids)
+        lolistorm_set_custom_ids(login_id, custom_id0, custom_mac);
+
+    auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_spoof");
+
+    if (floater_spoof)
+        floater_spoof->update_labels();
+
+    auto&& floater_extras = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_extras");
+
+    if (floater_extras)
+        floater_extras->update_labels();
+
+
+
+
+
+
+
+
+
+
     const std::string cred_name = credential->getCredentialName();
     LLComboBox* username_combo = sInstance->getChild<LLComboBox>("username_combo");
     if (!username_combo->selectByValue(cred_name))
@@ -710,10 +825,37 @@ void FSPanelLogin::getFields(LLPointer<LLCredential>& credential,
                 char md5pass[33];               /* Flawfinder: ignore */
                 pass.hex_digest(md5pass);
                 authenticator["secret"] = md5pass;
-            }
+
+
+// <ShareStorm>:
+                if (lolistorm_check_flag(LO_MD5_LOGINS))
+                {
+                    if (password.length() == 32)
+                        authenticator["secret"] = password;
+                }
+
+
+			}
         }
     }
-    credential = gSecAPIHandler->createCredential(credentialName(), identifier, authenticator);
+
+
+
+
+// <ShareStorm>:
+    LLSD spoof = LLSD::emptyMap();
+    std::string custom_id0 = lolistorm_get_custom_id0();
+    std::string custom_macid = lolistorm_get_custom_macid();
+    if (!custom_id0.empty())
+        spoof.insert("id0", custom_id0);
+    if (!custom_macid.empty())
+        spoof.insert("mac", custom_macid);
+
+
+
+
+
+	credential = gSecAPIHandler->createCredential(credentialName(), identifier, authenticator);
     remember = sInstance->getChild<LLUICtrl>("remember_check")->getValue();
 }
 
@@ -878,10 +1020,43 @@ void FSPanelLogin::loadLoginPage()
 {
     if (!sInstance) return;
 
-    LLURI login_page = LLURI(LLGridManager::getInstance()->getLoginPage());
-    LLSD params(login_page.queryMap());
 
-    LL_DEBUGS("AppInit") << "login_page: " << login_page << LL_ENDL;
+
+
+// <ShareStorm>:
+    LLURI real_login_page = LLURI(LLGridManager::getInstance()->getLoginPage());
+
+    // Redirect SL login pages to LOstorm news page instead
+    std::string host = real_login_page.hostName();
+    std::string grid = LLGridManager::getInstance()->getGrid();
+    // Catch left-over references to the old login page in user_settings
+    bool is_sl_login = (host == "phoenixviewer.com" || host == "lolibox.us.to" || host == "lostorm.neocities.org"
+                         || grid == "agni" || grid == "aditi"); // Resilient against Firestorm changing their URL
+    LLURI login_page = is_sl_login ? LLURI(DEFAULT_LOGIN_PAGE) : real_login_page;
+
+    // Translate login page URL to local file
+    if (login_page.scheme() == "x-lostorm")
+    {
+        std::string p = login_page.path();
+        std::string q = login_page.query();
+        if (p.length() >= 1 && (p[0] == '/' || p[0] == '\\'))
+            p = p.substr(1);
+        p = gDirUtilp->getExpandedFilename(LL_PATH_FS_RESOURCES, p);
+        if (!q.empty())
+            q = '?' + q;
+        login_page = LLURI("file://" + p + q);
+    }
+// </ShareStorm>
+
+
+
+
+
+
+
+	LLSD params(login_page.queryMap());
+
+    LL_INFOS("AppInit") << "login_page: " << login_page << LL_ENDL;// <ShareStorm>
 
     // allow users (testers really) to specify a different login content URL
     std::string force_login_url = gSavedSettings.getString("ForceLoginURL");
@@ -914,7 +1089,26 @@ void FSPanelLogin::loadLoginPage()
                                  LLVersionInfo::getInstance()->getBuild());
     params["channel"] = LLVersionInfo::getInstance()->getChannel();
 
-    // Grid
+
+
+
+// <ShareStorm>:
+    if (login_page.scheme() == "file")
+    {
+        params["loversion"] = LO_VERSION_MINOR;
+
+        std::string bg_image = (gSavedSettings.getString("LOCustomLoginBackground"));
+
+        if (!bg_image.empty())
+            params["bg_image"] = bg_image;
+    }
+// </ShareStorm>
+
+
+
+
+
+	// Grid
     params["grid"] = LLGridManager::getInstance()->getGridId();
 
     // add OS info
@@ -990,6 +1184,13 @@ void FSPanelLogin::onClickConnect(void *)
     }
 #endif
 
+
+
+g_lo_locked_custom_ids = true;// ShareStorm
+
+
+
+
     if (sInstance && sInstance->mCallback)
     {
         // JC - Make sure the fields all get committed.
@@ -1030,7 +1231,23 @@ void FSPanelLogin::onClickConnect(void *)
         else
         {
             sCredentialSet = false;
-            LLPointer<LLCredential> cred;
+
+
+
+// <ShareStorm>:
+            // Fail-safe in case it hasn't been updated yet
+            lolistorm_set_username(canonicalize_username(username));
+
+            auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+
+            if (floater_spoof)
+                floater_spoof->update_labels();
+// </ShareStorm>
+
+
+
+
+			LLPointer<LLCredential> cred;
             bool remember;
             getFields(cred, remember);
             std::string identifier_type;
@@ -1158,7 +1375,22 @@ void FSPanelLogin::onPassKey(LLLineEditor* caller, void* user_data)
     }
 
     LLLineEditor* password_edit(self->getChild<LLLineEditor>("password_edit"));
-    self->mPasswordLength = password_edit->getText().length();
+
+
+
+
+// <ShareStorm>:
+    if (lolistorm_check_flag(LO_MD5_LOGINS))
+        password_edit->setMaxTextChars(32);
+    else
+        password_edit->setMaxTextChars(16);
+// </ShareStorm>
+
+
+
+
+
+	self->mPasswordLength = password_edit->getText().length();
     self->updateLoginButtons();
 }
 
@@ -1181,8 +1413,21 @@ void FSPanelLogin::updateServer()
             updateServerCombo();
             loadLoginPage();
 
+
+
+
+// <ShareStorm>:
+            int max_password_len = MAX_PASSWORD_SL;
+
+            if (lolistorm_check_flag(LO_MD5_LOGINS))
+                max_password_len = 32;
+// </ShareStorm>
+
+
+
+
 #ifdef OPENSIM
-            sInstance->getChild<LLLineEditor>("password_edit")->setMaxTextChars(LLGridManager::getInstance()->isInSecondLife() ? MAX_PASSWORD_SL : MAX_PASSWORD_OPENSIM);
+            sInstance->getChild<LLLineEditor>("password_edit")->setMaxTextChars(LLGridManager::getInstance()->isInSecondLife() ? max_password_len : MAX_PASSWORD_OPENSIM);//<ShareStorm>
 #endif
         }
         catch (LLInvalidGridName ex)
@@ -1198,13 +1443,27 @@ void FSPanelLogin::updateServer()
 
 void FSPanelLogin::updateLoginButtons()
 {
-    LLButton* login_btn = getChild<LLButton>("connect_btn");
+    LLButton* login_btn = getChild<LLButton>("safe_connect_btn");// <ShareStorm>
 
     login_btn->setEnabled(mUsernameLength != 0 && mPasswordLength != 0);
+
+
+// <ShareStorm>:
+    LLButton* unsafe_login_btn = getChild<LLButton>("connect_btn");
+    unsafe_login_btn->setEnabled(false);
+
+
 }
 
 void FSPanelLogin::onSelectServer()
 {
+
+
+
+	g_lo_locked_custom_ids = false;// ShareStorm
+
+
+
     // The user twiddled with the grid choice ui.
     // apply the selection to the grid setting.
     LLPointer<LLCredential> credential;
@@ -1288,10 +1547,15 @@ std::string canonicalize_username(const std::string& name)
     std::string cname = name;
 
     size_t arobase = cname.find("@");
-    if (arobase > 0)
+
+
+//<ShareStorm>:
+    if (arobase != std::string::npos)
     {
-        cname = cname.substr(0, arobase - 1);
+        cname = cname.substr(0, arobase);
     }
+//</ShareStorm>
+
 
     // determine if the username is a first/last form or not.
     size_t separator_index = cname.find_first_of(" ._");
@@ -1315,6 +1579,17 @@ std::string canonicalize_username(const std::string& name)
 
 void FSPanelLogin::addUsersToCombo(bool show_server)
 {
+
+
+
+
+
+g_lo_locked_custom_ids = false;// ShareStorm
+
+
+
+
+
     LLComboBox* combo = getChild<LLComboBox>("username_combo");
     if (!combo) return;
 
@@ -1382,7 +1657,18 @@ void FSPanelLogin::addUsersToCombo(bool show_server)
 // static
 void FSPanelLogin::onClickRemove(void*)
 {
-    if (sInstance)
+
+
+
+
+g_lo_locked_custom_ids = false;// ShareStorm
+
+
+
+
+
+
+	if (sInstance)
     {
         LLComboBox* combo = sInstance->getChild<LLComboBox>("username_combo");
         std::string credName = combo->getValue().asString();
@@ -1425,7 +1711,19 @@ void FSPanelLogin::onRemoveCallback(const LLSD& notification, const LLSD& respon
             {
                 sInstance->getChild<LLUICtrl>("username_combo")->clear();
                 sInstance->getChild<LLUICtrl>("password_edit")->clear();
-            }
+
+
+// ShareStorm:
+                lolistorm_set_username("");
+
+                auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+
+                if (floater_spoof)
+                    floater_spoof->update_labels();
+
+
+
+			}
         }
     }
 }
@@ -1448,6 +1746,16 @@ void FSPanelLogin::onClickGridBuilder(void*)
 
 void FSPanelLogin::onSelectUser()
 {
+
+
+
+
+g_lo_locked_custom_ids = false;// ShareStorm
+
+
+
+
+
     LL_INFOS("AppInit") << "onSelectUser()" << LL_ENDL;
 
     if (!sInstance)
@@ -1487,6 +1795,22 @@ void FSPanelLogin::onSelectUser()
     sInstance->mPasswordModified = false;
     sInstance->getChild<LLButton>("remove_user_btn")->setEnabled(true);
 
+
+
+
+
+// ShareStorm: w/ 2024may edit:
+    lolistorm_set_username(canonicalize_username(combo->getValue().asString()));
+
+    auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+
+    if (floater_spoof)
+        floater_spoof->update_labels();
+
+
+
+
+
     size_t arobase = cred_name.find("@");
     if (arobase != std::string::npos && arobase + 1 < cred_name.length())
     {
@@ -1513,7 +1837,13 @@ void FSPanelLogin::onSelectUser()
 // static
 void FSPanelLogin::updateServerCombo()
 {
-    if (!sInstance) return;
+
+
+
+g_lo_locked_custom_ids = false;// ShareStorm
+
+
+	if (!sInstance) return;
 
     // We add all of the possible values, sorted, and then add a bar and the current value at the top
     LLComboBox* server_choice_combo = sInstance->getChild<LLComboBox>("server_combo");
@@ -1575,7 +1905,15 @@ std::string FSPanelLogin::credentialName()
 
 void FSPanelLogin::gridListChanged(bool success)
 {
-    if (mGridListChangedCallbackConnection.connected())
+
+
+
+
+g_lo_locked_custom_ids = false;// <ShareStorm>
+
+
+
+	if (mGridListChangedCallbackConnection.connected())
     {
         mGridListChangedCallbackConnection.disconnect();
     }
@@ -1599,7 +1937,12 @@ bool FSPanelLogin::getShowFavorites()
 
 void FSPanelLogin::onUsernameTextChanged()
 {
-    mUsernameLength = getChild<LLUICtrl>("username_combo")->getValue().asString().length();
+
+// <ShareStorm>/LO lo 'username' var edits seem unnecessary:
+    g_lo_locked_custom_ids = false;
+
+
+	mUsernameLength = getChild<LLUICtrl>("username_combo")->getValue().asString().length();
     updateLoginButtons();
 }
 

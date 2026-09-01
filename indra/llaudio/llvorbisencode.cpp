@@ -34,6 +34,76 @@
 #include "llmath.h"
 #include "llapr.h"
 
+// <ShareStorm>
+#include "vorbis/vorbisfile.h"
+
+static S32 check_for_invalid_ogg_formats(const std::string& in_fname, std::string& error_msg, bool is_in_secondlife)
+{
+    OggVorbis_File vf;
+    FILE* f = fopen(in_fname.c_str(), "rb");
+    if (f == NULL)
+    {
+        LL_WARNS() << "ogg: failed to open input file" << LL_ENDL;
+        error_msg = "CannotUploadSoundFile";
+        return(LLVORBISENC_SOURCE_OPEN_ERR);
+    }
+
+    if (ov_open(f, &vf, NULL, 0) != 0)
+    {
+        LL_WARNS() << "ogg: ov_open returned non-zero" << LL_ENDL;
+        error_msg = "SoundFileNotVorbis";
+        fclose(f);
+        return(LLVORBISENC_PCM_FORMAT_ERR);
+    }
+
+    if (ov_streams(&vf) != 1)
+    {
+        LL_WARNS() << "ogg: ov_streams returned a value other than 1" << LL_ENDL;
+        error_msg = "SoundFileNotVorbis";
+        ov_clear(&vf);
+        return(LLVORBISENC_PCM_FORMAT_ERR);
+    }
+
+    vorbis_info* vi = ov_info(&vf, -1);
+
+    if (!vi)
+    {
+        LL_WARNS() << "ogg: ov_info returned null" << LL_ENDL;
+        error_msg = "SoundFileNotVorbis";
+        ov_clear(&vf);
+        return(LLVORBISENC_PCM_FORMAT_ERR);
+    }
+
+    if (vi->channels < 1 || vi->channels > LLVORBIS_CLIP_MAX_CHANNELS)
+    {
+        LL_WARNS() << "ogg: channel count " << vi->channels << " is invalid" << LL_ENDL;
+        error_msg = "SoundFileInvalidChannelCount";
+        ov_clear(&vf);
+        return(LLVORBISENC_MULTICHANNEL_ERR);
+    }
+
+    if (vi->rate != LLVORBIS_CLIP_SAMPLE_RATE)
+    {
+        LL_WARNS() << "ogg: sample rate " << vi->rate << " != 44100" << LL_ENDL;
+        error_msg = "SoundFileInvalidSampleRate";
+        ov_clear(&vf);
+        return(LLVORBISENC_UNSUPPORTED_SAMPLE_RATE);
+    }
+
+    F32 clip_length = (F32)ov_time_total(&vf, -1);
+
+    if (clip_length > (is_in_secondlife ? LLVORBIS_CLIP_MAX_TIME : LLVORBIS_CLIP_MAX_TIME_OPENSIM))
+    {
+        error_msg = "SoundFileInvalidTooLong";
+        ov_clear(&vf);
+        return(LLVORBISENC_CLIP_TOO_LONG);
+    }
+
+    ov_clear(&vf);
+    return(LLVORBISENC_NOERR);
+}
+// </ShareStorm>
+
 // <FS:Ansariel> FIRE-17812: Increase sounds length to 60s on OpenSim
 //S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& error_msg)
 S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& error_msg, bool is_in_secondlife)
@@ -64,6 +134,14 @@ S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& erro
 
     infile.read(wav_header, 44);
     physical_file_size = infile.seek(APR_END,0);
+
+    // <ShareStorm> Handle ogg uploads
+    if (strncmp((char *)&(wav_header[0]),"OggS",4) == 0)
+    {
+        infile.close();
+        return check_for_invalid_ogg_formats(in_fname, error_msg, is_in_secondlife);
+    }
+    // </ShareStorm>
 
     if (strncmp((char *)&(wav_header[0]),"RIFF",4))
     {
@@ -230,6 +308,21 @@ S32 encode_vorbis_file(const std::string& in_fname, const std::string& out_fname
             << LL_ENDL;
         return(LLVORBISENC_DEST_OPEN_ERR);
     }
+
+    infile.read(wav_header, 4);
+    infile.seek(APR_SET, 0);
+
+    // <ShareStorm> Handle ogg uploads by doing a raw file copy
+    if (strncmp((char *)&(wav_header[0]),"OggS",4) == 0)
+    {
+        S32 nbytes = 0;
+        while ((nbytes = infile.read(readbuffer, READ_BUFFER * 4)) > 0)
+        {
+            outfile.write(readbuffer, nbytes);
+        }
+        return(LLVORBISENC_NOERR);
+    }
+    // </ShareStorm>
 
      // parse the chunks
      U32 chunk_length = 0;

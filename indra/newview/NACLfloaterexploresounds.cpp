@@ -15,6 +15,10 @@
 #include "fsassetblacklist.h"
 #include "fscommon.h"
 #include "rlvhandler.h"
+// <ShareStorm>
+#include "loassets.h"
+#include "loextras.h"
+// </ShareStorm>
 
 constexpr size_t num_collision_sounds = 28;
 const LLUUID collision_sounds[num_collision_sounds] =
@@ -78,6 +82,10 @@ bool NACLFloaterExploreSounds::postBuild()
     getChild<LLButton>("block_avatar_worn_sounds_btn")->setClickedCallback(boost::bind(&NACLFloaterExploreSounds::blacklistSound, this, FSAssetBlacklist::eBlacklistFlag::WORN));
     getChild<LLButton>("block_avatar_rezzed_sounds_btn")->setClickedCallback(boost::bind(&NACLFloaterExploreSounds::blacklistSound, this, FSAssetBlacklist::eBlacklistFlag::REZZED));
     getChild<LLButton>("block_avatar_gesture_sounds_btn")->setClickedCallback(boost::bind(&NACLFloaterExploreSounds::blacklistSound, this, FSAssetBlacklist::eBlacklistFlag::GESTURE));
+    // <ShareStorm>
+    getChild<LLButton>("copy_uuid_btn")->setClickedCallback(boost::bind(&NACLFloaterExploreSounds::handleCopyUUID, this));
+    getChild<LLButton>("export_btn")->setClickedCallback(boost::bind(&NACLFloaterExploreSounds::handleExport, this));
+    // </ShareStorm>
 
     mHistoryScroller = getChild<LLScrollListCtrl>("sound_list");
     mHistoryScroller->setCommitCallback(boost::bind(&NACLFloaterExploreSounds::handleSelection, this));
@@ -104,7 +112,42 @@ void NACLFloaterExploreSounds::handleSelection()
     childSetEnabled("block_avatar_worn_sounds_btn", num_selected);
     childSetEnabled("block_avatar_rezzed_sounds_btn", num_selected);
     childSetEnabled("block_avatar_gesture_sounds_btn", num_selected);
+    // <ShareStorm>
+    childSetEnabled("copy_uuid_btn", (num_selected && !multiple) && lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS));
+    childSetEnabled("export_btn", num_selected && lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS));
+    // </ShareStorm>
 }
+
+// <ShareStorm>
+void NACLFloaterExploreSounds::handleCopyUUID()
+{
+    for (const auto* sel : mHistoryScroller->getAllSelected())
+    {
+        LLSoundHistoryItem item = getItem(sel->getValue());
+        if (item.mID.isNull())
+        {
+            continue;
+        }
+
+        lo_copy_uuid(item.mAssetID);
+        break;
+    }
+}
+
+void NACLFloaterExploreSounds::handleExport()
+{
+    for (const auto* sel : mHistoryScroller->getAllSelected())
+    {
+        LLSoundHistoryItem item = getItem(sel->getValue());
+        if (item.mID.isNull())
+        {
+            continue;
+        }
+
+        lo_save_asset(item.mAssetID, LLAssetType::AT_SOUND);
+    }
+}
+// </ShareStorm>
 
 LLSoundHistoryItem NACLFloaterExploreSounds::getItem(const LLUUID& itemID) const
 {

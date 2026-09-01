@@ -101,6 +101,10 @@ protected:
     LLButton*         mBlacklistButton;
     LLButton*         mStopAndRevokeButton;
     LLCheckBoxCtrl*   mNoOwnedAnimationsCheckBox;
+    // <ShareStorm>
+    LLButton*         mCopyUUIDButton;
+    LLButton*         mExportButton;
+    // </ShareStorm>
 
     LLView*                       mPreviewCtrl;      // dummy control on the floater where the avatar preview should go
     LLPointer<LLPreviewAnimation> mAnimationPreview; // actual avatar preview
@@ -127,6 +131,10 @@ protected:
     void onBlacklistPressed();
     void onStopAndRevokePressed();
     void onOwnedCheckToggled();
+    // <ShareStorm>
+    void onCopyUUIDPressed();
+    void onExportPressed();
+    // </ShareStorm>
 };
 
 #endif // ANIMATIONEXPLORER_H

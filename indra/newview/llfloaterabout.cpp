@@ -88,7 +88,11 @@ public:
     /// Obtain the data used to fill out the contents string. This is
     /// separated so that we can programmatically access the same info.
     static LLSD getInfo();
-    void onClickCopyToClipboard();
+
+
+    void onClickCopyToClipboard(bool unfaked = false);// <ShareStorm>/LO
+
+
     void onClickUpdateCheck();
     static void setUpdateListener();
 
@@ -129,6 +133,14 @@ bool LLFloaterAbout::postBuild()
     LLViewerTextEditor *support_widget =
         getChild<LLViewerTextEditor>("support_editor", true);
 
+
+
+// <ShareStorm>/LO
+    LLViewerTextEditor *fake_support_widget =
+        getChild<LLViewerTextEditor>("fake_support_editor", true);
+
+
+
     LLViewerTextEditor *contrib_names_widget =
         getChild<LLViewerTextEditor>("contrib_names", true);
 
@@ -136,7 +148,15 @@ bool LLFloaterAbout::postBuild()
         getChild<LLViewerTextEditor>("licenses_editor", true);
 
     getChild<LLUICtrl>("copy_btn")->setCommitCallback(
-        boost::bind(&LLFloaterAbout::onClickCopyToClipboard, this));
+
+
+// <ShareStorm>/LO
+        boost::bind(&LLFloaterAbout::onClickCopyToClipboard, this, true));
+
+    getChild<LLUICtrl>("fake_copy_btn")->setCommitCallback(
+        boost::bind(&LLFloaterAbout::onClickCopyToClipboard, this, false));
+
+
 
     // <FS:Ansariel> Disabled update button
     //getChild<LLUICtrl>("update_btn")->setCommitCallback(
@@ -162,6 +182,16 @@ bool LLFloaterAbout::postBuild()
     // Fix views
     support_widget->setEnabled(false);
     support_widget->startOfDoc();
+
+
+// <ShareStorm>/LO
+    fake_support_widget->blockUndo();
+
+    // Fix views
+    fake_support_widget->setEnabled(false);
+    fake_support_widget->startOfDoc();
+
+
 
     // Get the names of contributors, extracted from .../doc/contributions.txt by viewer_manifest.py at build time
     std::string contributors_path = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"contributors.txt");
@@ -308,10 +338,10 @@ private:
 
 static LLFloaterAboutListener floaterAboutListener;
 
-void LLFloaterAbout::onClickCopyToClipboard()
+void LLFloaterAbout::onClickCopyToClipboard(bool unfaked)// <ShareStorm>/LO
 {
     LLViewerTextEditor *support_widget =
-        getChild<LLViewerTextEditor>("support_editor", true);
+        getChild<LLViewerTextEditor>(unfaked ? "support_editor" : "fake_support_editor", true);// <ShareStorm>/LO
     support_widget->selectAll();
     support_widget->copy();
     support_widget->deselect();
@@ -338,9 +368,21 @@ void LLFloaterAbout::setSupportText(const std::string& server_release_notes_url)
 
     LLUIColor about_color = LLUIColorTable::instance().getColor("TextFgReadOnlyColor");
     support_widget->clear();
-    support_widget->appendText(LLAppViewer::instance()->getViewerInfoString(),
+
+
+// <ShareStorm>/LO
+    support_widget->appendText(LLAppViewer::instance()->getViewerInfoString(true),
+                               false, LLStyle::Params() .color(about_color));
+
+    LLViewerTextEditor *fake_support_widget =
+        getChild<LLViewerTextEditor>("fake_support_editor", true);
+
+    fake_support_widget->clear();
+    fake_support_widget->appendText(LLAppViewer::instance()->getViewerInfoString(),
                                false, LLStyle::Params() .color(about_color));
 }
+
+
 
 //This is bound as a callback in postBuild()
 void LLFloaterAbout::setUpdateListener()

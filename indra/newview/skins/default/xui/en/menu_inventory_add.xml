@@ -81,7 +81,19 @@
                      function="File.ImportLinkset"
                      parameter="" />
                 </menu_item_call>
-            </menu>
+
+
+<!--ShareStorm Import XML Begin-->
+				<menu_item_call label="Import XML..." layout="topleft" name="Import...">
+					<menu_item_call.on_click function="File.ImportXML" parameter="" />
+					<menu_item_call.on_visible function="File.EnableImportXML" parameter="" />
+				</menu_item_call>
+			</menu>
+			<menu_item_call label="New Local Asset" name="New Pretend Item">
+				<menu_item_call.on_click function="Floater.Show" parameter="new_local_inventory"/>
+			</menu_item_call>
+<!--ShareStorm End-->
+
 
             <menu_item_call
              label="New Folder"

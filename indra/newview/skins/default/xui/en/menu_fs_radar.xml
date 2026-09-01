@@ -2,6 +2,39 @@
 <context_menu
 	layout="topleft"
 	name="Avatar Context Menu">
+	<!--ShareStorm Menu-->
+	<context_menu label="ShareStorm Menu" name="ShareStorm Menu">
+		<menu_item_call label="Avatar Textures" name="avatar_textures">
+			<menu_item_call.on_click function="Avatar.AVTextures"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+		<menu_item_call label="Inspect Textures" name="textures">
+			<menu_item_call.on_click function="Avatar.Textures"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+		<menu_item_call label="Avatar Animations" name="animations">
+			<menu_item_call.on_click function="Avatar.Anims"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+		<menu_item_call label="Avatar Huds" name="huds">
+			<menu_item_call.on_click function="Avatar.Huds"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+		<menu_item_call label="Av Export XML" name="export">
+			<menu_item_call.on_click function="Avatar.ExportXML"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+		<menu_item_call label="Export Linkset OXP" name="linkset">
+			<menu_item_call.on_click function="Avatar.ExportLINKSET"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+		<menu_item_call label="Export Mesh DAE" name="mesh">
+			<menu_item_call.on_click function="Avatar.ExportMESH"/>
+			<menu_item_call.on_visible function="Avatar.VisibleZoomIn"/>
+		</menu_item_call>
+	</context_menu>
+	<menu_item_separator />
+	<!--ShareStorm End-->
 	<menu_item_call
 		label="View Profile"
 		layout="topleft"

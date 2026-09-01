@@ -441,7 +441,7 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
 #ifdef USE_AVX2_OPTIMIZATION
                     std::string str_optimization_tag = "+";
 #else
-                    std::string str_optimization_tag = "-";
+					std::string str_optimization_tag = "+";// <ShareStorm> per Lo16.2 (?)
 #endif
                     //OpenSim check
                     std::string str_opensim_tag;

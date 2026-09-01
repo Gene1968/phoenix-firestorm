@@ -56,6 +56,9 @@ public:
     bool postBuild() override;
     void updateSelection();
 
+    /// Export selection to cache OXP and open import floater (mesh linksets need LOExportMeshes).
+    bool startCopyFromSelection(LLObjectSelectionHandle selection);
+
     static void onImageLoaded(bool success,
                               LLViewerFetchedTexture *src_vi,
                               LLImageRaw* src,
@@ -63,6 +66,10 @@ public:
                               S32 discard_level,
                               bool final,
                               void* userdata);
+    // <ShareStorm>
+    static void onMeshLoaded(const LLUUID& asset_uuid, LLAssetType::EType type, void* userdata, S32 status, LLExtStat ext_status);
+    void fetchMeshFromCache(const LLUUID& asset_uuid, LLAssetType::EType type);
+    // </ShareStorm>
     void fetchTextureFromCache(LLViewerFetchedTexture* src_vi);
     void saveFormattedImage(LLPointer<LLImageFormatted> mFormattedImage, LLUUID id);
     void removeRequestedTexture(LLUUID texture_id);
@@ -76,7 +83,9 @@ public:
                                void* user_data, S32 status, LLExtStat ext_status);
 
 private:
-    typedef enum {IDLE, INVENTORY_DOWNLOAD, ASSET_DOWNLOAD, TEXTURE_DOWNLOAD} FSExportState;
+    // <ShareStorm>
+    typedef enum {IDLE, INVENTORY_DOWNLOAD, ASSET_DOWNLOAD, TEXTURE_DOWNLOAD, MESH_DOWNLOAD} FSExportState;
+    // </ShareStorm>
     virtual ~FSFloaterObjectExport();
     void draw() override;
     void onOpen(const LLSD& key) override;
@@ -86,13 +95,18 @@ private:
     void addSelectedObjects();
     void populateObjectList();
     void onClickExport();
+    void onClickMakeCopy();// <ShareStorm>
     void onExportFileSelected(const std::vector<std::string>& filenames);
     void addTexturePreview();
     S32 getNumExportableTextures() const;
+    // <ShareStorm>
+    S32 getNumExportableMaterials();
+    // </ShareStorm>
     void addObject(const LLViewerObject* prim, const std::string name);
     void updateTextureInfo();
     void updateUI();
     void updateTitleProgress(FSExportState state);
+    LLSD getLLSD();  // Added getLLSD method declaration
 
     FSExportState mExportState;
     typedef std::vector<std::pair<LLViewerObject*,std::string> > obj_info_t;
@@ -103,8 +117,16 @@ private:
 
     S32 mTotal;
     S32 mIncluded;
+    // <ShareStorm>
+    S32 mNumMeshes;
+    S32 mNumExportableMeshes;
+    // </ShareStorm>
     S32 mNumTextures;
     S32 mNumExportableTextures;
+    // <ShareStorm>
+    S32 mNumMaterials;
+    S32 mNumExportableMaterials;
+    // </ShareStorm>
 
     LLScrollListCtrl* mObjectList;
     LLPanel* mTexturePanel;
@@ -114,13 +136,23 @@ private:
     LLSD getLinkSet(LLSelectNode* node);
     void addPrim(LLViewerObject* object, bool root);
     bool exportTexture(const LLUUID& texture_id);
+    bool exportGltfJson(const LLUUID& material_id, const std::string& gltf_json);// <ShareStorm>/LO
+    // <ShareStorm>
+    bool exportMesh(const LLUUID& mesh_id);
+    // </ShareStorm>
 
     void onIdle();
     void removeRequestedAsset(LLUUID asset_uuid);
 
     LLSD mManifest;
     std::map<LLUUID, FSAssetResourceData> mRequestedTexture;
+    // <ShareStorm>
+    std::map<LLUUID, FSAssetResourceData> mRequestedMesh;
+    // </ShareStorm>
     std::map<LLUUID, bool> mTextureChecked;
+    // <ShareStorm>
+    std::map<LLUUID, bool> mMeshChecked;
+    // </ShareStorm>
     std::string mFilePath;
     LLLoadedCallbackEntry::source_callback_list_t mCallbackTextureList;
     LLFrameTimer mWaitTimer;
@@ -128,11 +160,18 @@ private:
     bool mExported;
     bool mAborted;
     bool mDirty;
+    bool mCopyAfterExport;// <ShareStorm>
 
     typedef std::vector<LLUUID> id_list_t;
     typedef std::vector<std::string> string_list_t;
     id_list_t mTextures;
+    // <ShareStorm>
+    id_list_t mMaterials;
+    // </ShareStorm>
     string_list_t mTextureNames;
+    // <ShareStorm>
+    string_list_t mMaterialNames;
+    // </ShareStorm>
 
     uuid_vec_t mInventoryRequests;
     uuid_vec_t mAssetRequests;

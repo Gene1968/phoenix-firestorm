@@ -1,0 +1,5 @@
+@echo off
+REM Set LL_BUILD for ReleaseFS_open (RelWithDebInfo) configuration
+set LL_BUILD=/MD /Od /Ob0 /std:c++20 /permissive- /Zc:wchar_t /Zi /GR /DEBUG /DLL_RELEASE=1 /DLL_RELEASE_WITH_DEBUG_INFO=1 /DNDEBUG /D_SECURE_STL=0 /D_HAS_ITERATOR_DEBUGGING=0 /DWIN32 /D_WINDOWS /DLL_WINDOWS=1 /DUNICODE /D_UNICODE /DWINVER=0x0602 /D_WIN32_WINNT=0x0602 /DLL_OS_DRAGDROP_ENABLED=1 /DLIB_NDOF=1
+echo LL_BUILD has been set for RelWithDebInfo configuration
+

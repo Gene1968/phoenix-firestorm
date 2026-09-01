@@ -46,6 +46,9 @@ private:
 };
 
 
+// <ShareStorm>:
+S32 LLMachineID_getUniqueID_real(unsigned char *unique_id, size_t len);
+S32 LLMachineID_getLegacyID_real(unsigned char *unique_id, size_t len);
 
 
 
