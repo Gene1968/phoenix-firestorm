@@ -1981,13 +1981,14 @@ void LLFloaterTexturePicker::onPipetteSelect(LLPointer<LLViewerObject>& object, 
             // }
 
             commitIfImmediateSet();
-        // }
+        }
         // else
         // {
         //     LLToolPipette::getInstance()->setResult(false, LLTrans::getString("InventoryNoTexture"));
-        }
-    // }
-// </ShareStorm>!
+        // }
+//</ShareStorm!>
+
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
