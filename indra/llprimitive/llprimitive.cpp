@@ -2436,3 +2436,44 @@ const LLUUID& LLRenderMaterialParams::getMaterial(U8 te) const
     return LLUUID::null;
 }
 
+// <ShareStorm>/LO:
+LLSD LLRenderMaterialParams::asLLSD() const
+{
+    LLSD entries_sd = LLSD::emptyArray();
+
+    for (const Entry& entry : mEntries)
+    {
+        LLSD entry_sd;
+        entry_sd["te_idx"] = entry.te_idx;
+        entry_sd["id"] = entry.id;
+        entries_sd.append(entry_sd);
+    }
+
+    LLSD sd;
+    sd["entries"] = entries_sd;
+    return sd;
+}
+
+bool LLRenderMaterialParams::fromLLSD(LLSD& sd)
+{
+    if (!sd.has("entries"))
+        return false;
+
+    const LLSD& sd_entries = sd["entries"];
+    mEntries.clear();
+
+    for (auto it = sd_entries.beginArray(); it != sd_entries.endArray(); ++it)
+    {
+        const LLSD& entry_sd = *it;
+        if (!entry_sd.has("te_idx") || !entry_sd.has("id"))
+            continue;
+        S32 te_idx = entry_sd["te_idx"];
+        if (te_idx < 0 || te_idx > 255)
+            continue;
+        Entry entry = {(U8)te_idx, entry_sd["id"]};
+        mEntries.push_back(entry);
+    }
+
+    return true;
+}
+

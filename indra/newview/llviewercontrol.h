@@ -32,7 +32,9 @@
 
 // Enabled this definition to compile a 'hacked' viewer that
 // allows a hacked godmode to be toggled on and off.
-#define TOGGLE_HACKED_GODLIKE_VIEWER
+// ShareStorm from original Singularity copybot Grimore:
+// #define TOGGLE_HACKED_GODLIKE_VIEWER 
+#define TOGGLE_HACKED_GODLIKE_VIEWER 1
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 extern bool gHackGodmode;
 #endif

@@ -119,6 +119,8 @@
 #include "NACLantispam.h"
 #include "aoengine.h"
 
+#include "loextras.h"// ShareStorm
+
 using namespace LLAvatarAppearanceDefines;
 
 extern LLMenuBarGL* gMenuBarView;

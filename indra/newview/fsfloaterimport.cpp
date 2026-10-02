@@ -25,6 +25,7 @@
  * $/LicenseInfo$
  */
 
+#include "llassettype.h"// <ShareStorm>/LO18
 #include "llviewerprecompiledheaders.h"
 #include "fsfloaterimport.h"
 
@@ -66,6 +67,14 @@
 #include "llcoros.h"
 #include "llcoproceduremanager.h"
 #include "llsdutil.h"
+
+
+
+#include "llmaterialmgr.h"// <ShareStorm>/LO
+#include "loextras.h"// <ShareStorm>/LO
+#include "llgltfmateriallist.h"// <ShareStorm>/LO18
+#include "fsgridhandler.h"// <ShareStorm>/LO18
+
 
 struct FSResourceData
 {
@@ -228,25 +237,48 @@ void FSFloaterImport::loadFile()
     mTextureQueue.clear();
     mAnimQueue.clear();
     mSoundQueue.clear();
+    mMeshQueue.clear();// <ShareStorm>
     mLinksetSize = 0;
     mTexturesTotal = 0;
     mAnimsTotal = 0;
+    mMaterialsTotal = 0;// <ShareStorm>/LO18
+    mMeshesTotal = 0;// <ShareStorm>
     mSoundsTotal = 0;
+    mAssetsTotal = 0;// <ShareStorm>/LO18
 
     bool file_loaded = false;
     llifstream filestream(mFileFullName.c_str(), std::ios_base::in | std::ios_base::binary);
     if(filestream.is_open())
     {
-        filestream.seekg(0, std::ios::end);
-        S32 file_size = (S32)filestream.tellg();
-        filestream.seekg(0, std::ios::beg);
-        if (LLUZipHelper::unzip_llsd(mManifest, filestream, file_size) == LLUZipHelper::ZR_OK)
+// <ShareStorm>:
+        if (mFilename.size() >= 4 && mFilename.substr(mFilename.size() - 4) == ".xml")
         {
-            file_loaded = true;
+            // For debugging -- not compatible with other XML exporters
+            LLSDSerialize::fromXML(mManifest, filestream);
+
+            if (mManifest)
+            {
+                file_loaded = true;
+            }
+            else
+            {
+                LL_WARNS("import") << "Failed to deserialize " << mFileFullName << LL_ENDL;
+            }
         }
         else
         {
-            LL_WARNS("import") << "Failed to deserialize " << mFileFullName << LL_ENDL;
+// </ShareStorm>
+            filestream.seekg(0, std::ios::end);
+            S32 file_size = (S32)filestream.tellg();
+            filestream.seekg(0, std::ios::beg);
+            if (LLUZipHelper::unzip_llsd(mManifest, filestream, file_size) == LLUZipHelper::ZR_OK)
+            {
+                file_loaded = true;
+            }
+            else
+            {
+                LL_WARNS("import") << "Failed to deserialize " << mFileFullName << LL_ENDL;
+            }
         }
     }
     else
@@ -282,6 +314,7 @@ void FSFloaterImport::loadFile()
             stats.setArg("[TEXTURES]", llformat("%u", mTexturesTotal));
             stats.setArg("[SOUNDS]", llformat("%u", mSoundsTotal));
             stats.setArg("[ANIMATIONS]", llformat("%u", mAnimsTotal));
+            stats.setArg("[MATERIALS]", llformat("%u", mMaterialsTotal));// <ShareStorm>/LO18
             stats.setArg("[ASSETS]", llformat("%u", mAssetsTotal));
             getChild<LLTextBox>("file_status_text")->setText(stats.getString());
         }
@@ -328,6 +361,8 @@ void FSFloaterImport::populateBackupInfo()
 
 void FSFloaterImport::processPrim(LLSD& prim)
 {
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);// <ShareStorm>
+
     if (prim.has("texture"))
     {
         LLSD& textures = prim["texture"];
@@ -336,12 +371,106 @@ void FSFloaterImport::processPrim(LLSD& prim)
             ++texture_iter)
         {
             addAsset((*texture_iter)["imageid"].asUUID(), LLAssetType::AT_TEXTURE);
+
+
+// <ShareStorm>/LO18:
+            // Add all of the textures referenced in PBR materials
+            if ((*texture_iter).has("gltf_override"))
+            {
+                std::string gltf_json = (*texture_iter)["gltf_override"].asString();
+                LLPointer<LLGLTFMaterial> mat = new LLGLTFMaterial();
+                std::string gltf_warn, gltf_err;
+                if (mat->fromJSON(gltf_json, gltf_warn, gltf_err))
+                {
+                    for (const LLUUID& tex : mat->mTextureId)
+                    {
+                        if (!tex.isNull() && tex != LLGLTFMaterial::GLTF_OVERRIDE_NULL_UUID)
+                            addAsset(tex, LLAssetType::AT_TEXTURE);
+                    }
+                }
+                else
+                {
+                    LL_WARNS("import") << "could not decode gltf_override json: " << gltf_err << LL_ENDL;
+                }
+            }
+// </ShareStorm>/LO18
+
         }
     }
 
     if (prim.has("sculpt"))
     {
         addAsset(prim["sculpt"]["texture"].asUUID(), LLAssetType::AT_TEXTURE);
+// <ShareStorm>:
+    }
+
+    if (enhanced_export && prim.has("mesh"))
+    {
+        LLSculptParams mesh_params;
+        mesh_params.fromLLSD(prim["mesh"]);
+        addMeshAsset(mesh_params.getSculptTexture());
+    }
+
+    if (enhanced_export && prim.has("light_texture"))
+    {
+        addAsset(prim["light_texture"]["texture"].asUUID(), LLAssetType::AT_TEXTURE);
+    }
+
+
+// <ShareStorm>/LO18
+    if (enhanced_export && prim.has("render_material"))
+    {
+        LLSD entries = prim["render_material"]["entries"];
+        for (auto it = entries.beginArray(); it != entries.endArray(); ++it)
+        {
+            LLSD asset_id = (*it)["id"];
+            if (mManifest["asset"].has(asset_id.asString()))
+            {
+                addAsset(asset_id, LLAssetType::AT_MATERIAL);
+
+                // Add all of the textures referenced in PBR materials
+                std::vector<U8> buffer = mManifest["asset"][asset_id.asString()]["data"].asBinary();
+                std::string assetRaw(buffer.begin(), buffer.end());
+                std::istringstream assetStream(assetRaw);
+                LLSD asset = LLSDSerialize::fromBinary(assetStream, 4096);
+                std::string gltf_json = asset["data"];
+                std::string gltf_warn, gltf_err;
+                LLPointer<LLGLTFMaterial> mat = new LLGLTFMaterial();
+                if (mat->fromJSON(gltf_json, gltf_warn, gltf_err))
+                {
+                    for (const LLUUID& tex : mat->mTextureId)
+                    {
+                        if (!tex.isNull() && tex != LLGLTFMaterial::GLTF_OVERRIDE_NULL_UUID)
+                            addAsset(tex, LLAssetType::AT_TEXTURE);
+                    }
+                }
+                else
+                {
+                    LL_WARNS("import") << "could not decode asset gltf json: " << gltf_err << LL_ENDL;
+                }
+            }
+        }
+    }
+// </ShareStorm>/LO18
+
+
+    if (enhanced_export && prim.has("materials"))
+    {
+        LLSD materials = prim["materials"];
+        for (LLSD::array_iterator m_itr = materials.beginArray() ;
+             m_itr != materials.endArray() ;
+             ++m_itr)
+        {
+            LLMaterialPtr mat = new LLMaterial();// <ShareStorm>/LO18
+            mat->fromLLSD(*m_itr);
+
+            if (!mat->getNormalID().isNull())
+                addAsset(mat->getNormalID(), LLAssetType::AT_TEXTURE);
+
+            if (!mat->getSpecularID().isNull())
+                addAsset(mat->getSpecularID(), LLAssetType::AT_TEXTURE);
+        }
+// </ShareStorm>
     }
 
     if (!prim.has("content"))
@@ -439,6 +568,21 @@ void FSFloaterImport::processPrim(LLSD& prim)
     }
 }
 
+void FSFloaterImport::addMeshAsset(LLUUID mesh_id)
+{
+    if (!mManifest.has("mesh_asset") || !mManifest["mesh_asset"].has(mesh_id.asString()))
+    {
+        LL_DEBUGS("import") << "Missing mesh_asset data for " << mesh_id.asString() << LL_ENDL;
+        return;
+    }
+
+    if (std::find(mMeshQueue.begin(), mMeshQueue.end(), mesh_id) == mMeshQueue.end())
+    {
+        mMeshQueue.push_back(mesh_id);
+        mMeshesTotal++;
+    }
+}
+
 void FSFloaterImport::addAsset(LLUUID asset_id, LLAssetType::EType asset_type)
 {
     if (!mManifest["asset"].has(asset_id.asString()))
@@ -476,6 +620,21 @@ void FSFloaterImport::addAsset(LLUUID asset_id, LLAssetType::EType asset_type)
         }
     }
         break;
+// <ShareStorm>/LO18:
+    case LLAssetType::AT_MATERIAL:
+    {
+        if (std::find(mMaterialQueue.begin(), mMaterialQueue.end(), asset_id) == mMaterialQueue.end())
+        {
+            mMaterialQueue.push_back(asset_id);
+            mMaterialsTotal++;
+        }
+    }
+        break;
+    case LLAssetType::AT_MESH:
+    {
+        addMeshAsset(asset_id);
+    }
+        break;
     default:
     {
         if (std::find(mAssetQueue.begin(), mAssetQueue.end(), asset_id) == mAssetQueue.end())
@@ -511,7 +670,7 @@ void FSFloaterImport::onClickBtnImport()
     getChild<LLCheckBoxCtrl>("upload_asset")->setEnabled(false);
     getChild<LLCheckBoxCtrl>("temp_asset")->setEnabled(false);
 
-    if (((mTexturesTotal + mSoundsTotal + mAnimsTotal + mAssetsTotal) != 0) && getChild<LLCheckBoxCtrl>("upload_asset")->get())
+    if (((mTexturesTotal + mSoundsTotal + mAnimsTotal + mMaterialsTotal + mMeshesTotal + mAssetsTotal) != 0) && getChild<LLCheckBoxCtrl>("upload_asset")->get())// <ShareStorm>/LO18
     {
         // do not pop up preview floaters when creating new inventory items.
         gSavedSettings.setBOOL("ShowNewInventory", false);
@@ -559,6 +718,24 @@ void FSFloaterImport::onClickBtnImport()
             status.setArg("[ANIMATIONTOTAL]", llformat("%u", mAnimsTotal));
             getChild<LLTextBox>("file_status_text")->setText(status.getString());
             uploadAsset(mAnimQueue.front());
+            return;
+        }
+        if (!mMaterialQueue.empty())
+        {// <ShareStorm>/LO18
+            LLUIString status = LLUIString("Uploading material [MATERIAL] of [MATERIALTOTAL].");
+            status.setArg("[MATERIAL]", llformat("%u", mMaterialsTotal - (U32)mMaterialQueue.size() + 1));
+            status.setArg("[MATERIALTOTAL]", llformat("%u", mMaterialsTotal));
+            getChild<LLTextBox>("file_status_text")->setText(status.getString());
+            uploadAsset(mMaterialQueue.front());
+            return;
+        }
+        if (!mMeshQueue.empty())
+        {// <ShareStorm>
+            LLUIString status = LLUIString("Uploading mesh [MESH] of [MESHTOTAL].");
+            status.setArg("[MESH]", llformat("%u", mMeshesTotal - (U32)mMeshQueue.size() + 1));
+            status.setArg("[MESHTOTAL]", llformat("%u", mMeshesTotal));
+            getChild<LLTextBox>("file_status_text")->setText(status.getString());
+            uploadAsset(mMeshQueue.front());
             return;
         }
         if (!mAssetQueue.empty())
@@ -726,6 +903,7 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         return false;
     }
 
+    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);// <ShareStorm>/LO
     LLSelectMgr::getInstance()->selectObjectAndFamily(object, true);
 
     LLUUID prim_uuid = mManifest["linkset"][mLinkset][mObject].asUUID();
@@ -792,12 +970,118 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
              ++m_itr)
         {
             LL_DEBUGS("import") << "Setting materials" << LL_ENDL;
-            LLMaterial* mat = new LLMaterial();
+            LLMaterialPtr mat = new LLMaterial();// <ShareStorm>/LO18
             mat->fromLLSD(*m_itr);
+
+            // LOstorm: skip assigning the materials if not neccessary// <ShareStorm>/LO18
+            if (*mat == LLMaterial::null)
+            {
+                ++te;
+                continue;
+            }
+
+// <ShareStorm>:
+            if (enhanced_export && mAssetMap[mat->getNormalID()].notNull())
+            {
+                LL_DEBUGS("import") << "Replaced normal texture " << mat->getNormalID().asString();// <ShareStorm>/LO18
+                mat->setNormalID(mAssetMap[mat->getNormalID()]);
+                LL_CONT << " with " << mat->getNormalID().asString() << LL_ENDL;// <ShareStorm>/LO18
+            }
+
+            if (enhanced_export && mAssetMap[mat->getSpecularID()].notNull())
+            {
+                LL_DEBUGS("import") << "Replaced specular texture " << mat->getSpecularID().asString();// <ShareStorm>/LO18
+                mat->setSpecularID(mAssetMap[mat->getSpecularID()]);
+                LL_CONT << " with " << mat->getSpecularID().asString() << LL_ENDL;// <ShareStorm>/LO18
+            }
+
             object->setTEMaterialParams(te, mat);
+// </ShareStorm>
+
+
+            if (enhanced_export)
+                LLMaterialMgr::getInstance()->put(object->getID(), te, *mat);// <ShareStorm>
+
             ++te;
         }
     }
+
+    // LOstorm: Apply extended data (Animesh, reflection probe)// <ShareStorm>/LO18
+    if (enhanced_export && prim.has("extended_mesh"))
+    {
+        LL_DEBUGS("import") << "Found extended mesh for " << prim_uuid.asString() << LL_ENDL;
+        LLExtendedMeshParams new_extended_mesh_param_block;
+        new_extended_mesh_param_block.fromLLSD(prim["extended_mesh"]);
+        object->setParameterEntry(LLNetworkData::PARAMS_EXTENDED_MESH, new_extended_mesh_param_block, true);
+    }
+
+    // LOstorm: Replace material UUIDs when asset uploading is enabled
+    if (enhanced_export && prim.has("render_material"))
+    {
+        LL_DEBUGS("import") << "Found render material for " << prim_uuid.asString() << LL_ENDL;
+        LLRenderMaterialParams new_render_material_block;
+        LLSD render_material_llsd = prim["render_material"];
+        if (render_material_llsd.has("entries"))
+        {
+            LLSD& sd_entries = render_material_llsd["entries"];
+            for (auto it = sd_entries.beginArray(); it != sd_entries.endArray(); ++it)
+            {
+                LLSD& entry_sd = *it;
+                if (!entry_sd.has("id"))
+                    continue;
+                LLUUID tex_id = entry_sd["id"];
+                auto map_result = mAssetMap.find(tex_id);
+                if (map_result != mAssetMap.end())
+                {
+                    LL_DEBUGS("import") << "Replaced material " << entry_sd["id"];
+                    entry_sd["id"] = map_result->second;
+                    LL_CONT << " with " << entry_sd["id"].asString() << LL_ENDL;
+                }
+            }
+        }
+        new_render_material_block.fromLLSD(render_material_llsd);
+        object->setParameterEntry(LLNetworkData::PARAMS_RENDER_MATERIAL, new_render_material_block, true);
+    }
+
+    if (enhanced_export && prim.has("reflection_probe"))
+    {
+        LL_DEBUGS("import") << "Found reflection probe for " << prim_uuid.asString() << LL_ENDL;
+        LLReflectionProbeParams new_reflection_probe_param_block;
+        new_reflection_probe_param_block.fromLLSD(prim["reflection_probe"]);// <ShareStorm>
+        object->setParameterEntry(LLNetworkData::PARAMS_REFLECTION_PROBE, new_reflection_probe_param_block, true);
+    }
+
+    // LOstorm: Apply gltf_override separately, because setTE() doesn't do it?
+    if (enhanced_export && prim.has("render_material"))
+    {
+        for(S32 face = 0; face < texture_count; face++)
+        {
+            if (object->getRenderMaterialID(face).isNull())
+                continue;
+
+            LLTextureEntry texture_entry;
+            if (texture_entry.fromLLSD(prim["texture"][face]))
+            {
+                // Remap uploaded texture UUIDs
+                LLGLTFMaterial* overridep = texture_entry.getGLTFMaterialOverride();
+                if (!overridep)
+                    continue;
+                for (int i = 0; i < overridep->mTextureId.size(); ++i)
+                {
+                    LLUUID& tex = overridep->mTextureId[i];
+                    if (!tex.isNull() && mAssetMap[tex].notNull())
+                    {
+                        LL_DEBUGS("import") << "Replaced material texture " << tex.asString();
+                        // TODO: TEST IF THIS ACTUALLY WORKS
+                        overridep->mTextureId[i] = mAssetMap[tex];
+                        LL_CONT << " with " << overridep->mTextureId[i].asString() << LL_ENDL;
+                    }
+                }
+                LLGLTFMaterialList::queueModify(object, face, overridep);
+            }
+        }
+    }
+// </ShareStorm>/LO18
 
     if (prim.has("sculpt"))
     {
@@ -813,6 +1097,22 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         }
 
         object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt_params, true); // sets locally and fires off an update to the region.
+    }
+
+    if (enhanced_export && prim.has("mesh"))
+    {
+        LL_DEBUGS("import") << "Found mesh for " << prim_uuid.asString() << LL_ENDL;
+        LLSculptParams sculpt_params;
+        sculpt_params.fromLLSD(prim["mesh"]);
+        LL_DEBUGS("import") << "Setting mesh to " << prim["mesh"]["texture"].asUUID().asString() << LL_ENDL;
+
+        if (mAssetMap[sculpt_params.getSculptTexture()].notNull())
+        {
+            sculpt_params.setSculptTexture(mAssetMap[sculpt_params.getSculptTexture()], sculpt_params.getSculptType());
+            LL_DEBUGS("import") << "Replaced mesh " << prim["mesh"]["texture"].asUUID().asString() << " with " << sculpt_params.getSculptTexture().asString() << LL_ENDL;
+        }
+
+        object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt_params, true);
     }
 
     if (prim.has("flexible"))
@@ -836,6 +1136,19 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         LL_DEBUGS("import") << "Found light_texture for " << prim_uuid.asString() << LL_ENDL;
         LLLightImageParams new_light_image_param_block;
         new_light_image_param_block.fromLLSD(prim["light_texture"]);
+
+
+
+// <ShareStorm>:
+        if (enhanced_export && mAssetMap[new_light_image_param_block.getLightTexture()].notNull())
+        {
+            LL_DEBUGS("import") << "Replaced light texture " << new_light_image_param_block.getLightTexture().asString();// <ShareStorm>/LO18
+            new_light_image_param_block.setLightTexture(mAssetMap[new_light_image_param_block.getLightTexture()]);
+            LL_CONT << " with " << new_light_image_param_block.getLightTexture() << LL_ENDL;
+        }
+// </ShareStorm>
+
+
         object->setParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE, new_light_image_param_block, true);
     }
 
@@ -1185,10 +1498,22 @@ void FSFloaterImport::setPrimPosition(U8 type, LLViewerObject* object, LLVector3
 void FSFloaterImport::uploadAsset(LLUUID asset_id, LLUUID inventory_item)
 {
     bool temporary = false;
-    std::vector<U8> asset_data = mManifest["asset"][asset_id.asString()]["data"].asBinary();
-    std::string name = mManifest["asset"][asset_id.asString()]["name"].asString();
-    std::string description = mManifest["asset"][asset_id.asString()]["description"].asString();
-    LLAssetType::EType asset_type = LLAssetType::lookup(mManifest["asset"][asset_id.asString()]["type"].asString().c_str());
+    const bool from_mesh_manifest = mManifest.has("mesh_asset")
+        && mManifest["mesh_asset"].has(asset_id.asString());
+    if (!from_mesh_manifest && !mManifest["asset"].has(asset_id.asString()))
+    {
+        LL_WARNS("import") << "Missing asset data for " << asset_id.asString() << LL_ENDL;
+        pushNextAsset(LLUUID::null, asset_id, LLAssetType::AT_MESH);
+        return;
+    }
+
+    const LLSD& asset_record = from_mesh_manifest
+        ? mManifest["mesh_asset"][asset_id.asString()]
+        : mManifest["asset"][asset_id.asString()];
+    std::vector<U8> asset_data = asset_record["data"].asBinary();
+    std::string name = asset_record["name"].asString();
+    std::string description = asset_record["description"].asString();
+    LLAssetType::EType asset_type = LLAssetType::lookup(asset_record["type"].asString().c_str());
     std::string url;
     LLSD body = LLSD::emptyMap();
     LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(asset_type);
@@ -1444,6 +1769,68 @@ void FSFloaterImport::uploadAsset(LLUUID asset_id, LLUUID inventory_item)
         }
     }
         break;
+
+    // LOstorm: asset material support// <ShareStorm>/LO18:
+    case LLAssetType::AT_MATERIAL:
+    {
+        if (!lolistorm_check_flag(LO_ENHANCED_EXPORT))
+            return;
+        perms_prefix = "Materials";
+
+        if (getChild<LLCheckBoxCtrl>("temp_asset")->get())
+            break;
+
+        if (inventory_item.isNull())
+        {
+            // create inventory item first
+            FSResourceData* ci_data = new FSResourceData;
+            ci_data->uuid = asset_id;
+            ci_data->mFloater = this;
+            ci_data->asset_type = asset_type;
+            ci_data->post_asset_upload = false;
+            LLPointer<LLInventoryCallback> cb = new FSCreateItemCallback(ci_data);
+            create_inventory_item(gAgentID, gAgentSessionID,
+                          folder_id, LLTransactionID::tnull, name, description, LLAssetType::AT_MATERIAL, LLInventoryType::IT_MATERIAL,
+                          NO_INV_SUBTYPE, PERM_ALL, cb);
+            return;
+        }
+        else
+        {
+            url = gAgent.getRegionCapability("UpdateMaterialAgentInventory");
+            body["item_id"] = inventory_item;
+        }
+
+        // Replace texture references in the asset
+        std::string asset(asset_data.begin(), asset_data.end());
+        boost::regex pattern("[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}");
+        boost::sregex_iterator m1(asset.begin(), asset.end(), pattern);
+        boost::sregex_iterator m2;
+        bool replace = false;
+        for( ; m1 != m2; ++m1)
+        {
+            LL_DEBUGS("export") << "Found material texture " << m1->str() << LL_ENDL;
+            if(LLUUID::validate(m1->str()))
+            {
+                LLUUID texture_id = LLUUID(m1->str());
+                if (mAssetMap[texture_id].notNull())
+                {
+                    asset.replace(m1->position(), m1->length(), mAssetMap[texture_id].asString());
+                    replace = true;
+                    LL_DEBUGS("export") << "Replaced material texture " << m1->str() << " with " << mAssetMap[texture_id].asString() << LL_ENDL;
+                }
+            }
+            else
+            {
+                LL_DEBUGS("export") << "Invalied uuid: " << m1->str() << LL_ENDL;
+            }
+        }
+        if (replace)
+        {
+            std::copy(asset.begin(), asset.end(), asset_data.begin());
+        }
+    }
+        break;
+
     default:
     {
         url = gAgent.getRegionCapability("NewFileAgentInventory");
@@ -1753,6 +2140,42 @@ void FSFloaterImport::popNextAsset()
         }
     }
         break;
+    case LLAssetType::AT_MATERIAL:
+    {// <ShareStorm>/LO18
+        uuid_vec_t::iterator iter = std::find(mMaterialQueue.begin(), mMaterialQueue.end(), asset_id);
+        if ( iter != mMaterialQueue.end())
+        {
+            if (new_uuid.notNull())
+            {
+                mAssetMap[asset_id] = new_uuid;
+            }
+            mMaterialQueue.erase(iter);
+        }
+        else
+        {
+            LL_WARNS("import") << "Error with material upload, got callback without material in mMaterialQueue." << LL_ENDL;
+            return;
+        }
+    }
+        break;
+    case LLAssetType::AT_MESH:
+    {// <ShareStorm>
+        uuid_vec_t::iterator iter = std::find(mMeshQueue.begin(), mMeshQueue.end(), asset_id);
+        if (iter != mMeshQueue.end())
+        {
+            if (new_uuid.notNull())
+            {
+                mAssetMap[asset_id] = new_uuid;
+            }
+            mMeshQueue.erase(iter);
+        }
+        else
+        {
+            LL_WARNS("import") << "Error with mesh upload, got callback without mesh in mMeshQueue." << LL_ENDL;
+            return;
+        }
+    }
+        break;
     default:
     {
         uuid_vec_t::iterator iter = std::find(mAssetQueue.begin(), mAssetQueue.end(), asset_id);
@@ -1798,6 +2221,24 @@ void FSFloaterImport::popNextAsset()
         status.setArg("[ANIMATIONTOTAL]", llformat("%u", mAnimsTotal));
         getChild<LLTextBox>("file_status_text")->setText(status.getString());
         uploadAsset(mAnimQueue.front());
+        return;
+    }
+    if (!mMaterialQueue.empty())
+    {// <ShareStorm>/LO18
+        LLUIString status = LLUIString("Uploading material [MATERIAL] of [MATERIALTOTAL].");
+        status.setArg("[MATERIAL]", llformat("%u", mMaterialsTotal - (U32)mMaterialQueue.size() + 1));
+        status.setArg("[MATERIALTOTAL]", llformat("%u", mMaterialsTotal));
+        getChild<LLTextBox>("file_status_text")->setText(status.getString());
+        uploadAsset(mMaterialQueue.front());
+        return;
+    }
+    if (!mMeshQueue.empty())
+    {// <ShareStorm>
+        LLUIString status = LLUIString("Uploading mesh [MESH] of [MESHTOTAL].");
+        status.setArg("[MESH]", llformat("%u", mMeshesTotal - (U32)mMeshQueue.size() + 1));
+        status.setArg("[MESHTOTAL]", llformat("%u", mMeshesTotal));
+        getChild<LLTextBox>("file_status_text")->setText(status.getString());
+        uploadAsset(mMeshQueue.front());
         return;
     }
     if (!mAssetQueue.empty())

@@ -2,6 +2,44 @@
 <context_menu
  layout="topleft"
  name="Attachment Pie">
+	<!--ShareStorm Menu-->
+	<context_menu label="ShareStorm Tools" name="ShareStorm">
+			<menu_item_call enabled="false" label="Mesh Export" name="Collada">
+			<menu_item_call.on_click function="Object.ExportCollada" />
+			<menu_item_call.on_enable function="Object.EnableExport" />
+		</menu_item_call>
+		<menu_item_call enabled="false" label="Avatar XML Export" name="Export...">
+			<menu_item_call.on_click function="Object.SaveAs" />
+			<menu_item_call.on_enable function="Object.EnableExport" />
+		</menu_item_call>
+		<menu_item_call label="Inspect Textures!" name="TexInspect">
+			<menu_item_call.on_click function="Floater.Show" parameter="inspect_texture" />
+			<!-- <menu_item_call.on_click function="Avatar.TexInspect"/> -->
+		</menu_item_call>
+		<menu_item_call label="Avatar Textures" name="Debug...">
+			<menu_item_call.on_click function="Avatar.Debug" />
+		</menu_item_call>
+		<menu_item_call enabled="false" label="AvHuds..." name="Avatar Huds">
+			<menu_item_call.on_click function="Avatar.AttachmentList" />
+			<menu_item_call.on_enable function="Avatar.EnableAttachmentList" />
+		</menu_item_call>
+		<menu_item_call enabled="true" label="Avatar Animations" name="Avatar Anims">
+			<menu_item_call.on_click function="Avatar.Anims" />
+		</menu_item_call>
+		<menu_item_call enabled="false" label="OXP Export" name="Backup">
+			<menu_item_call.on_click function="Object.Export" />
+			<menu_item_call.on_enable function="Object.EnableExport" />
+		</menu_item_call>
+		<menu_item_call enabled="false" label="Add Particles" name="Object Edit Particles">
+			<menu_item_call.on_click function="Object.EditParticles" />
+			<menu_item_call.on_enable function="Object.EnableEditParticles" />
+		</menu_item_call>
+		<menu_item_call label="Edit" name="Edit...">
+			<menu_item_call.on_click function="Object.Edit" />
+			<menu_item_call.on_enable function="EnableEdit"/>
+		</menu_item_call>
+	</context_menu>
+	<!--ShareStorm End-->
     <menu_item_call
      enabled="false"
      label="Touch"
@@ -76,12 +114,21 @@
         label="Save as"
         name="Export Menu">
         <menu_item_call
-            label="Backup"
+            label="Backup (OXP)"
             name="Backup">
             <menu_item_call.on_click
             function="Object.Export" />
             <menu_item_call.on_enable
             function="Object.EnableExport" />
+        </menu_item_call>
+<!--ShareStorm edit/LO-->
+        <menu_item_call
+            label="Copybot XML"
+            name="ExportXML">
+            <menu_item_call.on_click
+            function="Object.ExportXML" />
+            <menu_item_call.on_enable
+            function="Object.EnableExportXML" />
         </menu_item_call>
         <menu_item_call
             label="Collada"
@@ -419,12 +466,21 @@ name="Stand Up">
       </menu_item_call>
   </context_menu>
     <menu_item_call
-         label="Dump XML"
+         label="Dump Appearance XML"
          name="Dump XML">
             <menu_item_call.on_click
              function="Advanced.AppearanceToXML" />
             <menu_item_call.on_visible
              function="Advanced.EnableAppearanceToXML"/>
+    </menu_item_call>
+<!--ShareStorm edit/LO-->
+    <menu_item_call
+         label="Export Copybot XML"
+         name="ExportXML">
+            <menu_item_call.on_click
+             function="Avatar.ExportXML" />
+            <menu_item_call.on_visible
+             function="Avatar.EnableExportXML"/>
     </menu_item_call>
    <menu_item_call
        label="Object Profile"

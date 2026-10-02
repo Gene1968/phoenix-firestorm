@@ -44,6 +44,7 @@
             </array>
         <key>loginpage</key>
             <string>http://phoenixviewer.com/app/loginV3/</string>
+	<!--ShareStorm <string>x-lostorm:///login.html</string>-->
         <key>loginuri</key>
             <array>
                 <string>https://login.aditi.lindenlab.com/cgi-bin/login.cgi</string>
@@ -77,6 +78,7 @@
         </array>
         <key>loginpage</key>
         <string>http://phoenixviewer.com/app/loginV3/</string>
+	<!--ShareStorm <string>x-lostorm:///login.html</string>-->
         <key>loginuri</key>
         <array>
             <string>https://login.agni.lindenlab.com/cgi-bin/login.cgi</string>

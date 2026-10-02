@@ -11,7 +11,7 @@
  help_topic="texture_picker"
  title="Pick: Texture"
  width="410">
- 
+
 <!--  top static -->
  <floater.string
      name="choose_picture">
@@ -38,7 +38,7 @@ Pick: Texture
      width="165"
      follows="left|top"
     />
-  
+
     <text
      type="string"
      length="1"
@@ -54,7 +54,7 @@ Pick: Texture
      width="163">
         Multiple textures
     </text>
-	
+
 	<!-- mode selector -->
    <radio_group
      height="20"
@@ -66,18 +66,18 @@ Pick: Texture
         <radio_item
          label="Inventory"
          name="inventory"
-         top_delta="20" 
+         top_delta="20"
          layout="topleft"
-         height="16" 
-         left="0" 
+         height="16"
+         left="0"
          value="0"
          width="70" />
         <radio_item
          label="Local"
          left_pad="0"
          layout="topleft"
-         top_delta="0" 
-         height="16" 
+         top_delta="0"
+         height="16"
          name="local"
          value="1"
          width="50" />
@@ -92,7 +92,7 @@ Pick: Texture
          width="50" />
     </radio_group>
 	<!-- -->
-	
+
     <text
      type="string"
      length="1"
@@ -105,7 +105,7 @@ Pick: Texture
         Size:
 [DIMENSIONS]
     </text>
-    
+
 <!--  middle: inventory mode -->
 
     <button
@@ -116,9 +116,9 @@ Pick: Texture
      label_selected="Default"
      layout="topleft"
      name="Default"
-     width="83"
-	 left="86"
-     top="215"/>
+     width="73"
+	 left="94"
+     top="206"/>
     <button
      follows="left|top"
      height="18"
@@ -151,6 +151,19 @@ Pick: Texture
      name="None"
      top_pad="0"
      width="83" />
+<!-- <ShareStorm> -->
+	<button
+		follows="left|top"
+		height="18"
+		label="CpToInv"
+		label_selected="CpToInv"
+		layout="topleft"
+		left_delta="0"
+		left_pad="4"
+		name="CpToInv"
+		top_pad="0"
+		width="73" />
+<!-- </ShareStorm> -->
     <button
      follows="left|top"
      height="28"
@@ -171,7 +184,7 @@ Pick: Texture
      value="Preview Disabled"
      word_wrap="true"
      visible="false"
-     width="87" />  
+     width="87" />
     <filter_editor
      follows="left|top|right"
      height="23"

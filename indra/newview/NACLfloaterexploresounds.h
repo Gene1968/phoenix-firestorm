@@ -32,6 +32,10 @@ private:
     void handleStop();
     void handleStopLocally();
     void handleSelection();
+    // <ShareStorm>
+    void handleCopyUUID();
+    void handleExport();
+    // </ShareStorm>
     void blacklistSound(FSAssetBlacklist::eBlacklistFlag flag);
 
     LLScrollListCtrl* mHistoryScroller{ nullptr };

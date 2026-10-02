@@ -52,6 +52,10 @@
 #include "llavatarnamecache.h"
 
 #include "fsassetblacklist.h"
+// <ShareStorm>
+#include "loassets.h"
+#include "loextras.h"
+// </ShareStorm>
 
 constexpr S32 MAX_ANIMATIONS = 100;
 
@@ -157,12 +161,22 @@ bool AnimationExplorer::postBuild()
     mBlacklistButton = getChild<LLButton>("blacklist_btn");
     mStopAndRevokeButton = getChild<LLButton>("stop_and_revoke_btn");
     mNoOwnedAnimationsCheckBox = getChild<LLCheckBoxCtrl>("no_owned_animations_check");
+    // <ShareStorm>
+    mCopyUUIDButton = getChild<LLButton>("copy_uuid_btn");
+    mExportButton = getChild<LLButton>("export_btn");
+    // </ShareStorm>
 
     mAnimationScrollList->setCommitCallback(boost::bind(&AnimationExplorer::onSelectAnimation, this));
     mStopButton->setCommitCallback(boost::bind(&AnimationExplorer::onStopPressed, this));
     mBlacklistButton->setCommitCallback(boost::bind(&AnimationExplorer::onBlacklistPressed, this));
     mStopAndRevokeButton->setCommitCallback(boost::bind(&AnimationExplorer::onStopAndRevokePressed, this));
     mNoOwnedAnimationsCheckBox->setCommitCallback(boost::bind(&AnimationExplorer::onOwnedCheckToggled, this));
+    // <ShareStorm>
+    mCopyUUIDButton->setClickedCallback(boost::bind(&AnimationExplorer::onCopyUUIDPressed, this));
+    mCopyUUIDButton->setEnabled(false);
+    mExportButton->setClickedCallback(boost::bind(&AnimationExplorer::onExportPressed, this));
+    mExportButton->setEnabled(false);
+    // </ShareStorm>
 
     mPreviewCtrl = findChild<LLView>("animation_preview");
     if (mPreviewCtrl)
@@ -201,7 +215,23 @@ void AnimationExplorer::onSelectAnimation()
     mCurrentObject = item->getColumn(column)->getValue().asUUID();
 
     startMotion(mCurrentAnimationID);
+    // <ShareStorm>
+    mCopyUUIDButton->setEnabled(mCurrentAnimationID.notNull() && lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS));
+    mExportButton->setEnabled(mCurrentAnimationID.notNull() && lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS));
+    // </ShareStorm>
 }
+
+// <ShareStorm>
+void AnimationExplorer::onCopyUUIDPressed()
+{
+    lo_copy_uuid(mCurrentAnimationID);
+}
+
+void AnimationExplorer::onExportPressed()
+{
+    lo_save_asset(mCurrentAnimationID, LLAssetType::AT_ANIMATION);
+}
+// </ShareStorm>
 
 void AnimationExplorer::onStopPressed()
 {
